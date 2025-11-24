@@ -26,15 +26,17 @@
 #ifndef ___ECS_H___
 #define ___ECS_H___
 
- // ===== インクルード =====
+// ===== インクルード =====
 #include "Core/Time.h"
 #include "Core/Context.h"
+#include "Core/Logger.h"
 
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <type_traits>
 #include <cassert>
+#include <chrono>
 
 // ------------------------------------------------------------
 // 1. 基本定義 & ComponentFamiliy
@@ -192,6 +194,13 @@ public:
 		return getPool<T>().get(entity);
 	}
 
+	// コンポーネント削除
+	template<typename T>
+	void remove(Entity entity)
+	{
+		getPool<T>().remove(entity);
+	}
+
 	// ============================================================
 	// Multi-View Implementation (C++17)
 	// ============================================================
@@ -271,6 +280,11 @@ public:
 	virtual ~ISystem() = default;
 	virtual void Update(Registry& registry) {}
 	virtual void Render(Registry& registry, const Context& context) {}
+
+	// システム名（デバッグ用）
+	std::string m_systemName = "System";
+	// 処理時間（デバッグ, ms）
+	double m_lastExecutionTime = 0.0;
 };
 
 class World
@@ -300,7 +314,15 @@ public:
 	{
 		for (auto& sys : systems)
 		{
+			// 計測開始
+			auto start = std::chrono::high_resolution_clock::now();
+
 			sys->Update(registry);
+
+			// 計測終了
+			auto end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double, std::milli> ms = end - start;
+			sys->m_lastExecutionTime = ms.count();
 		}
 	}
 
@@ -312,6 +334,9 @@ public:
 			sys->Render(registry, context);
 		}
 	}
+
+	// デバッグ用にシステムリストを取得
+	const std::vector<std::unique_ptr<ISystem>>& getSystems() const { return systems; }
 
 	// Registryへの直接アクセスが必要な場合
 	Registry& getRegistry() { return registry; }

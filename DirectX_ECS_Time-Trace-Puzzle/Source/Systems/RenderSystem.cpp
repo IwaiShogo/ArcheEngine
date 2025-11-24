@@ -30,21 +30,32 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 	// 1. メインの描画
 	// ------------------------------------------------------------
 
-	// カメラ探索
+	// 1. カメラ探索
 	XMMATRIX viewMatrix = XMMatrixIdentity();
 	XMMATRIX projMatrix = XMMatrixIdentity();
-	XMVECTOR cameraPos = XMVectorSet(0, 0, -1, 0);
-	XMVECTOR cameraTarget = XMVectorSet(0, 0, 0, 0);
+	XMVECTOR eye = XMVectorSet(0, 0, -1, 0);
+	XMVECTOR lookDir = XMVectorSet(0, 0, 0, 0);
 	bool cameraFound = false;
 
 	registry.view<Camera, Transform>([&](Entity e, Camera& cam, Transform& trans)
 	{
 		if (cameraFound) return;
 
-		cameraPos = XMLoadFloat3(&trans.position);
-		cameraTarget = XMVectorSet(0, 0, 0, 0);
+		eye = XMLoadFloat3(&trans.position);
 
-		XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+		// 回転行列を作成 (Pitch: X軸回転, Yaw: Y軸回転)
+		// Transform.rotation.x を Pitch(上下)、y を Yaw(左右) として使います
+		XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(trans.rotation.x, trans.rotation.y, 0.0f);
+
+		// 前方ベクトル (0, 0, 1) を回転させる
+		lookDir = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rotationMatrix);
+
+		// 上方向ベクトル (0, 1, 0) を回転させる
+		XMVECTOR upDir = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rotationMatrix);
+
+		// LookToLH: 位置、向き、上でビュー行列を作る
+		viewMatrix = XMMatrixLookToLH(eye, lookDir, upDir);
+
 		projMatrix = XMMatrixPerspectiveFovLH(cam.fov, cam.aspect, cam.nearZ, cam.farZ);
 		cameraFound = true;
 	});
@@ -110,7 +121,7 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 
 		// C.ギズモ用のビュー行列
 		// カメラの位置からターゲットへのベクトルを計算
-		XMVECTOR dir = XMVectorSubtract(cameraPos, cameraTarget);
+		XMVECTOR dir = XMVectorSubtract(eye, lookDir);
 
 		// 向きはそのまま、距離を一定に正規化して原点中心に配置
 		dir = XMVector3Normalize(dir) * 5.0f;

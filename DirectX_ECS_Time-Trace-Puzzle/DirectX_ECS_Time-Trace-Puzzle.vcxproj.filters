@@ -123,6 +123,12 @@
     <ClInclude Include="Header\Core\Input.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Header\Systems\InputSystem.h">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Core\Logger.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -166,6 +172,9 @@
     </ClCompile>
     <ClCompile Include="Source\Systems\CollisionSystem.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\Input.cpp">
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

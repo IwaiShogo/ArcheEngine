@@ -99,9 +99,34 @@ struct BoxCollider
 struct PlayerInput
 {
 	float speed;
+	float jumpPower;
 
-	PlayerInput(float s = 3.0f)
-		: speed(s) {}
+	PlayerInput(float s = 3.0f, float j = 5.0f)
+		: speed(s), jumpPower(j) {}
+};
+
+/**
+ * @struct	GridPosition
+ * @brief	論理的なグリッド描画（整数）
+ */
+struct GridPosition
+{
+	int x, z;
+
+	GridPosition(int _x = 0, int _z = 0)
+		: x(_x), z(_z) {}
+};
+
+struct GridMoveState
+{
+	bool isMoving = false;	// 移動中か？
+	XMFLOAT3 startPos;		// 移動開始時のワールド座標
+	XMFLOAT3 targetPos;		// 目的地のワールド座標
+	float progress = 0.0f;	// 進捗（0.0 ~ 1.0）
+	float moveSpeed = 4.0f;	// 移動アニメーション速度
+
+	GridMoveState(float speed = 4.0f)
+		: isMoving(false), startPos(0, 0, 0), targetPos(0, 0, 0), progress(0.0f), moveSpeed(speed) {}
 };
 
 #endif // !___COMPONENTS_H___

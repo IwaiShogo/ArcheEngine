@@ -35,6 +35,7 @@ struct DebugSettings
 	bool wireframeMode = true;		// true: 線、false: 面
 	bool showGrid = true;			// グリッド線
 	bool showAxis = true;			// 座標軸
+	bool useDebugCamera = false;	// デバッグカメラ
 };
 
 struct Context

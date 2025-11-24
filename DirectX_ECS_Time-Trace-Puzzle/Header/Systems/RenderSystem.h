@@ -30,7 +30,9 @@ class RenderSystem
 {
 public:
 	RenderSystem(PrimitiveRenderer* rendererPtr)
-		: m_renderer(rendererPtr) {}
+		: m_renderer(rendererPtr) {
+		m_systemName = "Render System";
+	}
 
 	void Render(Registry& registry, const Context& context) override;
 

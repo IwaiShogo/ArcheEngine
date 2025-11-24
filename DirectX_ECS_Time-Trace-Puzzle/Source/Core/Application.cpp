@@ -20,6 +20,7 @@
 // ===== インクルード =====
 #include "Core/Application.h"
 #include "Core/Time.h"
+#include "Core/Input.h"
 #include "main.h"
 #include <string>
 #include <stdexcept>
@@ -139,6 +140,9 @@ void Application::Initialize()
 	Time::Initialize();
 	Time::SetFrameRate(Config::FRAME_RATE);
 
+	// 入力
+	Input::Initialize();
+
 	// --- ImGui ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -184,10 +188,34 @@ void Application::DrawDebugUI()
 
 	ImGui::Begin("Debug Menu");	// ウィンドウ作成
 
+	ImGui::Checkbox("Show FPS", &ctx.debug.showFps);
+
 	// 1. FPSと時間
 	if (ctx.debug.showFps)
 	{
-		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+		// ------------------------------------------------------------
+		// FPS Graph
+		// ------------------------------------------------------------
+		static float values[90] = {};
+		static int values_offset = 0;
+		static float refresh_time = 0.0f;
+
+		// 高速更新しすぎると見にくいので少し間引く
+		if (refresh_time == 0.0f) refresh_time = ImGui::GetTime();
+		while (refresh_time < ImGui::GetTime())
+		{
+			values[values_offset] = ImGui::GetIO().Framerate;
+			values_offset = (values_offset + 1) % IM_ARRAYSIZE(values);
+			refresh_time += 1.0f / 60.0f;
+		}
+		
+		// グラフ描画
+		// (ラベル, 配列, 数, オフセット, オーバーレイ文字, 最小Y, 最大Y, サイズ）
+		ImGui::PlotLines("FPS", values, IM_ARRAYSIZE(values), values_offset, nullptr, 0.0f, 200.0f, ImVec2(0, 80));
+		ImGui::Text("Avg: %.1f", ImGui::GetIO().Framerate);
+
+		ImGui::Separator();
+
 		ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
 	}
 	ImGui::Text("Total Time: %.2f s", Time::TotalTime());
@@ -196,13 +224,12 @@ void Application::DrawDebugUI()
 	// 2. 表示切替
 	if (ImGui::CollapsingHeader("Display Settings", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Checkbox("Show FPS", &ctx.debug.showFps);
-
 		ImGui::Separator();
 		ImGui::Checkbox("Show Grid", &ctx.debug.showGrid);
 		ImGui::Checkbox("Show Axis", &ctx.debug.showAxis);
 
 		ImGui::Separator();
+		ImGui::Checkbox("Debug Camera Mode", &ctx.debug.useDebugCamera);
 		ImGui::Checkbox("Show Colliders", &ctx.debug.showColliders);
 		// コライダー表示中のみ有効なサブ設定
 		if (ctx.debug.showColliders)
@@ -215,12 +242,91 @@ void Application::DrawDebugUI()
 		}
 	}
 
+	// 入力デバッグ情報の表示
+	if (ImGui::CollapsingHeader("Input Visualizer", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		// 1. 接続状態
+		bool connected = Input::IsControllerConnected();
+		ImGui::Text("Controller: %s", connected ? "Connected" : "Disconnected");
+
+		if (connected)
+		{
+			// ------------------------------------------------------------
+			// スティック描画用ヘルパー関数
+			// ------------------------------------------------------------
+			auto DrawStick = [](const char* label, float x, float y)
+				{
+					ImGui::BeginGroup();	// グループ化して横並びにしやすくする
+					ImGui::Text("%s", label);
+
+					// 枠
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+					ImVec2 p = ImGui::GetCursorScreenPos();
+					float size = 80.0f;
+
+					drawList->AddRect(p, ImVec2(p.x + size, p.y + size), IM_COL32(255, 255, 255, 255));
+
+					// 十字線
+					ImVec2 center(p.x + size * 0.5f, p.y + size * 0.5f);
+					drawList->AddLine(ImVec2(center.x, p.y), ImVec2(center.x, p.y + size), IM_COL32(100, 100, 100, 100));
+					drawList->AddLine(ImVec2(p.x, center.y), ImVec2(p.x + size, center.y), IM_COL32(100, 100, 100, 100));
+
+					// 現在の位置の点（赤色）
+					float dotX = center.x + (x * (size * 0.5f));
+					float dotY = center.y - (y * (size * 0.5f));
+					drawList->AddCircleFilled(ImVec2(dotX, dotY), 4.0f, IM_COL32(255, 0, 0, 255));
+
+					// スペース確保
+					ImGui::Dummy(ImVec2(size, size));
+
+					// 数値表示
+					ImGui::Text("X: % .2f", x);
+					ImGui::Text("Y: % .2f", y);
+					ImGui::EndGroup();
+				};
+			
+			// ------------------------------------------------------------
+			// 描画実行
+			// ------------------------------------------------------------
+			float lx = Input::GetAxis(Axis::Horizontal);
+			float ly = Input::GetAxis(Axis::Vertical);
+			float rx = Input::GetAxis(Axis::RightHorizontal);
+			float ry = Input::GetAxis(Axis::RightVertical);
+
+			DrawStick("L Stick", lx, ly);
+			ImGui::SameLine(0, 20);	// 横に並べる
+			DrawStick("R Stick", rx, ry);
+
+			ImGui::Separator();
+
+			// 3. ボタン入力の可視化
+			ImGui::Text("Buttons:");
+			// ヘルパーラムダ式
+			auto DrawBtn = [&](const char* label, Button btn)
+				{
+					if (Input::GetButton(btn)) ImGui::TextColored(ImVec4(0, 1, 0, 1), "[%s]", label);
+					else ImGui::TextDisabled("[%s]", label);
+					ImGui::SameLine();
+				};
+
+			DrawBtn("A", Button::A);
+			DrawBtn("B", Button::B);
+			DrawBtn("X", Button::X);
+			DrawBtn("Y", Button::Y);
+			ImGui::NewLine();
+			DrawBtn("LB", Button::LShoulder);
+			DrawBtn("RB", Button::RShoulder);
+			DrawBtn("START", Button::Start);
+			ImGui::NewLine();
+		}
+	}
+
 	// 3. ゲーム進行制御
 	if (ImGui::CollapsingHeader("Game Control", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		// タイムスケール操作
 		ImGui::Text("Time Scale");
-		ImGui::SliderFloat("##TimeScale", &Time::timeScale, 0.0f, 2.0f, "%.1fx");
+		ImGui::SliderFloat("##TimeScale", &Time::timeScale, 0.0f, 15.0f, "%.1fx");
 
 		// --- 一時停止 / 再開 ---
 		if (Time::isPaused)
@@ -284,6 +390,9 @@ void Application::Update()
 	// 毎フレーム時間を更新
 	Time::Update();
 
+	// 入力
+	Input::Update();
+
 	// --- ImGui ---
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -291,6 +400,9 @@ void Application::Update()
 
 	// デバッグUI
 	DrawDebugUI();
+
+	// ログウィンドウの描画
+	Logger::Draw("Debug Logger");
 
 	// シーン更新
 	m_sceneManager.Update();

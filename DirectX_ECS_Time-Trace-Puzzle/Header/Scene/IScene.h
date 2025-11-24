@@ -29,6 +29,7 @@
 #include "Systems/RenderSystem.h"
 #include "Systems/MovementSystem.h"
 #include "Systems/CollisionSystem.h"
+#include "Systems/InputSystem.h"
 
 /**
  * @enum	SceneType

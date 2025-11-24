@@ -28,6 +28,8 @@ class CollisionSystem
 	: public ISystem
 {
 public:
+	CollisionSystem() { m_systemName = "Collision System"; }
+
 	void Update(Registry& registry) override;
 
 private:

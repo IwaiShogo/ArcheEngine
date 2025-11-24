@@ -45,7 +45,7 @@ void CollisionSystem::Update(Registry& registry)
 		{
 			// 判定実行
 			if (CheckAABB(transforms[i]->position, *colliders[i],
-						  transforms[j]->position, *colliders[i]))
+						  transforms[j]->position, *colliders[j]))
 			{
 				// --- 衝突時の処理 ---
 				Entity entA = entities[i];
@@ -63,6 +63,8 @@ void CollisionSystem::Update(Registry& registry)
 					// ここにゲームオーバーなどを書く
 					if (isPlayerA) colliders[i]->size = XMFLOAT3(0.5f, 0.5f, 0.5f);
 					if (isPlayerB) colliders[j]->size = XMFLOAT3(0.5f, 0.5f, 0.5f);
+
+					Logger::LogError("Player Hit Enemy!");
 				}
 			}
 		}
@@ -91,7 +93,7 @@ bool CollisionSystem::CheckAABB(const XMFLOAT3& posA, const BoxCollider& boxA, c
 	// 全軸で重なっていれば衝突
 	bool collisionX = maxXA >= minXB && maxXB >= minXA;
 	bool collisionY = maxYA >= minYB && maxYB >= minYA;
-	bool collisionZ = maxZA >= minZA && maxZB >= minZA;
+	bool collisionZ = maxZA >= minZB && maxZB >= minZA;
 
 	return collisionX && collisionY && collisionZ;
 }

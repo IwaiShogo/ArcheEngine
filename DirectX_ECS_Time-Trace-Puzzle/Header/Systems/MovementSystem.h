@@ -28,15 +28,33 @@ class MovementSystem
 	: public ISystem
 {
 public:
+	MovementSystem() { m_systemName = "Movement System"; }
+
 	void Update(Registry& registry) override
 	{
 		float dt = Time::DeltaTime();
 
-		registry.view<Transform, Velocity>([&](Entity e, Transform& t, Velocity& v) {
-			t.position.x += v.velocity.x * dt;
-			t.position.y += v.velocity.y * dt;
-			t.position.z += v.velocity.z * dt;
-		});
+		registry.view<Transform, Velocity>([&](Entity e, Transform& t, Velocity& v)
+			{
+				// 1. 移動
+				t.position.x += v.velocity.x * dt;
+				t.position.y += v.velocity.y * dt;
+				t.position.z += v.velocity.z * dt;
+
+				// 2. 重力（Gravity）
+				if (t.position.y > 0.0f || v.velocity.y > 0.0f)
+				{
+					v.velocity.y -= 9.8f * dt;
+				}
+				
+				// 3. 簡易的な床判定
+				if (t.position.y < 0.0f)
+				{
+					t.position.y = 0.0f;
+					v.velocity.y = 0.0f;
+				}
+
+			});
 	}
 };
 

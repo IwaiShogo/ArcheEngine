@@ -133,6 +133,7 @@
     <ClInclude Include="Header\Core\Application.h" />
     <ClInclude Include="Header\Core\Context.h" />
     <ClInclude Include="Header\Core\Input.h" />
+    <ClInclude Include="Header\Core\Logger.h" />
     <ClInclude Include="Header\Core\Time.h" />
     <ClInclude Include="Header\ECS\ECS.h" />
     <ClInclude Include="Header\Graphics\PrimitiveRenderer.h" />
@@ -142,6 +143,7 @@
     <ClInclude Include="Header\Scene\SceneManager.h" />
     <ClInclude Include="Header\Scene\SceneTitle.h" />
     <ClInclude Include="Header\Systems\CollisionSystem.h" />
+    <ClInclude Include="Header\Systems\InputSystem.h" />
     <ClInclude Include="Header\Systems\MovementSystem.h" />
     <ClInclude Include="Header\Systems\RenderSystem.h" />
     <ClInclude Include="Library\ImGui\imconfig.h" />
@@ -162,6 +164,7 @@
     <ClCompile Include="Library\ImGui\imgui_tables.cpp" />
     <ClCompile Include="Library\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Source\Core\Application.cpp" />
+    <ClCompile Include="Source\Core\Input.cpp" />
     <ClCompile Include="Source\Graphics\PrimitiveRenderer.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Scene\SceneGame.cpp" />
