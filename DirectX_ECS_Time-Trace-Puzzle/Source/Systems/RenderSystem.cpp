@@ -45,7 +45,6 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 		cameraTarget = XMVectorSet(0, 0, 0, 0);
 
 		XMVECTOR up = XMVectorSet(0, 1, 0, 0);
-		viewMatrix = XMMatrixLookAtLH(cameraPos, cameraTarget, up);
 		projMatrix = XMMatrixPerspectiveFovLH(cam.fov, cam.aspect, cam.nearZ, cam.farZ);
 		cameraFound = true;
 	});
