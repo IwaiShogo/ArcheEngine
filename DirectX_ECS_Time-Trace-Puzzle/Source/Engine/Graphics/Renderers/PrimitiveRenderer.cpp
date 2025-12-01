@@ -278,24 +278,30 @@ void PrimitiveRenderer::DrawSphere(const XMFLOAT3& position, float radius, const
 // カプセル
 void PrimitiveRenderer::DrawCapsule(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color)
 {
-	// メッシュは radius=0.5, cylinderHeight=0.5 で作ったので、それに合わせてスケール
-	// X, Z は radius*2 倍
-	// Y は height に合わせてスケールしたいが、半球部分と円柱部分の比率が変わると歪む
-	// 厳密には頂点シェーダーで変形するか、動的バッファが必要ですが、
-	// 簡易的に Yスケール = height で引き伸ばします (球部分が楕円になります)
-	XMVECTOR q = XMLoadFloat4(&rotation);
-	XMMATRIX world = XMMatrixScaling(radius, height, radius) * XMMatrixRotationQuaternion(q) * XMMatrixTranslation(position.x, position.y, position.z);
+	// カプセルは「円柱」＋「上下の半球」で構成される
+	// height は全体の高さ。円柱部分の高さは height - 2*radius
+	float cylinderH = std::max(0.0f, height - 2.0f * radius);
 
-	m_cbData.world = XMMatrixTranspose(world);
-	m_cbData.color = color;
-	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);
+	XMVECTOR posV = XMLoadFloat3(&position);
+	XMVECTOR rotQ = XMLoadFloat4(&rotation);
 
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	m_context->IASetVertexBuffers(0, 1, m_capsuleVB.GetAddressOf(), &stride, &offset);
-	m_context->IASetIndexBuffer(m_capsuleIB.Get(), DXGI_FORMAT_R16_UINT, 0);
-	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_context->DrawIndexed(m_capsuleIndexCount, 0, 0);
+	// Y軸向きのローカル座標系で考える
+	XMVECTOR up = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), rotQ);
+
+	// 1. 中央の円柱部分
+	if (cylinderH > 0.0f) {
+		DrawCylinder(position, radius, cylinderH, rotation, color);
+	}
+
+	// 2. 上の半球 (球体を描画して代用)
+	XMVECTOR topPos = posV + up * (cylinderH * 0.5f);
+	XMFLOAT3 topPosF; XMStoreFloat3(&topPosF, topPos);
+	DrawSphere(topPosF, radius, color);
+
+	// 3. 下の半球
+	XMVECTOR bottomPos = posV - up * (cylinderH * 0.5f);
+	XMFLOAT3 bottomPosF; XMStoreFloat3(&bottomPosF, bottomPos);
+	DrawSphere(bottomPosF, radius, color);
 }
 
 // 円柱

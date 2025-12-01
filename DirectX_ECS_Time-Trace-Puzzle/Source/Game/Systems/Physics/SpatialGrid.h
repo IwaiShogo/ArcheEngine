@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <vector>
 #include <DirectXMath.h>
+#include <cmath>
 
 namespace Physics
 {
@@ -46,13 +47,13 @@ namespace Physics
 
 	class SpatialGrid {
 	public:
-		SpatialGrid(float cellSize = 5.0f) : m_cellSize(cellSize) {}
+		SpatialGrid(float cellSize = 2.0f) : m_cellSize(cellSize) {}
 
 		void Clear() {
 			m_grid.clear();
 		}
 
-		// オブジェクトをグリッドに登録
+		// オブジェクトをグリッドに登録tttt
 		void Insert(Entity entity, const DirectX::XMFLOAT3& min, const DirectX::XMFLOAT3& max) {
 			int minX = (int)std::floor(min.x / m_cellSize);
 			int maxX = (int)std::floor(max.x / m_cellSize);

@@ -20,10 +20,12 @@
 // ===== インクルード =====
 #define NOMINMAX
 #include "Game/Systems/Physics/CollisionSystem.h"
+#include "Game/Systems/Physics/SpatialGrid.h"
 #include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <set>
 
 using namespace Physics;
 
@@ -340,18 +342,28 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 
 // Sphere vs Sphere [cite: 2]
 bool CollisionSystem::CheckSphereSphere(const Physics::Sphere& a, const Physics::Sphere& b, Physics::Contact& outContact) {
-	XMVECTOR vA = XMLoadFloat3(&a.center);
-	XMVECTOR vB = XMLoadFloat3(&b.center);
-	XMVECTOR distVec = vB - vA;
+	XMVECTOR centerA = XMLoadFloat3(&a.center);
+	XMVECTOR centerB = XMLoadFloat3(&b.center);
+
+	// 距離チェック
+	XMVECTOR distVec = centerB - centerA; // A -> B
 	float distSq = LengthSq(distVec);
 	float rSum = a.radius + b.radius;
 
 	if (distSq >= rSum * rSum) return false;
 
+	// 衝突情報の作成
 	float dist = std::sqrt(distSq);
-	if (dist < 1e-4f) { distVec = XMVectorSet(0, 1, 0, 0); dist = 0.0f; }
+	XMVECTOR normal;
 
-	XMVECTOR normal = distVec / dist; // A -> B
+	if (dist < 1e-4f) {
+		normal = XMVectorSet(0, 1, 0, 0); // 完全に重なったら上へ
+		dist = 0.0f;
+	}
+	else {
+		normal = distVec / dist;
+	}
+
 	XMStoreFloat3(&outContact.normal, normal);
 	outContact.depth = rSum - dist;
 	return true;
@@ -660,7 +672,7 @@ bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physic
 // =================================================================
 void CollisionSystem::Update(Registry& registry)
 {
-	// データ収集
+	// 1. データ収集 & AABB計算 & グリッド登録
 	struct CollisionProxy {
 		Entity entity;
 		ColliderType type;
@@ -671,7 +683,12 @@ void CollisionSystem::Update(Registry& registry)
 		Physics::Capsule capsule;
 		Physics::Cylinder cylinder;
 	};
+
 	std::vector<CollisionProxy> proxies;
+	// Entity ID -> Index のマップ (高速アクセス用)
+	std::unordered_map<Entity, int> entityToIndex;
+
+	Physics::SpatialGrid grid(5.0f); // セルサイズ (プレイヤーサイズより少し大きく)
 
 	registry.view<Transform, Collider>([&](Entity e, Transform& t, Collider& c) {
 		CollisionProxy proxy;
@@ -690,136 +707,161 @@ void CollisionSystem::Update(Registry& registry)
 		XMVECTOR centerVec = XMVector3Transform(offsetVec, t.worldMatrix);
 		XMFLOAT3 center; XMStoreFloat3(&center, centerVec);
 
+		// --- ここからAABB計算 ---
+		XMFLOAT3 minPos, maxPos;
+
 		if (c.type == ColliderType::Box) {
-			proxy.obb.center = center;
-			proxy.obb.extents = { c.boxSize.x * gScale.x * 0.5f, c.boxSize.y * gScale.y * 0.5f, c.boxSize.z * gScale.z * 0.5f };
-			XMFLOAT4X4 rotM; XMStoreFloat4x4(&rotM, rotMat);
-			proxy.obb.axes[0] = { rotM._11, rotM._12, rotM._13 };
-			proxy.obb.axes[1] = { rotM._21, rotM._22, rotM._23 };
-			proxy.obb.axes[2] = { rotM._31, rotM._32, rotM._33 };
+			// OBBからAABBを計算 (半径の投影和)
+			XMVECTOR center = XMLoadFloat3(&proxy.obb.center);
+			XMVECTOR ex = XMLoadFloat3(&proxy.obb.extents);
+			// 単純化のため、回転後の最大半径(外接球)で広めにとるか、各軸投影を行う
+			float r = XMVectorGetX(XMVector3Length(ex));
+			XMStoreFloat3(&minPos, center - XMVectorSet(r, r, r, 0));
+			XMStoreFloat3(&maxPos, center + XMVectorSet(r, r, r, 0));
 		}
 		else if (c.type == ColliderType::Sphere) {
-			proxy.sphere.center = center;
-			proxy.sphere.radius = c.sphere.radius * std::max({ gScale.x, gScale.y, gScale.z });
+			float r = proxy.sphere.radius;
+			minPos = { proxy.sphere.center.x - r, proxy.sphere.center.y - r, proxy.sphere.center.z - r };
+			maxPos = { proxy.sphere.center.x + r, proxy.sphere.center.y + r, proxy.sphere.center.z + r };
 		}
-		else if (c.type == ColliderType::Capsule) {
-			XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-			float h = c.capsule.height * gScale.y;
-			float r = c.capsule.radius * std::max(gScale.x, gScale.z);
-			float segLen = std::max(0.0f, h * 0.5f - r);
-			XMStoreFloat3(&proxy.capsule.start, centerVec - axisY * segLen);
-			XMStoreFloat3(&proxy.capsule.end, centerVec + axisY * segLen);
-			proxy.capsule.radius = r;
+		// Capsule, Cylinderも同様に外接AABBを計算
+		else {
+			// 簡易: 中心から十分なマージンを取る
+			// 厳密にはカプセルの始点・終点を含むBox
+			float r = 5.0f; // 仮
+			if (c.type == ColliderType::Capsule) r = proxy.capsule.radius + XMVectorGetX(XMVector3Length(XMLoadFloat3(&proxy.capsule.start) - XMLoadFloat3(&proxy.capsule.end)));
+
+			XMVECTOR center = XMLoadFloat3(&proxy.sphere.center); // 仮
+			// 実際は center メンバが無い構造体もあるので注意。共通の center を計算しておくのが良い
+
+			 // とりあえず既存のコードの center 計算を利用
+			XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
+			XMVECTOR centerVec = XMVector3Transform(offsetVec, t.worldMatrix);
+
+			XMStoreFloat3(&minPos, centerVec - XMVectorSet(r, r, r, 0));
+			XMStoreFloat3(&maxPos, centerVec + XMVectorSet(r, r, r, 0));
 		}
-		else if (c.type == ColliderType::Cylinder) {
-			XMStoreFloat3(&proxy.cylinder.center, centerVec);
-			XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-			XMStoreFloat3(&proxy.cylinder.axis, axisY);
-			proxy.cylinder.height = c.cylinder.height * gScale.y;
-			proxy.cylinder.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
-		}
+
+		grid.Insert(e, minPos, maxPos);
+
+		entityToIndex[e] = (int)proxies.size();
 		proxies.push_back(proxy);
 		});
 
 
-	// 総当たり判定
+	// 2. グリッドベースの判定
 	std::vector<Physics::Contact> contacts;
+	std::set<std::pair<Entity, Entity>> checkedPairs; // 重複チェック
 
-	for (size_t i = 0; i < proxies.size(); ++i) {
-		for (size_t j = i + 1; j < proxies.size(); ++j) {
-			auto& A = proxies[i];
-			auto& B = proxies[j];
+	for (auto& pair : grid.GetMap()) {
+		const auto& entities = pair.second;
+		if (entities.size() < 2) continue;
 
-			if (A.bodyType == BodyType::Static && B.bodyType == BodyType::Static) continue;
+		for (size_t i = 0; i < entities.size(); ++i) {
+			for (size_t j = i + 1; j < entities.size(); ++j) {
+				Entity eA = entities[i];
+				Entity eB = entities[j];
 
-			Physics::Contact contact;
-			contact.a = A.entity;
-			contact.b = B.entity;
-			bool hit = false;
+				if (eA > eB) std::swap(eA, eB);
+				if (checkedPairs.count({ eA, eB })) continue;
+				checkedPairs.insert({ eA, eB });
 
-			// Sphere vs ...
-			if (A.type == ColliderType::Sphere && B.type == ColliderType::Sphere)
-				hit = CheckSphereSphere(A.sphere, B.sphere, contact);
-			else if (A.type == ColliderType::Sphere && B.type == ColliderType::Box)
-				hit = CheckSphereOBB(A.sphere, B.obb, contact);
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Sphere) {
-				hit = CheckSphereOBB(B.sphere, A.obb, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
-			else if (A.type == ColliderType::Sphere && B.type == ColliderType::Capsule)
-				hit = CheckSphereCapsule(A.sphere, B.capsule, contact);
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Sphere) {
-				hit = CheckSphereCapsule(B.sphere, A.capsule, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
-			else if (A.type == ColliderType::Sphere && B.type == ColliderType::Cylinder)
-				hit = CheckSphereCylinder(A.sphere, B.cylinder, contact);
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Sphere) {
-				hit = CheckSphereCylinder(B.sphere, A.cylinder, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
+				// プロキシ取得
+				auto& A = proxies[entityToIndex[eA]];
+				auto& B = proxies[entityToIndex[eB]];
 
-			// Box vs ...
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Box)
-				hit = CheckOBBOBB(A.obb, B.obb, contact);
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Capsule)
-				hit = CheckOBBCapsule(A.obb, B.capsule, contact);
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Box) {
-				hit = CheckOBBCapsule(B.obb, A.capsule, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Cylinder)
-				hit = CheckOBBCylinder(A.obb, B.cylinder, contact);
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Box) {
-				hit = CheckOBBCylinder(B.obb, A.cylinder, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
+				if (A.bodyType == BodyType::Static && B.bodyType == BodyType::Static) continue;
 
-			// Capsule vs ...
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Capsule)
-				hit = CheckCapsuleCapsule(A.capsule, B.capsule, contact);
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Cylinder) {
-				// 円柱をカプセル近似して判定
-				Physics::Capsule cylCap;
-				XMVECTOR cAx = XMLoadFloat3(&B.cylinder.axis);
-				XMVECTOR cC = XMLoadFloat3(&B.cylinder.center);
-				float hH = B.cylinder.height * 0.5f;
-				XMStoreFloat3(&cylCap.start, cC - cAx * hH);
-				XMStoreFloat3(&cylCap.end, cC + cAx * hH);
-				cylCap.radius = B.cylinder.radius;
+				// 詳細判定 (既存のswitch文など)
+				Physics::Contact contact;
+				contact.a = A.entity;
+				contact.b = B.entity;
+				bool hit = false;
 
-				// CheckCylinderCylinder ではなく CheckCapsuleCapsule を呼ぶ！
-				hit = CheckCapsuleCapsule(A.capsule, cylCap, contact);
-			}
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Capsule) {
-				Physics::Capsule cylCap;
-				XMVECTOR cAx = XMLoadFloat3(&A.cylinder.axis);
-				XMVECTOR cC = XMLoadFloat3(&A.cylinder.center);
-				float hH = A.cylinder.height * 0.5f;
-				XMStoreFloat3(&cylCap.start, cC - cAx * hH);
-				XMStoreFloat3(&cylCap.end, cC + cAx * hH);
-				cylCap.radius = A.cylinder.radius;
-
-				// ここも CheckCapsuleCapsule を呼ぶ！
-				hit = CheckCapsuleCapsule(cylCap, B.capsule, contact);
-			}
-
-			// Cylinder vs Cylinder
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Cylinder)
-				hit = CheckCylinderCylinder(A.cylinder, B.cylinder, contact);
-
-
-			if (hit) {
-				if (A.isTrigger || B.isTrigger) {
-					// Logger::Log("Trigger Hit!");
+				// Sphere vs ...
+				if (A.type == ColliderType::Sphere && B.type == ColliderType::Sphere)
+					hit = CheckSphereSphere(A.sphere, B.sphere, contact);
+				else if (A.type == ColliderType::Sphere && B.type == ColliderType::Box)
+					hit = CheckSphereOBB(A.sphere, B.obb, contact);
+				else if (A.type == ColliderType::Box && B.type == ColliderType::Sphere) {
+					hit = CheckSphereOBB(B.sphere, A.obb, contact);
+					if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
 				}
-				else {
-					contacts.push_back(contact);
+				else if (A.type == ColliderType::Sphere && B.type == ColliderType::Capsule)
+					hit = CheckSphereCapsule(A.sphere, B.capsule, contact);
+				else if (A.type == ColliderType::Capsule && B.type == ColliderType::Sphere) {
+					hit = CheckSphereCapsule(B.sphere, A.capsule, contact);
+					if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
+				}
+				else if (A.type == ColliderType::Sphere && B.type == ColliderType::Cylinder)
+					hit = CheckSphereCylinder(A.sphere, B.cylinder, contact);
+				else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Sphere) {
+					hit = CheckSphereCylinder(B.sphere, A.cylinder, contact);
+					if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
+				}
+
+				// Box vs ...
+				else if (A.type == ColliderType::Box && B.type == ColliderType::Box)
+					hit = CheckOBBOBB(A.obb, B.obb, contact);
+				else if (A.type == ColliderType::Box && B.type == ColliderType::Capsule)
+					hit = CheckOBBCapsule(A.obb, B.capsule, contact);
+				else if (A.type == ColliderType::Capsule && B.type == ColliderType::Box) {
+					hit = CheckOBBCapsule(B.obb, A.capsule, contact);
+					if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
+				}
+				else if (A.type == ColliderType::Box && B.type == ColliderType::Cylinder)
+					hit = CheckOBBCylinder(A.obb, B.cylinder, contact);
+				else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Box) {
+					hit = CheckOBBCylinder(B.obb, A.cylinder, contact);
+					if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
+				}
+
+				// Capsule vs ...
+				else if (A.type == ColliderType::Capsule && B.type == ColliderType::Capsule)
+					hit = CheckCapsuleCapsule(A.capsule, B.capsule, contact);
+				else if (A.type == ColliderType::Capsule && B.type == ColliderType::Cylinder) {
+					// 円柱をカプセル近似して判定
+					Physics::Capsule cylCap;
+					XMVECTOR cAx = XMLoadFloat3(&B.cylinder.axis);
+					XMVECTOR cC = XMLoadFloat3(&B.cylinder.center);
+					float hH = B.cylinder.height * 0.5f;
+					XMStoreFloat3(&cylCap.start, cC - cAx * hH);
+					XMStoreFloat3(&cylCap.end, cC + cAx * hH);
+					cylCap.radius = B.cylinder.radius;
+
+					// CheckCylinderCylinder ではなく CheckCapsuleCapsule を呼ぶ！
+					hit = CheckCapsuleCapsule(A.capsule, cylCap, contact);
+				}
+				else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Capsule) {
+					Physics::Capsule cylCap;
+					XMVECTOR cAx = XMLoadFloat3(&A.cylinder.axis);
+					XMVECTOR cC = XMLoadFloat3(&A.cylinder.center);
+					float hH = A.cylinder.height * 0.5f;
+					XMStoreFloat3(&cylCap.start, cC - cAx * hH);
+					XMStoreFloat3(&cylCap.end, cC + cAx * hH);
+					cylCap.radius = A.cylinder.radius;
+
+					// ここも CheckCapsuleCapsule を呼ぶ！
+					hit = CheckCapsuleCapsule(cylCap, B.capsule, contact);
+				}
+
+				// Cylinder vs Cylinder
+				else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Cylinder)
+					hit = CheckCylinderCylinder(A.cylinder, B.cylinder, contact);
+
+
+				if (hit) {
+					if (A.isTrigger || B.isTrigger) {
+						Logger::Log("Trigger Hit!");
+					}
+					else {
+						contacts.push_back(contact);
+					}
 				}
 			}
 		}
-	}
 
-	// 解決
-	PhysicsSystem::Solve(registry, contacts);
+		// 解決
+		PhysicsSystem::Solve(registry, contacts);
+	}
 }
