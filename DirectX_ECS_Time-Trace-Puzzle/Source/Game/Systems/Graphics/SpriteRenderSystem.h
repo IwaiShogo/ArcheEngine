@@ -43,7 +43,7 @@ public:
 		// 2D描画開始
 		m_renderer->Begin();
 
-		registry.view<SpriteComponent, Transform>([&](Entity e, SpriteComponent& s, Transform& t)
+		registry.view<SpriteComponent, Transform>().each([&](Entity e, SpriteComponent& s, Transform& t)
 			{
 				// テクスチャ取得
 				auto tex = ResourceManager::Instance().GetTexture(s.textureKey);

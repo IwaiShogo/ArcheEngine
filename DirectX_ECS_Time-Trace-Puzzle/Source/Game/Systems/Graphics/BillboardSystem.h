@@ -42,7 +42,7 @@ public:
 		XMMATRIX viewMatrix = XMMatrixIdentity();
 		XMMATRIX projMatrix = XMMatrixIdentity();
 		bool cameraFound = false;
-		registry.view<Camera, Transform>([&](Entity e, Camera& cam, Transform& trans)
+		registry.view<Camera, Transform>().each([&](Entity e, Camera& cam, Transform& trans)
 			{
 				if (cameraFound) return;
 				XMVECTOR eye = XMLoadFloat3(&trans.position);
@@ -58,7 +58,7 @@ public:
 		// •`‰æŠJŽn
 		m_renderer->Begin(viewMatrix, projMatrix);
 
-		registry.view<Transform, BillboardComponent>([&](Entity e, Transform& t, BillboardComponent& b)
+		registry.view<Transform, BillboardComponent>().each([&](Entity e, Transform& t, BillboardComponent& b)
 			{
 				auto tex = ResourceManager::Instance().GetTexture(b.textureKey);
 				if (tex)

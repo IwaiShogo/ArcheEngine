@@ -46,7 +46,7 @@ public:
 		XMFLOAT3 lightDir = { 0.5f, -1.0f, 0.5f };
 		bool cameraFound = false;
 
-		registry.view<Camera, Transform>([&](Entity e, Camera& cam, Transform& trans)
+		registry.view<Camera, Transform>().each([&](Entity e, Camera& cam, Transform& trans)
 			{
 				if (cameraFound) return;
 				XMVECTOR eye = XMLoadFloat3(&trans.position);
@@ -65,7 +65,7 @@ public:
 		m_renderer->Begin(viewMatrix, projMatrix, lightDir);
 
 		// 3. MeshComponent‚ÆTransform‚ğ‚ÂEntity‚ğ•`‰æ
-		registry.view<MeshComponent, Transform>([&](Entity e, MeshComponent& m, Transform& t)
+		registry.view<MeshComponent, Transform>().each([&](Entity e, MeshComponent& m, Transform& t)
 			{
 				auto model = ResourceManager::Instance().GetModel(m.modelKey);
 				if (model)

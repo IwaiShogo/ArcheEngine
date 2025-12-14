@@ -183,7 +183,7 @@ void PrimitiveRenderer::Initialize()
 	m_device->CreateBuffer(&bd, &initData, &m_sphereIB);
 
 	// カプセル、円柱の作成
-	CreateCapsuleMesh();
+	//CreateCapsuleMesh();
 	CreateCylinderMesh();
 
 	// 深度ステンシルステート作成
@@ -309,7 +309,7 @@ void PrimitiveRenderer::DrawCylinder(const XMFLOAT3& position, float radius, flo
 {
 	// 半径と高さでスケーリング (基本メッシュは半径1, 高さ1)
 	XMVECTOR q = XMLoadFloat4(&rotation);
-	XMMATRIX world = XMMatrixScaling(radius * 2.0f, height, radius * 2.0f) * XMMatrixRotationQuaternion(q) * XMMatrixTranslation(position.x, position.y, position.z);
+	XMMATRIX world = XMMatrixScaling(radius, height, radius) * XMMatrixRotationQuaternion(q) * XMMatrixTranslation(position.x, position.y, position.z);
 	m_cbData.world = XMMatrixTranspose(world);
 	m_cbData.color = color;
 	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);

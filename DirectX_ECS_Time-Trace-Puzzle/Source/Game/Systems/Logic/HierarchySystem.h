@@ -60,7 +60,7 @@ public:
 			};
 
 		// --- ルート（親なし）エンティティを探して更新開始 ---
-		registry.view<Transform>([&](Entity e, Transform& t) {
+		registry.view<Transform>().each([&](Entity e, Transform& t) {
 			bool isRoot = true;
 			if (registry.has<Relationship>(e)) {
 				if (registry.get<Relationship>(e).parent != NullEntity) isRoot = false;

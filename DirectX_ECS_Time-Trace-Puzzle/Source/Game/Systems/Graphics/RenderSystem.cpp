@@ -40,7 +40,7 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 	static XMFLOAT3 savedRotation = { 0, 0, 0 };
 	bool cameraFound = false;
 
-	registry.view<Camera, Transform>([&](Entity e, Camera& cam, Transform& trans)
+	registry.view<Camera, Transform>().each([&](Entity e, Camera& cam, Transform& trans)
 	{
 		if (cameraFound) return;
 
@@ -75,7 +75,7 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 	{
 		m_renderer->SetFillMode(context.debug.wireframeMode);
 
-		registry.view<Transform, Collider>([&](Entity e, Transform& t, Collider& c)
+		registry.view<Transform, Collider>().each([&](Entity e, Transform& t, Collider& c)
 			{
 				XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 				if (registry.has<Tag>(e))

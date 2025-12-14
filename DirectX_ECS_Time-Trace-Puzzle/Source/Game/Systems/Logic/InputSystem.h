@@ -51,7 +51,7 @@ public:
 			}
 		}
 
-		registry.view<PlayerInput, Rigidbody>([&](Entity e, PlayerInput& input, Rigidbody& rb)
+		registry.view<PlayerInput, Rigidbody>().each([&](Entity e, PlayerInput& input, Rigidbody& rb)
 			{
 				rb.velocity.x = x * input.speed;
 				rb.velocity.z = z * input.speed;

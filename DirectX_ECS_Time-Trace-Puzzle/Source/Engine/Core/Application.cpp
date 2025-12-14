@@ -259,7 +259,7 @@ void Application::Render()
 		float aspect = m_sceneWindowSize.x / m_sceneWindowSize.y;
 		auto& reg = m_sceneManager.GetWorld().getRegistry();
 
-		reg.view<Tag, Camera>([&](Entity e, Tag& tag, Camera& cam)
+		reg.view<Tag, Camera>().each([&](Entity e, Tag& tag, Camera& cam)
 			{
 				if (tag.name == "MainCamera")
 				{
@@ -340,7 +340,7 @@ void Application::Render()
 		bool cameraFound = false;
 
 		World& world = m_sceneManager.GetWorld();
- 		m_sceneManager.GetWorld().getRegistry().view<Tag, Camera, Transform>([&](Entity e, Tag& tag, Camera& cam, Transform& t) {
+ 		m_sceneManager.GetWorld().getRegistry().view<Tag, Camera, Transform>().each([&](Entity e, Tag& tag, Camera& cam, Transform& t) {
 			if (!cameraFound && tag.name == "MainCamera")
 			{
 				XMVECTOR eye = XMLoadFloat3(&t.position);
@@ -384,7 +384,7 @@ void Application::Render()
 			// 簡易的にメインカメラを探す (デバッグカメラ対応は後ほど)
 			// ※シーンマネージャ経由でWorldにアクセス
 			World& world = m_sceneManager.GetWorld();
-			world.getRegistry().view<Tag, Camera, Transform>([&](Entity e, Tag& tag, Camera& cam, Transform& t) {
+			world.getRegistry().view<Tag, Camera, Transform>().each([&](Entity e, Tag& tag, Camera& cam, Transform& t) {
 				if (!cameraFound && strcmp(tag.name.c_str(), "MainCamera") == 0) {
 					camPos = XMLoadFloat3(&t.position);
 

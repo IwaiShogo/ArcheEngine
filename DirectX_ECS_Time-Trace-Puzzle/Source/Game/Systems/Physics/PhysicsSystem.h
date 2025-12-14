@@ -49,7 +49,7 @@ public:
 		float dt = Time::DeltaTime();
 		const float GRAVITY = 9.81f;
 
-		registry.view<Rigidbody, Transform>([&](Entity e, Rigidbody& rb, Transform& t)
+		registry.view<Rigidbody, Transform>().each([&](Entity e, Rigidbody& rb, Transform& t)
 			{
 				// Static‚Í‰½‚à‚µ‚È‚¢
 				if (rb.type == BodyType::Static) return;

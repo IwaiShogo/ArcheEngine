@@ -41,7 +41,7 @@ public:
 		XMFLOAT3 listenerPos = { 0, 0, 0 };
 		bool listenerFound = false;
 
-		registry.view<AudioListener, Transform>([&](Entity e, AudioListener& l, Transform& t)
+		registry.view<AudioListener, Transform>().each([&](Entity e, AudioListener& l, Transform& t)
 			{
 				if (!listenerFound)
 				{
@@ -55,7 +55,7 @@ public:
 		if (!listenerFound) return;
 
 		// 2. 音源の更新
-		registry.view<AudioSource, Transform>([&](Entity e, AudioSource& source, Transform& t)
+		registry.view<AudioSource, Transform>().each([&](Entity e, AudioSource& source, Transform& t)
 			{
 				// --- 再生制御ロジック ---
 				if (source.playOnAwake && !source.isPlaying)

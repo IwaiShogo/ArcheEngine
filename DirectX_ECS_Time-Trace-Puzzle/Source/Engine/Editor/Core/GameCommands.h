@@ -104,7 +104,7 @@ namespace GameCommands
 
 			// Playerタグを持つEntityを探して移動
 			bool found = false;
-			world.getRegistry().view<Tag, Transform>([&](Entity e, Tag& tag, Transform& t) {
+			world.getRegistry().view<Tag, Transform>().each([&](Entity e, Tag& tag, Transform& t) {
 				if (tag.name == "Player") {
 					t.position = { x, y, z };
 					// 物理挙動をリセット（落下速度などを0にする）
@@ -122,7 +122,7 @@ namespace GameCommands
 		// list: 現在の全エンティティを表示
 		Logger::RegisterCommand("list", [&world](auto args) {
 			Logger::Log("--- Entity List ---");
-			world.getRegistry().view<Tag>([&](Entity e, Tag& tag) {
+			world.getRegistry().view<Tag>().each([&](Entity e, Tag& tag) {
 				std::string msg = "ID:" + std::to_string(e) + " [" + tag.name + "]";
 				// 座標も表示してみる
 				if (world.getRegistry().has<Transform>(e)) {
@@ -144,7 +144,7 @@ namespace GameCommands
 				// 全削除（危険ですがデバッグ用として）
 				// ※ループ中の削除は危険なのでIDリストを作ってから消す
 				std::vector<Entity> ids;
-				world.getRegistry().view<Tag>([&](Entity e, Tag& t) { ids.push_back(e); });
+				world.getRegistry().view<Tag>().each([&](Entity e, Tag& t) { ids.push_back(e); });
 				for (auto id : ids) world.getRegistry().destroy(id);
 				Logger::Log("Killed all entities.");
 			}
@@ -167,7 +167,7 @@ namespace GameCommands
 
 			XMFLOAT3 pos = { 0, 5, 0 }; // 頭上にスポーン
 			// プレイヤーがいればその近くに
-			world.getRegistry().view<Tag, Transform>([&](auto, Tag& t, Transform& tr) {
+			world.getRegistry().view<Tag, Transform>().each([&](auto, Tag& t, Transform& tr) {
 				if (t.name == "Player") pos = tr.position;
 				});
 			pos.y += 3.0f;

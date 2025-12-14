@@ -275,7 +275,7 @@ public:
 		if (ImGui::CollapsingHeader("Entity List (Flat)", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			int count = 0;
-			reg.view<Tag>([&](Entity e, Tag& tag) {
+			reg.view<Tag>().each([&](Entity e, Tag& tag) {
 				count++;
 				// クリックで選択可能にする
 				if (ImGui::Selectable((std::to_string(e) + ": " + tag.name).c_str(), selected == e)) {
@@ -292,7 +292,7 @@ public:
 		if (ImGui::CollapsingHeader("Player Watcher", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			bool playerFound = false;
-			reg.view<Tag>([&](Entity e, Tag& tag) {
+			reg.view<Tag>().each([&](Entity e, Tag& tag) {
 				if (!playerFound && tag.name == "Player") {
 					playerFound = true;
 
@@ -318,7 +318,7 @@ public:
 		if (ctx.debug.useDebugCamera)
 		{
 			// MainCameraを探す
-			reg.view<Tag, Transform, Camera>([&](Entity e, Tag& tag, Transform& t, Camera& c) {
+			reg.view<Tag, Transform, Camera>().each([&](Entity e, Tag& tag, Transform& t, Camera& c) {
 				if (tag.name == "MainCamera")
 				{
 					bool isRightClicking = Input::GetMouseRightButton();

@@ -41,7 +41,7 @@ public:
 		// íœƒŠƒXƒg
 		std::vector<Entity> toDestroy;
 
-		registry.view<Lifetime>([&](Entity e, Lifetime& life)
+		registry.view<Lifetime>().each([&](Entity e, Lifetime& life)
 			{
 				life.time -= dt;
 				if (life.time <= 0.0f)

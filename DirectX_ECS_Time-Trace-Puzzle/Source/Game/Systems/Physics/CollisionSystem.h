@@ -84,17 +84,24 @@ class CollisionSystem
 public:
 	CollisionSystem() { m_systemName = "Collision System"; }
 
+	// 初期化（Observerの接続など）
+	void Initialize(Registry& registry);
+
 	void Update(Registry& registry) override;
 
 	static Entity Raycast(Registry& registry, const XMFLOAT3& rayOrigin, const XMFLOAT3& rayDir, float& outDist);
 
 private:
+	// --- 内部処理 ---
+	void UpdateWorldCollider(const Transform& t, const Collider& c, WorldCollider& wc);
+
 	// --- 判定関数群（回転対応） ---
 	// 球 vs ...
 	bool CheckSphereSphere(const Physics::Sphere& a, const Physics::Sphere& b, Physics::Contact& outContact);
 	bool CheckSphereOBB(const Physics::Sphere& s, const Physics::OBB& b, Physics::Contact& outContact);
 	bool CheckSphereCapsule(const Physics::Sphere& s, const Physics::Capsule& c, Physics::Contact& outContact);
 	bool CheckSphereCylinder(const Physics::Sphere& s, const Physics::Cylinder& c, Physics::Contact& outContact);
+
 
 	// OOB（箱）vs ...
 	bool CheckOBBOBB(const Physics::OBB& a, const Physics::OBB& b, Physics::Contact& outContact);
@@ -103,8 +110,13 @@ private:
 
 	// Capsule vs ...
 	bool CheckCapsuleCapsule(const Physics::Capsule& a, const Physics::Capsule& b, Physics::Contact& outContact);
+	bool CheckCapsuleCylinder(const Physics::Capsule& cap, const Physics::Cylinder& cyl, Physics::Contact& outContact);
 	bool CheckCylinderCylinder(const Physics::Cylinder& a, const Physics::Cylinder& b, Physics::Contact& outContact);
 
+private:
+	// 変更検知用
+	Observer m_observer;
+	bool m_isInitialized = false;
 };
 
 #endif // !___COLLISION_SYSTEM_H___

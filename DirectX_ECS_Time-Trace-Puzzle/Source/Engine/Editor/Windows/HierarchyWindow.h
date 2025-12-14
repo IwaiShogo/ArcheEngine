@@ -39,7 +39,7 @@ public:
 
 		// 「親を持たない（ルート）Entity」だけを起点に描画する
 		// これをしないと、子が二重に表示されてしまいます
-		world.getRegistry().view<Tag>([&](Entity e, Tag& tag) {
+		world.getRegistry().view<Tag>().each([&](Entity e, Tag& tag) {
 			bool isRoot = true;
 			if (world.getRegistry().has<Relationship>(e)) {
 				if (world.getRegistry().get<Relationship>(e).parent != NullEntity) isRoot = false;

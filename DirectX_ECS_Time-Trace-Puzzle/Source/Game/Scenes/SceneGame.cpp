@@ -115,7 +115,7 @@ void SceneGame::Update()
 	if (Input::GetButtonDown(Button::A))
 	{
 		XMFLOAT3 playerPos = { 0, 0, 0 };
-		m_world.getRegistry().view<Tag, Transform>([&](Entity e, Tag& tag, Transform& t)
+		m_world.getRegistry().view<Tag, Transform>().each([&](Entity e, Tag& tag, Transform& t)
 			{
 				if (tag.name == "Player")
 				{

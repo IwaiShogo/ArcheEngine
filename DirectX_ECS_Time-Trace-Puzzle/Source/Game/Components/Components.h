@@ -21,7 +21,10 @@
 #define ___COMPONENTS_H___
 
 // ===== インクルード =====
+#define NOMINMAX
 #include <DirectXMath.h>
+#include <vector>
+#include <string>
 #include "main.h"
 
 using namespace DirectX;
@@ -69,6 +72,9 @@ struct Relationship
 {
 	Entity parent = NullEntity;
 	std::vector<Entity> children;
+
+	Relationship() : parent(NullEntity) {}
+	Relationship(Entity p) : parent(p) {}
 };
 
 /**
@@ -79,9 +85,7 @@ struct Lifetime
 {
 	float time;	// 残り時間
 
-	Lifetime() : time(0.0f) {}
-
-	Lifetime(float t)
+	Lifetime(float t = 0.0f)
 		: time(t) {}
 };
 
@@ -174,6 +178,43 @@ struct Collider
 	}
 };
 
+// 物理エンジンが計算して使う「キャッシュデータ」
+// これをObserverで更新し、マイフレームの計算をスキップする
+struct AABB
+{
+	XMFLOAT3 min;
+	XMFLOAT3 max;
+
+	//AABB() : min({ 0,0,0 }), max({ 0,0,0 }) {}
+};
+
+/**
+ * @struct	WorldCollider
+ * @brief	ワールド空間での形状データキャッシュ
+ */
+struct WorldCollider
+{
+	// 形状データ
+	union
+	{
+		struct { XMFLOAT3 center; XMFLOAT3 extents; XMFLOAT3 axes[3]; } obb;
+		struct { XMFLOAT3 center; float radius; } sphere;
+		struct { XMFLOAT3 start; XMFLOAT3 end; float radius; } capsule;
+		struct { XMFLOAT3 center; XMFLOAT3 axis; float height; float radius; } cylinder;
+	};
+
+	// ブロードフェーズ用AABB
+	AABB aabb;
+
+	// 更新が必要かどうか（システム側で管理）
+	bool isDirty = true;
+
+	WorldCollider() {
+		std::memset(this, 0, sizeof(WorldCollider));
+		isDirty = true;
+	}
+};
+
 // ============================================================
 // ゲームロジック・入力
 // ============================================================
@@ -204,13 +245,8 @@ struct MeshComponent
 	XMFLOAT3 scaleOffset;	// モデル固有のスケール補正（アセットが巨大/極小な場合用）
 	XMFLOAT4 color;			// マテリアルカラー乗算用
 
-	MeshComponent() : scaleOffset({ 1, 1, 1 }), color({ 1, 1, 1, 1 }) {}
-
-	MeshComponent(const std::string& key,
-		const XMFLOAT3& scale = { 1.0f, 1.0f, 1.0f },
-		const XMFLOAT4& c = { 1.0f, 1.0f, 1.0f, 1.0f })
-		: modelKey(key), scaleOffset(scale), color(c) {
-	}
+	MeshComponent(const std::string& key = "", const XMFLOAT3& scale = {1,1,1}, const XMFLOAT4& c = {1, 1, 1, 1})
+		: modelKey(key), scaleOffset(scale), color(c) {}
 };
 
 /**
@@ -224,11 +260,8 @@ struct SpriteComponent
 	XMFLOAT4 color;			// 色と透明度
 	XMFLOAT2 pivot;			// 中心点（0.0 ~ 1.0）デフォルトは左上（0, 0）
 
-	SpriteComponent() : width(0), height(0), color({ 1,1,1,1 }), pivot({ 0,0 }) {}
-
-	SpriteComponent(const std::string& key, float w, float h, const XMFLOAT4& c = { 1, 1, 1, 1 }, const XMFLOAT2& p = { 0, 0 })
-		: textureKey(key), width(w), height(h), color(c), pivot(p) {
-	}
+	SpriteComponent(const std::string& key = "", float w = 0.0f, float h = 0.0f, const XMFLOAT4& c = { 1, 1, 1, 1 }, const XMFLOAT2& p = { 0, 0 })
+		: textureKey(key), width(w), height(h), color(c), pivot(p) {}
 };
 
 /**
@@ -241,12 +274,14 @@ struct BillboardComponent
 	XMFLOAT2 size;	// 幅、高さ
 	XMFLOAT4 color;
 
-	BillboardComponent() : size({ 1,1 }), color({ 1,1,1,1 }) {}
-
-	BillboardComponent(const std::string& key, float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1, 1, 1, 1 })
-		: textureKey(key), size(w, h), color(c) {
+	BillboardComponent(const std::string& key = "", float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1,1,1,1 })
+		: textureKey(key), size({ w, h }), color(c) {
 	}
 };
+
+// ============================================================
+// オーディオ関連
+// ============================================================
 
 /**
  * @struct	Audiosource
@@ -263,13 +298,7 @@ struct AudioSource
 	// 内部状態管理用
 	bool isPlaying = false;
 
-	AudioSource() : volume(1.0f), range(20.0f), isLoop(false), playOnAwake(false) {}
-
-	AudioSource(const std::string& key,
-				float vol = 1.0f,
-				float r = 20.0f,
-				bool loop = false,
-				bool awake = false)
+	AudioSource(const std::string& key = "", float vol = 1.0f, float r = 20.0f, bool loop = false, bool awake = false)
 		: soundKey(key), volume(vol), range(r), isLoop(loop), playOnAwake(awake) {}
 };
 

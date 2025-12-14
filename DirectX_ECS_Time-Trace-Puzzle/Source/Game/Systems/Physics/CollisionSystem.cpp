@@ -29,7 +29,7 @@
 using namespace Physics;
 
 // =================================================================
-// 数学ヘルパー関数
+// 数学・幾何ヘルパー関数
 // =================================================================
 
 // ベクトルの長さの二乗
@@ -122,6 +122,85 @@ XMVECTOR ClosestPointOnOBB(XMVECTOR P, const OBB& box) {
 	}
 	return q;
 }
+
+// 点Pの、円柱表面上での最近接点を求める (修正版)
+// cylP: 中心, cylAxis: 軸(正規化), h: 高さ, r: 半径
+XMVECTOR ClosestPointOnCylinder(XMVECTOR P, XMVECTOR cylP, XMVECTOR cylAxis, float h, float r) {
+	XMVECTOR d = P - cylP;
+	// 軸方向の距離 (中心から)
+	float distY = XMVectorGetX(XMVector3Dot(d, cylAxis));
+
+	// 1. 半径方向のベクトルを計算
+	// Pを軸上に投影した点
+	XMVECTOR onAxis = cylP + cylAxis * distY;
+	XMVECTOR radial = P - onAxis;
+	float radLenSq = LengthSq(radial);
+
+	// 軸上(中心)にいる場合の例外処理
+	if (radLenSq < 1e-6f) {
+		// 適当な半径方向 (X軸かZ軸)
+		XMVECTOR arb = XMVectorSet(1, 0, 0, 0);
+		if (std::abs(XMVectorGetX(XMVector3Dot(cylAxis, arb))) > 0.9f) arb = XMVectorSet(0, 0, 1, 0);
+		radial = XMVector3Normalize(XMVector3Cross(cylAxis, arb)) * r;
+		radLenSq = r * r;
+	}
+
+	float radLen = std::sqrt(radLenSq);
+	// 表面（側面）への方向
+	XMVECTOR radialDir = radial / radLen;
+
+	// --- 領域判定 ---
+	float halfH = h * 0.5f;
+
+	// A. 完全に内部にいる場合
+	if (distY >= -halfH && distY <= halfH && radLen <= r) {
+		// 「側面」と「蓋（上下）」のどちらに近いか？
+		float distToSide = r - radLen;
+		float distToTop = halfH - distY;
+		float distToBottom = distY - (-halfH);
+
+		// 最も近い面へ射影
+		if (distToSide < distToTop && distToSide < distToBottom) {
+			// 側面へ
+			return onAxis + radialDir * r;
+		}
+		else if (distToTop < distToBottom) {
+			// 上面へ
+			return cylP + cylAxis * halfH + radial;
+		}
+		else {
+			// 下面へ
+			return cylP + cylAxis * (-halfH) + radial;
+		}
+	}
+
+	// B. 外部にいる場合（クランプ処理）
+
+	// まず高さをクランプ
+	float clampedY = distY;
+	if (clampedY > halfH) clampedY = halfH;
+	if (clampedY < -halfH) clampedY = -halfH;
+
+	// 半径方向をチェック
+	// 高さ範囲内なら、必ず側面にクランプ。
+	// 高さ範囲外(蓋の上)なら、円盤内に収める。
+
+	if (std::abs(distY) <= halfH) {
+		// 胴体の横 -> 側面上へ
+		return (cylP + cylAxis * distY) + radialDir * r;
+	}
+	else {
+		// 蓋の上 -> 円盤領域へクランプ
+		// radialLen が r を超えていれば r に抑える
+		float capR = radLen;
+		if (capR > r) capR = r;
+		return (cylP + cylAxis * clampedY) + radialDir * capR;
+	}
+}
+
+// =================================================================
+// Raycast
+// =================================================================
 
 // レイ vs 球
 bool IntersectRaySphere(XMVECTOR origin, XMVECTOR dir, XMVECTOR center, float radius, float& t)
@@ -238,10 +317,110 @@ bool IntersectRayCapsule(XMVECTOR origin, XMVECTOR dir, const Physics::Capsule& 
 	return false;
 }
 
+// レイ vs 円柱
+bool IntersectRayCylinder(XMVECTOR origin, XMVECTOR dir, const Physics::Cylinder& cyl, float& t)
+{
+	XMVECTOR center = XMLoadFloat3(&cyl.center);
+	XMVECTOR axis = XMLoadFloat3(&cyl.axis);
+	float height = cyl.height;
+	float radius = cyl.radius;
 
-// =================================================================
-// Raycast 関数の修正版
-// =================================================================
+	// レイの始点と方向を、円柱基準のベクトルに変換して計算を簡略化する手もあるが、
+	// ここではワールド空間のまま幾何学的に解く。
+
+	// 1. 無限円柱との交差判定
+	// 円柱表面の方程式: |(P - C) - dot(P - C, A) * A|^2 = r^2
+	// P(t) = O + tD を代入して t の2次方程式 At^2 + Bt + C = 0 を解く
+
+	XMVECTOR oc = origin - center;
+
+	// レイ方向 D のうち、軸 A に垂直な成分
+	XMVECTOR dProj = dir - XMVector3Dot(dir, axis) * axis;
+	// 始点ベクトル OC のうち、軸 A に垂直な成分
+	XMVECTOR ocProj = oc - XMVector3Dot(oc, axis) * axis;
+
+	float a = XMVectorGetX(XMVector3LengthSq(dProj));
+	float b = 2.0f * XMVectorGetX(XMVector3Dot(dProj, ocProj));
+	float c = XMVectorGetX(XMVector3LengthSq(ocProj)) - radius * radius;
+
+	float t1 = -1.0f, t2 = -1.0f;
+	bool hitCylinder = false;
+
+	if (std::abs(a) > 1e-6f) {
+		float discr = b * b - 4.0f * a * c;
+		if (discr >= 0.0f) {
+			float root = std::sqrt(discr);
+			t1 = (-b - root) / (2.0f * a);
+			t2 = (-b + root) / (2.0f * a);
+			hitCylinder = true;
+		}
+	}
+
+	float halfH = height * 0.5f;
+	float tClose = FLT_MAX;
+	bool hit = false;
+
+	// 側面ヒットの確認 (高さ範囲内か？)
+	auto CheckHeight = [&](float tVal) {
+		if (tVal < 0.0f) return;
+		XMVECTOR p = origin + dir * tVal;
+		float h = XMVectorGetX(XMVector3Dot(p - center, axis));
+		if (std::abs(h) <= halfH) {
+			if (tVal < tClose) {
+				tClose = tVal;
+				hit = true;
+			}
+		}
+		};
+
+	if (hitCylinder) {
+		CheckHeight(t1);
+		CheckHeight(t2);
+	}
+
+	// 2. 蓋（円盤）との交差判定
+	// 平面 (P - (C +/- H/2 * A)) . A = 0
+	// t = dot((C +/- H/2 * A) - O, A) / dot(D, A)
+
+	float dDotA = XMVectorGetX(XMVector3Dot(dir, axis));
+	if (std::abs(dDotA) > 1e-6f) {
+		float ocDotA = XMVectorGetX(XMVector3Dot(oc, axis));
+
+		// 上面 (C + H/2 * A)
+		float tTop = (halfH - ocDotA) / dDotA;
+		if (tTop > 0.0f) {
+			XMVECTOR p = origin + dir * tTop;
+			// 半径チェック: |P - (C + H/2 * A)|^2 <= r^2
+			// 軸上の点は center + halfH * axis
+			XMVECTOR pOnAxis = center + axis * halfH;
+			if (LengthSq(p - pOnAxis) <= radius * radius) {
+				if (tTop < tClose) {
+					tClose = tTop;
+					hit = true;
+				}
+			}
+		}
+
+		// 下面 (C - H/2 * A)
+		float tBottom = (-halfH - ocDotA) / dDotA;
+		if (tBottom > 0.0f) {
+			XMVECTOR p = origin + dir * tBottom;
+			XMVECTOR pOnAxis = center - axis * halfH;
+			if (LengthSq(p - pOnAxis) <= radius * radius) {
+				if (tBottom < tClose) {
+					tClose = tBottom;
+					hit = true;
+				}
+			}
+		}
+	}
+
+	if (hit) {
+		t = tClose;
+		return true;
+	}
+	return false;
+}
 
 Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, const XMFLOAT3& rayDir, float& outDist)
 {
@@ -251,7 +430,7 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 	XMVECTOR originV = XMLoadFloat3(&rayOrigin);
 	XMVECTOR dirV = XMLoadFloat3(&rayDir);
 
-	registry.view<Transform, Collider>([&](Entity e, Transform& t, Collider& c)
+	registry.view<Transform, Collider>().each([&](Entity e, Transform& t, Collider& c)
 		{
 			// ワールド行列の分解
 			XMVECTOR scale, rotQuat, pos;
@@ -306,18 +485,14 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 			}
 			else if (c.type == ColliderType::Cylinder)
 			{
-				// 円柱はカプセル近似で判定
+				Physics::Cylinder cyl;
+				cyl.center = center;
 				XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-				float h = c.cylinder.height * gScale.y;
-				float r = c.cylinder.radius * std::max(gScale.x, gScale.z);
-				float halfLen = h * 0.5f;
+				XMStoreFloat3(&cyl.axis, axisY);
+				cyl.height = c.cylinder.height * gScale.y;
+				cyl.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
 
-				Physics::Capsule cap;
-				XMStoreFloat3(&cap.start, centerVec - axisY * halfLen);
-				XMStoreFloat3(&cap.end, centerVec + axisY * halfLen);
-				cap.radius = r;
-
-				hit = IntersectRayCapsule(originV, dirV, cap, dist);
+				hit = IntersectRayCylinder(originV, dirV, cyl, dist);
 			}
 
 			// 最近接の更新
@@ -371,43 +546,124 @@ bool CollisionSystem::CheckSphereSphere(const Physics::Sphere& a, const Physics:
 // Sphere vs OBB [cite: 2]
 bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OBB& b, Physics::Contact& outContact) {
 	XMVECTOR sphereCenter = XMLoadFloat3(&s.center);
-	XMVECTOR closest = ClosestPointOnOBB(sphereCenter, b);
-	XMVECTOR distVec = closest - sphereCenter;
-	float distSq = LengthSq(distVec);
+	XMVECTOR obbCenter = XMLoadFloat3(&b.center);
+	XMVECTOR delta = sphereCenter - obbCenter;
 
-	if (distSq > s.radius * s.radius) return false;
+	// OBBの回転行列（軸）を取得
+	XMVECTOR axes[3] = {
+		XMLoadFloat3(&b.axes[0]),
+		XMLoadFloat3(&b.axes[1]),
+		XMLoadFloat3(&b.axes[2])
+	};
+	float extents[3] = { b.extents.x, b.extents.y, b.extents.z };
 
-	float dist = std::sqrt(distSq);
-	XMVECTOR normal;
+	// 球の中心をOBBのローカル座標系に変換
+	// localPos: OBB中心を原点とした、球中心の座標
+	XMVECTOR localPos = XMVectorSet(
+		XMVectorGetX(XMVector3Dot(delta, axes[0])),
+		XMVectorGetX(XMVector3Dot(delta, axes[1])),
+		XMVectorGetX(XMVector3Dot(delta, axes[2])),
+		0.0f
+	);
 
-	if (dist < 1e-4f) {
-		// 中心がOBB内部にある場合：最も浅い面へ押し出す
-		// (簡易的に球中心からOBB中心へのベクトル等を使うか、各面との距離を測る)
-		// ここでは簡易的に、OBBの中心から球の中心へのベクトルを採用
-		XMVECTOR obbCenter = XMLoadFloat3(&b.center);
-		normal = sphereCenter - obbCenter;
-		if (LengthSq(normal) < 1e-4f) normal = XMVectorSet(0, 1, 0, 0);
-		normal = XMVector3Normalize(normal);
-		// 深度は正確には「浸透距離 + 半径」だが、簡易計算
-		outContact.depth = s.radius;
+	// ローカル空間での最近接点を見つける
+	XMVECTOR localClosest = localPos;
+	bool isInside = true;
+
+	// 各軸ごとにクランプ処理
+	float localP[3] = { XMVectorGetX(localPos), XMVectorGetY(localPos), XMVectorGetZ(localPos) };
+	float closest[3];
+
+	for (int i = 0; i < 3; ++i) {
+		if (localP[i] > extents[i]) {
+			closest[i] = extents[i];
+			isInside = false;
+		}
+		else if (localP[i] < -extents[i]) {
+			closest[i] = -extents[i];
+			isInside = false;
+		}
+		else {
+			closest[i] = localP[i];
+		}
 	}
-	else {
-		normal = -distVec / dist; // A(Sphere) -> B(OBB)
+
+	localClosest = XMVectorSet(closest[0], closest[1], closest[2], 0.0f);
+
+	// 判定分岐
+	if (!isInside) {
+		// --- 球の中心がOBBの【外部】にある場合 ---
+		// ローカル空間での距離計算
+		XMVECTOR distVecLocal = localPos - localClosest; // Sphere -> Closest
+		float distSq = LengthSq(distVecLocal);
+
+		if (distSq > s.radius * s.radius) return false;
+
+		float dist = std::sqrt(distSq);
+
+		// 法線をワールド空間に戻す
+		// distVecLocal はローカルでの「Closest -> Sphere」ではなく「Sphere(内部) -> Closest」に向かうべきか？
+		// distVecLocal = localPos(外) - localClosest(表面)。これは「表面 -> 外」へのベクトル。
+		// A(Sphere) -> B(OBB) の法線が欲しいので、これは「Sphere -> OBB」つまり内向きであるべき。
+		// なので normalized(-distVecLocal) が A->B 法線。
+
+		XMVECTOR normalLocal;
+		if (dist < 1e-6f) {
+			normalLocal = XMVectorSet(0, 1, 0, 0); // 例外回避
+		}
+		else {
+			normalLocal = -distVecLocal / dist;
+		}
+
+		// ローカル法線をワールドへ
+		XMVECTOR normal = normalLocal.m128_f32[0] * axes[0] +
+			normalLocal.m128_f32[1] * axes[1] +
+			normalLocal.m128_f32[2] * axes[2];
+
+		XMStoreFloat3(&outContact.normal, normal);
 		outContact.depth = s.radius - dist;
 	}
+	else {
+		// --- 球の中心がOBBの【内部】にある場合 ---
+		// 最も近い面を探して、そこへ押し出す
+		float minDrag = FLT_MAX;
+		int minAxis = -1;
+		float sign = 1.0f;
 
-	XMStoreFloat3(&outContact.normal, normal);
+		for (int i = 0; i < 3; ++i) {
+			// 面までの距離: extents - |localP|
+			float distToFace = extents[i] - std::abs(localP[i]);
+			if (distToFace < minDrag) {
+				minDrag = distToFace;
+				minAxis = i;
+				sign = (localP[i] < 0.0f) ? -1.0f : 1.0f;
+			}
+		}
+
+		// 法線（A->B）：球をOBBの外に出す方向の「逆」。
+		// 球を出すには「最も近い面の方へ」動かす。
+		// つまり移動方向は「中心 -> 面」。
+		// A->B法線はその逆なので「面 -> 中心（内向き）」。
+		// ローカル軸 minAxis の sign 方向が「外向き」なので、法線は -sign * axis。
+
+		XMVECTOR normal = axes[minAxis] * (-sign);
+
+		XMStoreFloat3(&outContact.normal, normal);
+		// 内部にいる場合、深さは「半径 + 表面までの距離(minDrag)」
+		outContact.depth = s.radius + minDrag;
+	}
+
 	return true;
 }
 
-// Sphere vs Capsule [cite: 2]
+// Sphere vs Capsule (厳密)
 bool CollisionSystem::CheckSphereCapsule(const Physics::Sphere& s, const Physics::Capsule& c, Physics::Contact& outContact) {
 	XMVECTOR sphP = XMLoadFloat3(&s.center);
 	XMVECTOR capA = XMLoadFloat3(&c.start);
 	XMVECTOR capB = XMLoadFloat3(&c.end);
 
 	XMVECTOR closest = ClosestPointOnSegment(sphP, capA, capB);
-	XMVECTOR distVec = closest - sphP; // 球 -> カプセル
+	XMVECTOR distVec = closest - sphP; // 球 -> カプセル軸
 	float distSq = LengthSq(distVec);
 	float rSum = s.radius + c.radius;
 
@@ -415,7 +671,6 @@ bool CollisionSystem::CheckSphereCapsule(const Physics::Sphere& s, const Physics
 
 	float dist = std::sqrt(distSq);
 	XMVECTOR normal;
-
 	if (dist < 1e-4f) {
 		normal = XMVectorSet(0, 1, 0, 0);
 		dist = 0.0f;
@@ -633,189 +888,561 @@ bool CollisionSystem::CheckCapsuleCapsule(const Physics::Capsule& a, const Physi
 	return true;
 }
 
-// Cylinder vs Cylinder (カプセル近似)
-bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Physics::Cylinder& b, Physics::Contact& outContact) {
-	Physics::Capsule capA, capB;
-	XMVECTOR axisA = XMLoadFloat3(&a.axis);
-	XMVECTOR centerA = XMLoadFloat3(&a.center);
-	float halfHA = a.height * 0.5f;
-	XMStoreFloat3(&capA.start, centerA - axisA * halfHA);
-	XMStoreFloat3(&capA.end, centerA + axisA * halfHA);
-	capA.radius = a.radius;
+// Sphere vs Cylinder (修正：外部法線の反転)
+bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physics::Cylinder& c, Physics::Contact& outContact) {
+	XMVECTOR sCenter = XMLoadFloat3(&s.center);
+	XMVECTOR cCenter = XMLoadFloat3(&c.center);
+	XMVECTOR cAxis = XMLoadFloat3(&c.axis);
 
-	XMVECTOR axisB = XMLoadFloat3(&b.axis);
-	XMVECTOR centerB = XMLoadFloat3(&b.center);
-	float halfHB = b.height * 0.5f;
-	XMStoreFloat3(&capB.start, centerB - axisB * halfHB);
-	XMStoreFloat3(&capB.end, centerB + axisB * halfHB);
-	capB.radius = b.radius;
+	XMVECTOR d = sCenter - cCenter;
+	float distY = XMVectorGetX(XMVector3Dot(d, cAxis));
 
-	return CheckCapsuleCapsule(capA, capB, outContact);
+	XMVECTOR onAxis = cCenter + cAxis * distY;
+	XMVECTOR radialVec = sCenter - onAxis;
+	float distRadSq = LengthSq(radialVec);
+	float distRad = std::sqrt(distRadSq);
+
+	float halfH = c.height * 0.5f;
+	float r = c.radius;
+
+	// 1. 領域判定
+	if (std::abs(distY) > halfH + s.radius) return false;
+	if (distRad > r + s.radius) return false;
+
+	// 2. 内部判定
+	bool insideY = (std::abs(distY) < halfH);
+	bool insideR = (distRad < r);
+	bool isCenterInside = insideY && insideR;
+
+	if (isCenterInside) {
+		// --- 内部 (前回修正済み・OK) ---
+		float depthSide = r - distRad;
+		float depthTop = halfH - distY;
+		float depthBottom = distY - (-halfH);
+
+		float minDepth = depthSide;
+		// A->B法線なので「内向き」。radialVec(外向き)の逆
+		XMVECTOR normal = (distRad > 1e-5f) ? (-radialVec / distRad) : XMVectorSet(-1, 0, 0, 0);
+
+		if (depthTop < minDepth) {
+			minDepth = depthTop;
+			normal = -cAxis; // 下へ
+		}
+		if (depthBottom < minDepth) {
+			minDepth = depthBottom;
+			normal = cAxis; // 上へ
+		}
+
+		XMStoreFloat3(&outContact.normal, normal);
+		outContact.depth = s.radius + minDepth;
+		return true;
+	}
+	else {
+		// --- 外部 (【修正箇所】ここが逆でした) ---
+		XMVECTOR closest;
+
+		if (insideY) {
+			closest = onAxis + (radialVec / distRad) * r;
+		}
+		else if (insideR) {
+			float sign = (distY > 0) ? 1.0f : -1.0f;
+			closest = cCenter + cAxis * (halfH * sign) + radialVec;
+		}
+		else {
+			float sign = (distY > 0) ? 1.0f : -1.0f;
+			XMVECTOR capCenter = cCenter + cAxis * (halfH * sign);
+			closest = capCenter + (radialVec / distRad) * r;
+		}
+
+		// 距離チェック
+		XMVECTOR distVec = closest - sCenter; // 【修正】 A->B (Sphere -> Surface) に変更
+		float distSq = LengthSq(distVec);
+
+		if (distSq > s.radius * s.radius) return false;
+
+		float dist = std::sqrt(distSq);
+
+		XMVECTOR normal;
+		if (dist < 1e-5f) {
+			// 密着時: A->B なので 内向き
+			normal = (distRad > 1e-5f) ? (-radialVec / distRad) : -cAxis;
+		}
+		else {
+			normal = distVec / dist; // これで A->B (内向き) になる
+		}
+
+		XMStoreFloat3(&outContact.normal, normal);
+		outContact.depth = s.radius - dist;
+		return true;
+	}
 }
 
-// Sphere vs Cylinder (カプセル近似)
-bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physics::Cylinder& c, Physics::Contact& outContact) {
-	Physics::Capsule cap;
-	XMVECTOR axis = XMLoadFloat3(&c.axis);
-	XMVECTOR center = XMLoadFloat3(&c.center);
-	float halfH = c.height * 0.5f;
-	XMStoreFloat3(&cap.start, center - axis * halfH);
-	XMStoreFloat3(&cap.end, center + axis * halfH);
-	cap.radius = c.radius;
+// Capsule vs Cylinder (すり抜け防止強化)
+bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Physics::Cylinder& cyl, Physics::Contact& outContact) {
+	// 最も深い衝突情報を記録するための変数
+	float maxDepth = -FLT_MAX;
+	XMVECTOR bestNormal = XMVectorZero();
+	bool hit = false;
 
-	return CheckSphereCapsule(s, cap, outContact);
+	// 判定用の一時球体
+	Physics::Sphere s;
+	s.radius = cap.radius;
+	Physics::Contact temp; // 法線・深度取得用
+
+	// 1. 始点 (Start) の判定
+	s.center = cap.start;
+	if (CheckSphereCylinder(s, cyl, temp)) {
+		if (temp.depth > maxDepth) {
+			maxDepth = temp.depth;
+			bestNormal = XMLoadFloat3(&temp.normal);
+			hit = true;
+		}
+	}
+
+	// 2. 終点 (End) の判定
+	s.center = cap.end;
+	if (CheckSphereCylinder(s, cyl, temp)) {
+		if (!hit || temp.depth > maxDepth) {
+			maxDepth = temp.depth;
+			bestNormal = XMLoadFloat3(&temp.normal);
+			hit = true;
+		}
+	}
+
+	// 3. 軸上の最近接点 (Closest Point on Axis) の判定
+	XMVECTOR capA = XMLoadFloat3(&cap.start);
+	XMVECTOR capB = XMLoadFloat3(&cap.end);
+	XMVECTOR cylPos = XMLoadFloat3(&cyl.center);
+	XMVECTOR cylAxis = XMLoadFloat3(&cyl.axis);
+	float cylH = cyl.height;
+
+	XMVECTOR cylP1 = cylPos - cylAxis * (cylH * 0.5f);
+	XMVECTOR cylP2 = cylPos + cylAxis * (cylH * 0.5f);
+
+	XMVECTOR cCap, cCyl;
+	// カプセル軸と円柱軸の最短距離にある点(cCap)を求める
+	SegmentSegmentDistanceSq(capA, capB, cylP1, cylP2, cCap, cCyl);
+
+	XMStoreFloat3(&s.center, cCap);
+	if (CheckSphereCylinder(s, cyl, temp)) {
+		if (!hit || temp.depth > maxDepth) {
+			maxDepth = temp.depth;
+			bestNormal = XMLoadFloat3(&temp.normal);
+			hit = true;
+		}
+	}
+
+	if (hit) {
+		// 【重要】outContactのa, b（エンティティ情報）を消さないように、
+		// 法線と深度だけを更新する
+		XMStoreFloat3(&outContact.normal, bestNormal);
+		outContact.depth = maxDepth;
+		return true;
+	}
+	return false;
+}
+
+// Cylinder vs Cylinder (Gap解消・振動防止)
+bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Physics::Cylinder& b, Physics::Contact& outContact) {
+	XMVECTOR posA = XMLoadFloat3(&a.center);
+	XMVECTOR axisA = XMLoadFloat3(&a.axis);
+	XMVECTOR posB = XMLoadFloat3(&b.center);
+	XMVECTOR axisB = XMLoadFloat3(&b.axis);
+
+	// 1. 側面チェック (カプセル近似)
+	XMVECTOR pa = posA - axisA * (a.height * 0.5f);
+	XMVECTOR qa = posA + axisA * (a.height * 0.5f);
+	XMVECTOR pb = posB - axisB * (b.height * 0.5f);
+	XMVECTOR qb = posB + axisB * (b.height * 0.5f);
+
+	XMVECTOR c1, c2;
+	float distSq = SegmentSegmentDistanceSq(pa, qa, pb, qb, c1, c2);
+	float rSum = a.radius + b.radius;
+
+	bool sideHit = (distSq < rSum * rSum);
+	float sideDepth = 0.0f;
+	XMVECTOR sideNormal = XMVectorZero();
+
+	if (sideHit) {
+		float dist = std::sqrt(distSq);
+		sideDepth = rSum - dist;
+		if (dist < 1e-5f) {
+			XMVECTOR arb = XMVector3Cross(axisA, axisB);
+			if (LengthSq(arb) < 1e-4f) arb = XMVectorSet(1, 0, 0, 0);
+			sideNormal = XMVector3Normalize(arb);
+		}
+		else {
+			sideNormal = (c2 - c1) / dist; // A->B
+		}
+	}
+
+	// 2. SATチェック (縦方向)
+	float minSatOverlap = FLT_MAX;
+	XMVECTOR satNormal = XMVectorZero();
+	bool satHit = true;
+
+	auto TestAxis = [&](XMVECTOR axis) -> bool {
+		if (LengthSq(axis) < 1e-6f) return true;
+		axis = XMVector3Normalize(axis);
+
+		auto Proj = [](XMVECTOR ax, XMVECTOR cP, XMVECTOR cAx, float h, float r) {
+			float p = XMVectorGetX(XMVector3Dot(cP, ax));
+			float c = std::abs(XMVectorGetX(XMVector3Dot(cAx, ax)));
+			float s = XMVectorGetX(XMVector3Length(XMVector3Cross(cAx, ax)));
+			float e = (h * 0.5f) * c + r * s;
+			return std::make_pair(p - e, p + e);
+			};
+		auto rA = Proj(axis, posA, axisA, a.height, a.radius);
+		auto rB = Proj(axis, posB, axisB, b.height, b.radius);
+		float d1 = rA.second - rB.first;
+		float d2 = rB.second - rA.first;
+		if (d1 < 0 || d2 < 0) return false;
+
+		float o = std::min(d1, d2);
+		if (o < minSatOverlap) {
+			minSatOverlap = o;
+			satNormal = axis;
+			// A->B に揃える
+			if (XMVectorGetX(XMVector3Dot(posB - posA, axis)) < 0) satNormal = -satNormal;
+		}
+		return true;
+		};
+
+	if (!TestAxis(axisA)) satHit = false;
+	if (satHit && !TestAxis(axisB)) satHit = false;
+
+	// 【重要】Gap対策: 側面(Radial) と 縦(SAT) の両方が重なっていないと衝突ではない
+	// 以前は (!sideHit && !satHit) だったので、片方でもTrueならヒットになっていた
+	// これにより「浮いているのにカプセル近似がヒットする」現象を防ぐ
+	if (!sideHit || !satHit) return false;
+
+	// 決定ロジック
+	if (minSatOverlap < sideDepth * 0.6f) {
+		XMStoreFloat3(&outContact.normal, satNormal);
+		outContact.depth = minSatOverlap;
+	}
+	else {
+		XMStoreFloat3(&outContact.normal, sideNormal);
+		outContact.depth = sideDepth;
+	}
+
+	return true;
 }
 
 // =================================================================
 // メイン更新ループ
 // =================================================================
-void CollisionSystem::Update(Registry& registry) {
-	struct CollisionProxy {
-		Entity entity;
-		ColliderType type;
-		bool isTrigger;
-		BodyType bodyType;
-		Physics::Sphere sphere;
-		Physics::OBB obb;
-		Physics::Capsule capsule;
-		Physics::Cylinder cylinder;
-	};
-	std::vector<CollisionProxy> proxies;
 
-	registry.view<Transform, Collider>([&](Entity e, Transform& t, Collider& c) {
-		CollisionProxy proxy;
-		proxy.entity = e;
-		proxy.type = c.type;
-		proxy.isTrigger = c.isTrigger;
-		if (registry.has<Rigidbody>(e)) proxy.bodyType = registry.get<Rigidbody>(e).type;
-		else proxy.bodyType = BodyType::Static;
+void CollisionSystem::Initialize(Registry& registry)
+{
+	if (m_isInitialized) return;
 
-		XMVECTOR scale, rotQuat, pos;
-		XMMatrixDecompose(&scale, &rotQuat, &pos, t.worldMatrix);
-		XMFLOAT3 gScale; XMStoreFloat3(&gScale, scale);
-		XMMATRIX rotMat = XMMatrixRotationQuaternion(rotQuat);
+	// 1. Observerの設定
+	m_observer.connect(registry)
+		.update<Transform>()
+		.update<Collider>()
+		.group<Collider>()
+		.where<Transform, Collider>();
 
-		XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
-		XMVECTOR centerVec = XMVector3Transform(offsetVec, t.worldMatrix);
-		XMFLOAT3 center; XMStoreFloat3(&center, centerVec);
-
-		if (c.type == ColliderType::Box) {
-			proxy.obb.center = center;
-			proxy.obb.extents = { c.boxSize.x * gScale.x * 0.5f, c.boxSize.y * gScale.y * 0.5f, c.boxSize.z * gScale.z * 0.5f };
-			XMFLOAT4X4 rotM; XMStoreFloat4x4(&rotM, rotMat);
-			proxy.obb.axes[0] = { rotM._11, rotM._12, rotM._13 };
-			proxy.obb.axes[1] = { rotM._21, rotM._22, rotM._23 };
-			proxy.obb.axes[2] = { rotM._31, rotM._32, rotM._33 };
+	// 2. 初期化
+	registry.view<Transform, Collider>().each([&](Entity e, Transform& t, Collider& c) {
+		if (!registry.has<WorldCollider>(e)) {
+			registry.emplace<WorldCollider>(e);
 		}
-		else if (c.type == ColliderType::Sphere) {
-			proxy.sphere.center = center;
-			proxy.sphere.radius = c.sphere.radius * std::max({ gScale.x, gScale.y, gScale.z });
-		}
-		else if (c.type == ColliderType::Capsule) {
-			XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-			float h = c.capsule.height * gScale.y;
-			float r = c.capsule.radius * std::max(gScale.x, gScale.z);
-			float segLen = std::max(0.0f, h * 0.5f - r);
-			XMStoreFloat3(&proxy.capsule.start, centerVec - axisY * segLen);
-			XMStoreFloat3(&proxy.capsule.end, centerVec + axisY * segLen);
-			proxy.capsule.radius = r;
-		}
-		else if (c.type == ColliderType::Cylinder) {
-			XMStoreFloat3(&proxy.cylinder.center, centerVec);
-			XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-			XMStoreFloat3(&proxy.cylinder.axis, axisY);
-			proxy.cylinder.height = c.cylinder.height * gScale.y;
-			proxy.cylinder.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
-		}
-		proxies.push_back(proxy);
-		});
+		auto& wc = registry.get<WorldCollider>(e);
+		wc.isDirty = true;
+		UpdateWorldCollider(t, c, wc);
+	});
 
+	m_isInitialized = true;
+}
+
+// キャッシュ（WorldCollider）の更新処理
+void CollisionSystem::UpdateWorldCollider(const Transform& t, const Collider& c, WorldCollider& wc) 
+{
+	// ワールド行列の分解 (Scale, Rotation, Position)
+	XMVECTOR scale, rotQuat, pos;
+	XMMatrixDecompose(&scale, &rotQuat, &pos, t.worldMatrix);
+	XMFLOAT3 gScale; XMStoreFloat3(&gScale, scale);
+	XMMATRIX rotMat = XMMatrixRotationQuaternion(rotQuat);
+
+	// オフセット込みの中心座標
+	XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
+	offsetVec = XMVectorSetW(offsetVec, 1.0f);
+	XMVECTOR centerVec = XMVector3TransformCoord(offsetVec, t.worldMatrix);
+
+	// AABB計算用の最小/最大
+	XMVECTOR vMin, vMax;
+
+	// 形状毎の計算
+	if(c.type == ColliderType::Box)
+	{
+		XMStoreFloat3(&wc.obb.center, centerVec);
+		wc.obb.extents = {
+			c.boxSize.x * gScale.x * 0.5f,
+			c.boxSize.y * gScale.y * 0.5f,
+			c.boxSize.z * gScale.z * 0.5f
+		};
+		XMFLOAT4X4 rotM; XMStoreFloat4x4(&rotM, rotMat);
+		wc.obb.axes[0] = { rotM._11, rotM._12, rotM._13 };
+		wc.obb.axes[1] = { rotM._21, rotM._22, rotM._23 };
+		wc.obb.axes[2] = { rotM._31, rotM._32, rotM._33 };
+
+		// AABB計算
+		XMVECTOR center = centerVec;
+		XMVECTOR ext = XMLoadFloat3(&wc.obb.extents);
+		XMVECTOR axisX = XMLoadFloat3(&wc.obb.axes[0]);
+		XMVECTOR axisY = XMLoadFloat3(&wc.obb.axes[1]);
+		XMVECTOR axisZ = XMLoadFloat3(&wc.obb.axes[2]);
+
+		XMVECTOR newExt =
+			XMVectorAbs(axisX) * XMVectorGetX(ext) +
+			XMVectorAbs(axisY) * XMVectorGetY(ext) +
+			XMVectorAbs(axisZ) * XMVectorGetZ(ext);
+
+		vMin = center - newExt;
+		vMax = center + newExt;
+	}
+	else if (c.type == ColliderType::Sphere)
+	{
+		XMStoreFloat3(&wc.sphere.center, centerVec);
+		wc.sphere.radius = c.sphere.radius * std::max({ gScale.x, gScale.y, gScale.z });
+
+		XMVECTOR r = XMVectorReplicate(wc.sphere.radius);
+
+		vMin = centerVec - r;
+		vMax = centerVec + r;
+	}
+	else if(c.type == ColliderType::Capsule)
+	{
+		XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
+		float h = c.capsule.height * gScale.y;
+		float r = c.capsule.radius * std::max(gScale.x, gScale.z);
+		float segLen = std::max(0.0f, h * 0.5f - r);
+
+		XMVECTOR p1 = centerVec - axisY * segLen;
+		XMVECTOR p2 = centerVec + axisY * segLen;
+		XMStoreFloat3(&wc.capsule.start, p1);
+		XMStoreFloat3(&wc.capsule.end, p2);
+		wc.capsule.radius = r;
+
+		// AABB計算
+		XMVECTOR capMin = XMVectorMin(p1, p2) - XMVectorReplicate(r);
+		XMVECTOR capMax = XMVectorMax(p1, p2) + XMVectorReplicate(r);
+		vMin = capMin;
+		vMax = capMax;
+	}
+	else if(c.type == ColliderType::Cylinder)
+	{
+		XMStoreFloat3(&wc.cylinder.center, centerVec);
+		XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
+		XMStoreFloat3(&wc.cylinder.axis, axisY);
+		wc.cylinder.height = c.cylinder.height * gScale.y;
+		wc.cylinder.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
+
+		// AABB計算
+		// 円柱の頂点群から計算するのが正確だが、ここでは「球」として近似したAABBで代用
+		// あるいは中心軸線分 + 半径で計算
+		float halfH = wc.cylinder.height * 0.5f;
+		float rad = wc.cylinder.radius;
+		// 軸に垂直な平面での広がりを考慮
+		XMVECTOR ex = XMVectorAbs(axisY) * halfH;
+		// 半径分を全方向に追加
+		XMVECTOR radiusExt = XMVectorSet(rad, rad, rad, 0) * XMVectorSplatOne();
+		
+		vMin = centerVec - ex - radiusExt;
+		vMax = centerVec + ex + radiusExt;
+	}
+
+	XMStoreFloat3(&wc.aabb.min, vMin);
+	XMStoreFloat3(&wc.aabb.max, vMax);
+	wc.isDirty = false;
+}
+
+void CollisionSystem::Update(Registry& registry)
+{
+	if (!m_isInitialized) Initialize(registry);
+
+	// ----------------------------------------------------------
+	// Phase 1: キャッシュ更新（Observer使用）
+	// ----------------------------------------------------------
+	m_observer.each([&](Entity e) {
+		if(registry.has<Transform>(e) && registry.has<Collider>(e)) {
+			// 自動追加
+			if(!registry.has<WorldCollider>(e)) {
+				registry.emplace<WorldCollider>(e);
+			}
+
+			auto& t = registry.get<Transform>(e);
+			auto& c = registry.get<Collider>(e);
+			auto& wc = registry.get<WorldCollider>(e);
+
+			UpdateWorldCollider(t, c, wc);
+		}
+	});
+
+	// クリア
+	m_observer.clear();
+
+	// ----------------------------------------------------------
+	// Phase 2 & 3: 衝突判定（Broad Phase -> Narrow Phase）
+	// ----------------------------------------------------------
 	std::vector<Physics::Contact> contacts;
 
-	// 総当たり判定 (O(N^2))
-	for (size_t i = 0; i < proxies.size(); ++i) {
-		for (size_t j = i + 1; j < proxies.size(); ++j) {
-			auto& A = proxies[i];
-			auto& B = proxies[j];
+	// viewのエンティティリストを一旦vectorにコピー（2重ループ用）
+	std::vector<Entity> entities;
+	registry.view<WorldCollider, Collider>().each([&](Entity e, WorldCollider& wc, Collider& c) {	
+		entities.push_back(e);
+	});
 
-			if (A.bodyType == BodyType::Static && B.bodyType == BodyType::Static) continue;
+	// 2重ループで全エンティティをチェック
+	for(size_t i = 0; i < entities.size(); ++i) {
+		Entity eA = entities[i];
+		auto& wcA = registry.get<WorldCollider>(eA);
+		auto& cA = registry.get<Collider>(eA);
+		bool isStaticA = (!registry.has<Rigidbody>(eA) || registry.get<Rigidbody>(eA).type == BodyType::Static);
 
+		for(size_t j = i + 1; j < entities.size(); ++j)
+		{
+			Entity eb = entities[j];
+			auto& wcB = registry.get<WorldCollider>(eb);
+			auto& cB = registry.get<Collider>(eb);
+			bool isStaticB = (!registry.has<Rigidbody>(eb) || registry.get<Rigidbody>(eb).type == BodyType::Static);
+
+			// Static同士は衝突しない
+			if (isStaticA && isStaticB) continue;
+
+			// Broad Phase: AABB重なりチェック
+			if (wcA.aabb.max.x < wcB.aabb.min.x || wcA.aabb.min.x > wcB.aabb.max.x ||
+				wcA.aabb.max.y < wcB.aabb.min.y || wcA.aabb.min.y > wcB.aabb.max.y ||
+				wcA.aabb.max.z < wcB.aabb.min.z || wcA.aabb.min.z > wcB.aabb.max.z) 
+			{
+				continue; // 重なっていない
+			}
+
+			// Narrow Phase: 形状毎の詳細衝突判定
 			Physics::Contact contact;
-			contact.a = A.entity;
-			contact.b = B.entity;
+			contact.a = eA;
+			contact.b = eb;
 			bool hit = false;
 
+			// データ詰め替え用に一時変数
+			
 			// Sphere vs ...
-			if (A.type == ColliderType::Sphere && B.type == ColliderType::Sphere)
-				hit = CheckSphereSphere(A.sphere, B.sphere, contact);
-			else if (A.type == ColliderType::Sphere && B.type == ColliderType::Box)
-				hit = CheckSphereOBB(A.sphere, B.obb, contact);
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Sphere) {
-				hit = CheckSphereOBB(B.sphere, A.obb, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
-			else if (A.type == ColliderType::Sphere && B.type == ColliderType::Capsule)
-				hit = CheckSphereCapsule(A.sphere, B.capsule, contact);
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Sphere) {
-				hit = CheckSphereCapsule(B.sphere, A.capsule, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
-			else if (A.type == ColliderType::Sphere && B.type == ColliderType::Cylinder)
-				hit = CheckSphereCylinder(A.sphere, B.cylinder, contact);
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Sphere) {
-				hit = CheckSphereCylinder(B.sphere, A.cylinder, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
+			if (cA.type == ColliderType::Sphere)
+			{
+				Physics::Sphere sA = { wcA.sphere.center, wcA.sphere.radius };
 
+				if (cB.type == ColliderType::Sphere)
+				{
+					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					hit = CheckSphereSphere(sA, sB, contact);
+				}
+				else if(cB.type == ColliderType::Box)
+				{
+					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					hit = CheckSphereOBB(sA, oB, contact);
+				}
+				else if(cB.type == ColliderType::Capsule)
+				{
+					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					hit = CheckSphereCapsule(sA, cpB, contact);
+				}
+				else if(cB.type == ColliderType::Cylinder)
+				{
+					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					hit = CheckSphereCylinder(sA, cyB, contact);
+				}
+			}
 			// Box vs ...
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Box)
-				hit = CheckOBBOBB(A.obb, B.obb, contact);
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Capsule)
-				hit = CheckOBBCapsule(A.obb, B.capsule, contact);
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Box) {
-				hit = CheckOBBCapsule(B.obb, A.capsule, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
-			else if (A.type == ColliderType::Box && B.type == ColliderType::Cylinder)
-				hit = CheckOBBCylinder(A.obb, B.cylinder, contact);
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Box) {
-				hit = CheckOBBCylinder(B.obb, A.cylinder, contact);
-				if (hit) { contact.normal.x *= -1; contact.normal.y *= -1; contact.normal.z *= -1; }
-			}
+			else if(cA.type == ColliderType::Box)
+			{
+				Physics::OBB oA = { wcA.obb.center, wcA.obb.extents, wcA.obb.axes[0], wcA.obb.axes[1], wcA.obb.axes[2] };
 
+				if (cB.type == ColliderType::Box)
+				{
+					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					hit = CheckOBBOBB(oA, oB, contact);
+				}
+				else if(cB.type == ColliderType::Sphere)
+				{
+					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					hit = CheckSphereOBB(sB, oA, contact);
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
+				}
+				else if(cB.type == ColliderType::Capsule)
+				{
+					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					hit = CheckOBBCapsule(oA, cpB, contact);
+				}
+				else if(cB.type == ColliderType::Cylinder)
+				{
+					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					hit = CheckOBBCylinder(oA, cyB, contact);
+				}
+			}
 			// Capsule vs ...
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Capsule)
-				hit = CheckCapsuleCapsule(A.capsule, B.capsule, contact);
-			else if (A.type == ColliderType::Capsule && B.type == ColliderType::Cylinder) {
-				// 円柱をカプセル近似して判定
-				Physics::Capsule cylCap;
-				XMVECTOR cAx = XMLoadFloat3(&B.cylinder.axis);
-				XMVECTOR cC = XMLoadFloat3(&B.cylinder.center);
-				float hH = B.cylinder.height * 0.5f;
-				XMStoreFloat3(&cylCap.start, cC - cAx * hH);
-				XMStoreFloat3(&cylCap.end, cC + cAx * hH);
-				cylCap.radius = B.cylinder.radius;
-				hit = CheckCapsuleCapsule(A.capsule, cylCap, contact);
+			else if(cA.type == ColliderType::Capsule)
+			{
+				Physics::Capsule cpA = { wcA.capsule.start, wcA.capsule.end, wcA.capsule.radius };
+
+				if (cB.type == ColliderType::Capsule)
+				{
+					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					hit = CheckCapsuleCapsule(cpA, cpB, contact);
+				}
+				else if(cB.type == ColliderType::Sphere)
+				{
+					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					hit = CheckSphereCapsule(sB, cpA, contact);
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
+				}
+				else if(cB.type == ColliderType::Box)
+				{
+					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					hit = CheckOBBCapsule(oB, cpA, contact);
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
+				}
+				else if(cB.type == ColliderType::Cylinder)
+				{
+					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					hit = CheckCapsuleCylinder(cpA, cyB, contact);
+				}
 			}
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Capsule) {
-				Physics::Capsule cylCap;
-				XMVECTOR cAx = XMLoadFloat3(&A.cylinder.axis);
-				XMVECTOR cC = XMLoadFloat3(&A.cylinder.center);
-				float hH = A.cylinder.height * 0.5f;
-				XMStoreFloat3(&cylCap.start, cC - cAx * hH);
-				XMStoreFloat3(&cylCap.end, cC + cAx * hH);
-				cylCap.radius = A.cylinder.radius;
-				hit = CheckCapsuleCapsule(cylCap, B.capsule, contact);
+			// Cylinder vs ...
+			else if(cA.type == ColliderType::Cylinder)
+			{
+				Physics::Cylinder cyA = { wcA.cylinder.center, wcA.cylinder.axis, wcA.cylinder.height, wcA.cylinder.radius };
+
+				if (cB.type == ColliderType::Cylinder)
+				{
+					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					hit = CheckCylinderCylinder(cyA, cyB, contact);
+				}
+				else if(cB.type == ColliderType::Sphere)
+				{
+					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					hit = CheckSphereCylinder(sB, cyA, contact);
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
+				}
+				else if(cB.type == ColliderType::Capsule)
+				{
+					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					hit = CheckCapsuleCylinder(cpB, cyA, contact);
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
+				}
+				else if(cB.type == ColliderType::Box)
+				{
+					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					hit = CheckOBBCylinder(oB, cyA, contact);
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
+				}
 			}
 
-			// Cylinder vs Cylinder
-			else if (A.type == ColliderType::Cylinder && B.type == ColliderType::Cylinder)
-				hit = CheckCylinderCylinder(A.cylinder, B.cylinder, contact);
-
-
-			if (hit) {
-				if (A.isTrigger || B.isTrigger) {
-					// Logger::Log("Trigger Hit!");
+			if (hit)
+			{
+				if(cA.isTrigger || cB.isTrigger) {
+					// trigger event
 				}
 				else {
 					contacts.push_back(contact);
@@ -824,5 +1451,6 @@ void CollisionSystem::Update(Registry& registry) {
 		}
 	}
 
+	// 3. 物理応答
 	PhysicsSystem::Solve(registry, contacts);
 }
