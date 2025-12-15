@@ -124,6 +124,90 @@ struct Rigidbody
 	}
 };
 
+// ============================================================
+// レイヤーシステム
+// ============================================================
+/**
+ * @enum	Layer
+ * @brief	レイヤー定義（ビットマスク）
+ */
+enum class Layer : uint32_t
+{
+	None = 0,
+	Default = 1 << 0,
+	Player = 1 << 1,
+	Enemy = 1 << 2,
+	Wall = 1 << 3,
+	Item = 1 << 4,
+	Projectile = 1 << 5,
+	// 必要に応じて追加（最大32レイヤー）
+
+	All = 0xFFFFFFFF
+};
+
+// 演算子オーバーロード（Layer同士のビット演算用）
+constexpr Layer operator|(Layer a, Layer b) { return static_cast<Layer>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); }
+constexpr Layer operator&(Layer a, Layer b) { return static_cast<Layer>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); }
+constexpr Layer operator~(Layer a) { return static_cast<Layer>(~static_cast<uint32_t>(a)); }
+constexpr Layer& operator|=(Layer& a, Layer b) { a = a | b; return a; }
+constexpr Layer& operator&=(Layer& a, Layer b) { a = a & b; return a; }
+// bool判定用
+constexpr bool operator&&(Layer a, Layer b) { return (static_cast<uint32_t>(a) & static_cast<uint32_t>(b)) != 0; }
+
+// ============================================================
+// 衝突マトリックス（グローバル設定）
+// ============================================================
+/**
+ * @class	PhysicsConfig
+ * @brief	物理設定（レイヤーごとの衝突設定）
+ */
+class PhysicsConfig
+{
+public:
+	// @brief	AとBが衝突するように設定する
+	static void SetCollision(Layer layerA, Layer layerB, bool enable = true)
+	{
+		if (enable)
+		{
+			matrix[layerA] |= layerB;
+			matrix[layerB] |= layerA;
+		}
+		else
+		{
+			matrix[layerA] = matrix[layerA] & (~layerB);
+			matrix[layerB] = matrix[layerB] & (~layerA);
+		}
+	}
+
+	// @brief	指定レイヤーのマスクを取得（設定が無ければAllを返す）
+	static Layer GetMask(Layer layer)
+	{
+		if (matrix.find(layer) != matrix.end())
+		{
+			// 設定されていないレイヤーはデフォルトで「全て」と当たるようにするか、
+			// あるいは「Default」と同じにするか。ここでは安全のためDefault設定を返す。
+			if (matrix.find(Layer::Default) != matrix.end())
+				return matrix[Layer::Default];
+			else
+				return Layer::All;
+		}
+		return matrix[layer];
+	}
+
+	// @brief	全レイヤーのマスクをクリア（初期化用）
+	static void ClearAll()
+	{
+		matrix.clear();
+		SetCollision(Layer::Default, Layer::All); // デフォルトは全てと当たる
+	}
+
+private:
+	static inline std::map<Layer, Layer> matrix;	// Layer -> Mask
+};
+
+// ============================================================
+// コライダー定義
+// ============================================================
 /**
  * @enum	ColliderType
  * @brief	当たり判定の形状
@@ -136,14 +220,25 @@ enum class ColliderType
 	Cylinder,	// 円柱
 };
 
+struct ColliderInfo
+{
+	ColliderType type = ColliderType::Box;
+	Layer layer = Layer::Default;
+	bool isTrigger = false;
+	XMFLOAT3 size = { 1.0f, 1.0f, 1.0f }; // box: x,y,z | sphere: x=radius | capsule/cylinder: x=radius,y=height
+	XMFLOAT3 offset = { 0.0f, 0.0f, 0.0f };
+};
+
 /**
  * @struct	Collider
  * @brief	当たり判定
  */
 struct Collider
 {
-	ColliderType type;
-	bool isTrigger;
+	ColliderType type;	// タイプの種類
+	bool isTrigger;		// 物理衝突を無視してイベントのみ発生させるか	
+	Layer layer;		// 所属
+	Layer mask;			// 衝突判定を行うレイヤーのマスク
 
 	// 共用体でメモリ節約
 	union
@@ -153,28 +248,93 @@ struct Collider
 		struct { float radius, height; } capsule;
 		struct { float radius, height; } cylinder;
 	};
+	XMFLOAT3 offset;	// オフセット
 
-	XMFLOAT3 offset;
+	// デフォルトコンストラクタ
+	Collider() :type(ColliderType::Box), isTrigger(false), layer(Layer::Default), mask(Layer::All), boxSize{ 1.0f, 1.0f, 1.0f }, offset{ 0.0f, 0.0f, 0.0f } {}
 
-	// コンストラクタ
-	Collider() : type(ColliderType::Box), isTrigger(false), offset({ 0,0,0 }) { boxSize = { 1,1,1 }; }
+	// 一括設定コンストラクタ
+	Collider(const ColliderInfo& info)
+		: type(info.type), isTrigger(info.isTrigger), layer(info.layer), offset(info.offset)
+	{
+		// 衝突マスクをグローバル設定から取得
+		mask = PhysicsConfig::GetMask(layer);
+		// サイズ設定
+		if (type == ColliderType::Box) { boxSize = { info.size.x, info.size.y, info.size.z }; }
+		else if (type == ColliderType::Sphere) { sphere.radius = info.size.x; }
+		else if (type == ColliderType::Capsule) { capsule.radius = info.size.x; capsule.height = info.size.y; }
+		else if (type == ColliderType::Cylinder) { cylinder.radius = info.size.x; cylinder.height = info.size.y; }
+	}
 
-	// ヘルパー関数
-	static Collider CreateSphere(float r)
+	// ------------------------------------------------------------
+	// Fluent Interface用セッター
+	// ------------------------------------------------------------
+
+	// @brief	自分の所属を設定
+	Collider& setGroup(Layer l)
 	{
-		Collider c; c.type = ColliderType::Sphere; c.sphere.radius = r; return c;
+		this->layer = l;
+		return *this;
 	}
-	struct Collider CreateBox(float x, float y, float z)
+
+	// @brief	衝突対象を上書き設定
+	Collider& setMask(Layer l)
 	{
-		Collider c; c.type = ColliderType::Box; c.boxSize = { x, y, z }; return c;
+		this->mask = l;
+		return *this;
 	}
-	static Collider CreateCapsule(float r, float h)
+
+	// @brief	衝突対象を追加（例：collidesWith(Layer::Enemy)）
+	Collider& collidesWith(Layer l)
 	{
-		Collider c; c.type = ColliderType::Capsule; c.capsule.radius = r; c.capsule.height = h; return c;
+		this->mask |= l;
+		return *this;
 	}
-	static Collider CreateCylinder(float r, float h)
+
+	// @brief	衝突対象から除外（例：ignore(Layer::Player)）
+	Collider& ignore(Layer l)
 	{
-		Collider c; c.type = ColliderType::Cylinder; c.cylinder.radius = r; c.cylinder.height = h; return c;
+		this->mask = this->mask & (~l);
+		return *this;
+	}
+
+	// @brief	トリガー設定
+	Collider& setTrigger(bool trigger)
+	{
+		this->isTrigger = trigger;
+		return *this;
+	}
+
+	// @brief	オフセット設定
+	Collider& setOffset(const XMFLOAT3& off)
+	{
+		this->offset = off;
+		return *this;
+	}
+
+	// ------------------------------------------------------------
+	// Static Creator Methods
+	// ------------------------------------------------------------
+	struct Collider CreateBox(float x, float y, float z, Layer l = Layer::Default)
+	{
+		return Collider(ColliderInfo{ ColliderType::Box, l, false, { x, y, z }, { 0,0,0 } });
+	}
+	static Collider CreateSphere(float radius, Layer l = Layer::Default)
+	{
+		return Collider(ColliderInfo{ ColliderType::Sphere, l, false, { radius, 0, 0 }, { 0,0,0 } });
+	}
+	static Collider CreateCapsule(float radius, float height, Layer l = Layer::Default)
+	{
+		return Collider(ColliderInfo{ ColliderType::Capsule, l, false, { radius, height, 0 }, { 0,0,0 } });
+	}
+	static Collider CreateCylinder(float radius, float height, Layer l = Layer::Default)
+	{
+		return Collider(ColliderInfo{ ColliderType::Cylinder, l, false, { radius, height, 0 }, { 0,0,0 } });
+	}
+	// トリガー作成用ショートカット
+	static Collider CreateTriggerBox(float x, float y, float z, Layer l = Layer::Default)
+	{
+		return Collider(ColliderInfo{ ColliderType::Box, l, true, { x, y, z }, { 0,0,0 } });
 	}
 };
 

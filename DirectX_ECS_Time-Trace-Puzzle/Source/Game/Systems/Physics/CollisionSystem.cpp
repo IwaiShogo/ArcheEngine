@@ -1312,6 +1312,10 @@ void CollisionSystem::Update(Registry& registry)
 			// Static同士は衝突しない
 			if (isStaticA && isStaticB) continue;
 
+			if (!(cA.layer & cB.mask) || !(cB.layer & cA.mask)) {
+				continue; // レイヤーマスクで弾く
+			}
+
 			// Broad Phase: AABB重なりチェック
 			if (wcA.aabb.max.x < wcB.aabb.min.x || wcA.aabb.min.x > wcB.aabb.max.x ||
 				wcA.aabb.max.y < wcB.aabb.min.y || wcA.aabb.min.y > wcB.aabb.max.y ||
