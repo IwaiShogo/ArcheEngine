@@ -20,6 +20,9 @@
 // ===== インクルード =====
 #define NOMINMAX
 #include "Game/Systems/Physics/CollisionSystem.h"
+#include "Game/Systems/Physics/PhysicsEvents.h"
+#include "Game/Systems/Physics/SpatialHash.h"
+#include "Engine/Core/Time.h"
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -27,6 +30,14 @@
 #include <set>
 
 using namespace Physics;
+using namespace DirectX;
+
+// ペア管理用
+using EntityPair = std::pair<Entity, Entity>;
+
+// 以前の接触状態を保持するスタティック変数
+static std::map<EntityPair, bool> g_prevContacts;
+static SpatialHash g_spatialHash;	// 空間ハッシュインスタンス
 
 // =================================================================
 // 数学・幾何ヘルパー関数
@@ -1151,14 +1162,14 @@ void CollisionSystem::Initialize(Registry& registry)
 		}
 		auto& wc = registry.get<WorldCollider>(e);
 		wc.isDirty = true;
-		UpdateWorldCollider(t, c, wc);
+		UpdateWorldCollider(registry, e, t, c, wc);
 	});
 
 	m_isInitialized = true;
 }
 
 // キャッシュ（WorldCollider）の更新処理
-void CollisionSystem::UpdateWorldCollider(const Transform& t, const Collider& c, WorldCollider& wc) 
+void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Transform& t, const Collider& c, WorldCollider& wc) 
 {
 	// ワールド行列の分解 (Scale, Rotation, Position)
 	XMVECTOR scale, rotQuat, pos;
@@ -1254,6 +1265,29 @@ void CollisionSystem::UpdateWorldCollider(const Transform& t, const Collider& c,
 		vMax = centerVec + ex + radiusExt;
 	}
 
+	// ----------------------------------------------------------------------
+	// Swept AABB
+	// 高速移動ですり抜けないよう、1フレーム前の位置も含めたAABBにする
+	// ----------------------------------------------------------------------
+	if (registry.has<Rigidbody>(e))
+	{
+		const auto& rb = registry.get<Rigidbody>(e);
+		if (rb.type == BodyType::Dynamic)
+		{
+			XMVECTOR vel = XMLoadFloat3(&rb.velocity);
+			float dt = Time::DeltaTime();
+
+			// 1フレーム前の位置（現在の位置 - velocity * dt）
+			XMVECTOR prevPosOffset = -(vel * dt);
+
+			XMVECTOR prevMin = vMin + prevPosOffset;
+			XMVECTOR prevMax = vMax + prevPosOffset;
+
+			vMin = XMVectorMin(vMin, prevMin);
+			vMax = XMVectorMax(vMax, prevMax);
+		}
+	}
+
 	XMStoreFloat3(&wc.aabb.min, vMin);
 	XMStoreFloat3(&wc.aabb.max, vMax);
 	wc.isDirty = false;
@@ -1263,9 +1297,14 @@ void CollisionSystem::Update(Registry& registry)
 {
 	if (!m_isInitialized) Initialize(registry);
 
-	// ----------------------------------------------------------
-	// Phase 1: キャッシュ更新（Observer使用）
-	// ----------------------------------------------------------
+	// 1. イベントキューの初期化
+	auto& eventQueue = Physics::EventQueue::Instance();
+	eventQueue.Clear();
+
+	// 2. 空間ハッシュのリセット
+	g_spatialHash.Clear();
+
+	// 3. Observerによる差分更新（動いたものだけ計算し直す）
 	m_observer.each([&](Entity e) {
 		if(registry.has<Transform>(e) && registry.has<Collider>(e)) {
 			// 自動追加
@@ -1277,61 +1316,60 @@ void CollisionSystem::Update(Registry& registry)
 			auto& c = registry.get<Collider>(e);
 			auto& wc = registry.get<WorldCollider>(e);
 
-			UpdateWorldCollider(t, c, wc);
+			UpdateWorldCollider(registry, e, t, c, wc);
 		}
 	});
 
 	// クリア
 	m_observer.clear();
 
-	// ----------------------------------------------------------
-	// Phase 2 & 3: 衝突判定（Broad Phase -> Narrow Phase）
-	// ----------------------------------------------------------
-	std::vector<Physics::Contact> contacts;
-
-	// viewのエンティティリストを一旦vectorにコピー（2重ループ用）
-	std::vector<Entity> entities;
-	registry.view<WorldCollider, Collider>().each([&](Entity e, WorldCollider& wc, Collider& c) {	
-		entities.push_back(e);
+	// 4. 全エンティティを空間ハッシュに登録
+	registry.view<WorldCollider>().each([&](Entity e, WorldCollider& wc)
+	{
+		g_spatialHash.Register(e, wc.aabb.min, wc.aabb.max);
 	});
 
-	// 2重ループで全エンティティをチェック
-	for(size_t i = 0; i < entities.size(); ++i) {
-		Entity eA = entities[i];
-		auto& wcA = registry.get<WorldCollider>(eA);
-		auto& cA = registry.get<Collider>(eA);
-		bool isStaticA = (!registry.has<Rigidbody>(eA) || registry.get<Rigidbody>(eA).type == BodyType::Static);
+	// 5. 衝突判定（Spatial Hash + Narrow Phase）
+	std::vector<Physics::Contact> contactsForSolver;
+	std::map<EntityPair, Physics::Contact> currentContactsMap;
 
-		for(size_t j = i + 1; j < entities.size(); ++j)
+	registry.view<Transform, Collider, WorldCollider>().each([&](Entity eA, Transform& tA, Collider& cA, WorldCollider& wcA)
+	{
+		// 周辺エンティティのみ取得（高速化）
+		auto candidates = g_spatialHash.Query(wcA.aabb.min, wcA.aabb.max);
+
+		for (Entity eB : candidates)
 		{
-			Entity eb = entities[j];
-			auto& wcB = registry.get<WorldCollider>(eb);
-			auto& cB = registry.get<Collider>(eb);
-			bool isStaticB = (!registry.has<Rigidbody>(eb) || registry.get<Rigidbody>(eb).type == BodyType::Static);
+			if (eA >= eB) continue;	// 重複チェック（A-B と B-A は同じ）
+			if (!registry.valid(eB)) continue;
 
-			// Static同士は衝突しない
+			auto& cB = registry.get<Collider>(eB);
+
+			// レイヤーマスク判定
+			if (!(cA.mask & cB.layer) || !(cB.mask & cA.layer)) continue;
+
+			// Static同士は判定しない
+			bool isStaticA = (!registry.has<Rigidbody>(eA) || registry.get<Rigidbody>(eA).type == BodyType::Static);
+			bool isStaticB = (!registry.has<Rigidbody>(eB) || registry.get<Rigidbody>(eB).type == BodyType::Static);
 			if (isStaticA && isStaticB) continue;
 
-			if (!(cA.layer & cB.mask) || !(cB.layer & cA.mask)) {
-				continue; // レイヤーマスクで弾く
-			}
+			auto& wcB = registry.get<WorldCollider>(eB);
 
-			// Broad Phase: AABB重なりチェック
+			// Broad Phase (AABB)
 			if (wcA.aabb.max.x < wcB.aabb.min.x || wcA.aabb.min.x > wcB.aabb.max.x ||
 				wcA.aabb.max.y < wcB.aabb.min.y || wcA.aabb.min.y > wcB.aabb.max.y ||
-				wcA.aabb.max.z < wcB.aabb.min.z || wcA.aabb.min.z > wcB.aabb.max.z) 
+				wcA.aabb.max.z < wcB.aabb.min.z || wcA.aabb.min.z > wcB.aabb.max.z)
 			{
 				continue; // 重なっていない
 			}
 
-			// Narrow Phase: 形状毎の詳細衝突判定
+			// Narrow Phase
 			Physics::Contact contact;
 			contact.a = eA;
-			contact.b = eb;
+			contact.b = eB;
 			bool hit = false;
+			auto& tB = registry.get<Transform>(eB);
 
-			// データ詰め替え用に一時変数
-			
 			// Sphere vs ...
 			if (cA.type == ColliderType::Sphere)
 			{
@@ -1342,24 +1380,24 @@ void CollisionSystem::Update(Registry& registry)
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereSphere(sA, sB, contact);
 				}
-				else if(cB.type == ColliderType::Box)
+				else if (cB.type == ColliderType::Box)
 				{
 					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
 					hit = CheckSphereOBB(sA, oB, contact);
 				}
-				else if(cB.type == ColliderType::Capsule)
+				else if (cB.type == ColliderType::Capsule)
 				{
 					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
 					hit = CheckSphereCapsule(sA, cpB, contact);
 				}
-				else if(cB.type == ColliderType::Cylinder)
+				else if (cB.type == ColliderType::Cylinder)
 				{
 					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
 					hit = CheckSphereCylinder(sA, cyB, contact);
 				}
 			}
 			// Box vs ...
-			else if(cA.type == ColliderType::Box)
+			else if (cA.type == ColliderType::Box)
 			{
 				Physics::OBB oA = { wcA.obb.center, wcA.obb.extents, wcA.obb.axes[0], wcA.obb.axes[1], wcA.obb.axes[2] };
 
@@ -1368,25 +1406,25 @@ void CollisionSystem::Update(Registry& registry)
 					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
 					hit = CheckOBBOBB(oA, oB, contact);
 				}
-				else if(cB.type == ColliderType::Sphere)
+				else if (cB.type == ColliderType::Sphere)
 				{
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereOBB(sB, oA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
-				else if(cB.type == ColliderType::Capsule)
+				else if (cB.type == ColliderType::Capsule)
 				{
 					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
 					hit = CheckOBBCapsule(oA, cpB, contact);
 				}
-				else if(cB.type == ColliderType::Cylinder)
+				else if (cB.type == ColliderType::Cylinder)
 				{
 					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
 					hit = CheckOBBCylinder(oA, cyB, contact);
 				}
 			}
 			// Capsule vs ...
-			else if(cA.type == ColliderType::Capsule)
+			else if (cA.type == ColliderType::Capsule)
 			{
 				Physics::Capsule cpA = { wcA.capsule.start, wcA.capsule.end, wcA.capsule.radius };
 
@@ -1395,26 +1433,26 @@ void CollisionSystem::Update(Registry& registry)
 					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
 					hit = CheckCapsuleCapsule(cpA, cpB, contact);
 				}
-				else if(cB.type == ColliderType::Sphere)
+				else if (cB.type == ColliderType::Sphere)
 				{
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereCapsule(sB, cpA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
-				else if(cB.type == ColliderType::Box)
+				else if (cB.type == ColliderType::Box)
 				{
 					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
 					hit = CheckOBBCapsule(oB, cpA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
-				else if(cB.type == ColliderType::Cylinder)
+				else if (cB.type == ColliderType::Cylinder)
 				{
 					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
 					hit = CheckCapsuleCylinder(cpA, cyB, contact);
 				}
 			}
 			// Cylinder vs ...
-			else if(cA.type == ColliderType::Cylinder)
+			else if (cA.type == ColliderType::Cylinder)
 			{
 				Physics::Cylinder cyA = { wcA.cylinder.center, wcA.cylinder.axis, wcA.cylinder.height, wcA.cylinder.radius };
 
@@ -1423,19 +1461,19 @@ void CollisionSystem::Update(Registry& registry)
 					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
 					hit = CheckCylinderCylinder(cyA, cyB, contact);
 				}
-				else if(cB.type == ColliderType::Sphere)
+				else if (cB.type == ColliderType::Sphere)
 				{
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereCylinder(sB, cyA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
-				else if(cB.type == ColliderType::Capsule)
+				else if (cB.type == ColliderType::Capsule)
 				{
 					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
 					hit = CheckCapsuleCylinder(cpB, cyA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
-				else if(cB.type == ColliderType::Box)
+				else if (cB.type == ColliderType::Box)
 				{
 					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
 					hit = CheckOBBCylinder(oB, cyA, contact);
@@ -1445,16 +1483,56 @@ void CollisionSystem::Update(Registry& registry)
 
 			if (hit)
 			{
-				if(cA.isTrigger || cB.isTrigger) {
-					// trigger event
+				// TriggerならSolverには送らないが、イベントには残す
+				if (!cA.isTrigger && !cB.isTrigger)
+				{
+					contactsForSolver.push_back(contact);
 				}
-				else {
-					contacts.push_back(contact);
+
+				// イベント検知用に保存
+				EntityPair pair = (eA < eB) ? EntityPair(eA, eB) : EntityPair(eB, eA);
+				currentContactsMap[pair] = contact;
+
+				// Normal向き補正（保存時A->Bにする）
+				if (eA != pair.first)
+				{
+					// eB(pair.first) -> eA(pair.second) の向きとして保存されている場合、反転
+					// contact.normal は A->B なのでそのままでOK?
+					// ここはイベントで使う時に注意が必要
 				}
 			}
 		}
+	});
+
+	// 6. イベント発行（Enter / Stay / Exit）
+	// Exit: 前回あって今回ない
+	for (auto& prev : g_prevContacts)
+	{
+		if (currentContactsMap.find(prev.first) == currentContactsMap.end())
+		{
+			eventQueue.Add(prev.first.first, prev.first.second, Physics::CollisionState::Exit, { 0,0,0 });
+		}
+	}
+	// Enter / Stay
+	for (auto& curr : currentContactsMap)
+	{
+		if (g_prevContacts.find(curr.first) == g_prevContacts.end())
+		{
+			eventQueue.Add(curr.first.first, curr.first.second, Physics::CollisionState::Enter, curr.second.normal);
+		}
+		else
+		{
+			eventQueue.Add(curr.first.first, curr.first.second, Physics::CollisionState::Stay, curr.second.normal);
+		}
 	}
 
-	// 3. 物理応答
-	PhysicsSystem::Solve(registry, contacts);
+	// 履歴更新
+	g_prevContacts.clear();
+	for (auto& curr : currentContactsMap)
+	{
+		g_prevContacts[curr.first] = true;
+	}
+
+	// 7. 物理応答
+	PhysicsSystem::Solve(registry, contactsForSolver);
 }

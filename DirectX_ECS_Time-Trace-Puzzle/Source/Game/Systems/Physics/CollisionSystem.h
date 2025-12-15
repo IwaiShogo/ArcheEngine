@@ -93,7 +93,7 @@ public:
 
 private:
 	// --- “à•”ˆ— ---
-	void UpdateWorldCollider(const Transform& t, const Collider& c, WorldCollider& wc);
+	void UpdateWorldCollider(Registry& registry, Entity e, const Transform& t, const Collider& c, WorldCollider& wc);
 
 	// --- ”»’èŠÖ”ŒQi‰ñ“]‘Î‰j ---
 	// ‹… vs ...

@@ -235,7 +235,10 @@
     <ClInclude Include="Source\Game\Systems\Physics\PhysicsSystem.h">
       <Filter>Source\Game\Systems\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Systems\Physics\SpatialGrid.h">
+    <ClInclude Include="Source\Game\Systems\Physics\PhysicsEvents.h">
+      <Filter>Source\Game\Systems\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Systems\Physics\SpatialHash.h">
       <Filter>Source\Game\Systems\Physics</Filter>
     </ClInclude>
   </ItemGroup>
@@ -307,6 +310,9 @@
       <Filter>Source\Game\Systems\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\Systems\Physics\CollisionSystem.cpp">
+      <Filter>Source\Game\Systems\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Systems\Physics\PhysicsSystem.cpp">
       <Filter>Source\Game\Systems\Physics</Filter>
     </ClCompile>
   </ItemGroup>

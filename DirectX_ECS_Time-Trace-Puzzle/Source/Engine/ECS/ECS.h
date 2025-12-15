@@ -312,6 +312,24 @@ public:
 		return getPool<T>().has(entity);
 	}
 
+	// エンティティが有効（存在している）か判定
+	bool valid(Entity entity) const
+	{
+		// 1. 無効IDなら false
+		if (entity == NullEntity) return false;
+
+		// 2. まだ発行されていないIDなら false
+		if (entity >= nextEntity) return false;
+
+		// 3. 削除済みIDリスト(freeIds)に含まれているなら false
+		for (Entity id : freeIds)
+		{
+			if (id == entity) return false;
+		}
+
+		return true;
+	}
+
 	// 読み取り用
 	template<typename T>
 	const T& get(Entity entity) const

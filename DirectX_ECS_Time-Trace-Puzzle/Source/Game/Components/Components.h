@@ -109,15 +109,18 @@ enum class BodyType
  */
 struct Rigidbody
 {
-	BodyType type;
-	XMFLOAT3 velocity;
-	float mass;
-	float drag;
-	bool useGravity;
+	BodyType type;			// 物理挙動の種類
+	XMFLOAT3 velocity;		// 速度
+	float mass;				// 質量
+	float drag;				// 空気抵抗
+	bool useGravity;		// 重力を使用するか
 	bool freezeRotation;	// 回転を固定するか
+	float restitution;		// 反発係数 (0.0: 非反発 ～ 1.0: 完全反発)
+	float friction;			// 摩擦係数（0.0: ツルツル ～ 1.0: ザラザラ）
+	bool isGrounded;		// 地面に接地しているか（ジャンプ制御用など）
 
 	Rigidbody(BodyType t = BodyType::Dynamic, float m = 1.0f)
-		: type(t), velocity({ 0,0,0 }), mass(m), drag(0.1f), useGravity(true), freezeRotation(true)
+		: type(t), velocity({ 0,0,0 }), mass(m), drag(0.1f), useGravity(true), freezeRotation(true), restitution(0.5f), friction(0.5f), isGrounded(false)
 	{
 		// StaticやKinematicなら重力OFFにするなどの初期化
 		if (type != BodyType::Dynamic) useGravity = false;
@@ -153,6 +156,8 @@ constexpr Layer& operator|=(Layer& a, Layer b) { a = a | b; return a; }
 constexpr Layer& operator&=(Layer& a, Layer b) { a = a & b; return a; }
 // bool判定用
 constexpr bool operator&&(Layer a, Layer b) { return (static_cast<uint32_t>(a) & static_cast<uint32_t>(b)) != 0; }
+constexpr bool operator||(Layer a, Layer b) { return (static_cast<uint32_t>(a) | static_cast<uint32_t>(b)) != 0; }
+constexpr bool operator!(Layer a) { return static_cast<uint32_t>(a) == 0; }
 
 // ============================================================
 // 衝突マトリックス（グローバル設定）
@@ -164,19 +169,42 @@ constexpr bool operator&&(Layer a, Layer b) { return (static_cast<uint32_t>(a) &
 class PhysicsConfig
 {
 public:
-	// @brief	AとBが衝突するように設定する
-	static void SetCollision(Layer layerA, Layer layerB, bool enable = true)
+	// 設定用ヘルパー構造体（メソッドチェーン用）
+	struct RuleBuilder
 	{
-		if (enable)
+		Layer target;
+
+		RuleBuilder(Layer l) : target(l) {}
+
+		// @brief	衝突設定を追加
+		RuleBuilder& collidesWith(Layer other)
 		{
-			matrix[layerA] |= layerB;
-			matrix[layerB] |= layerA;
+			PhysicsConfig::matrix[target] |= other;
+			PhysicsConfig::matrix[other] |= target;	// 相手側にも自分を追加
+			return *this;
 		}
-		else
+
+		// @brief	衝突設定を除外
+		RuleBuilder& ignore(Layer other)
 		{
-			matrix[layerA] = matrix[layerA] & (~layerB);
-			matrix[layerB] = matrix[layerB] & (~layerA);
+			PhysicsConfig::matrix[target] &= ~other;
+			PhysicsConfig::matrix[other] &= ~target;	// 相手側からも自分を除外
+			return *this;
 		}
+	};
+
+	// @brief	設定開始（チェーンの起点）
+	static RuleBuilder Configure(Layer layer)
+	{
+		return RuleBuilder(layer);
+	}
+
+	// @brief	全レイヤーの設定をクリア
+	static void Reset()
+	{
+		matrix.clear();
+		// DefaultはAllと当たるのが基本
+		Configure(Layer::Default).collidesWith(Layer::All);
 	}
 
 	// @brief	指定レイヤーのマスクを取得（設定が無ければAllを返す）
@@ -186,19 +214,10 @@ public:
 		{
 			// 設定されていないレイヤーはデフォルトで「全て」と当たるようにするか、
 			// あるいは「Default」と同じにするか。ここでは安全のためDefault設定を返す。
-			if (matrix.find(Layer::Default) != matrix.end())
-				return matrix[Layer::Default];
-			else
-				return Layer::All;
+			if (matrix.find(Layer::Default) != matrix.end()) return matrix[Layer::Default];
+			else return Layer::All;
 		}
 		return matrix[layer];
-	}
-
-	// @brief	全レイヤーのマスクをクリア（初期化用）
-	static void ClearAll()
-	{
-		matrix.clear();
-		SetCollision(Layer::Default, Layer::All); // デフォルトは全てと当たる
 	}
 
 private:
@@ -206,7 +225,7 @@ private:
 };
 
 // ============================================================
-// コライダー定義
+// コライダー定義（メソッドチェーン対応）
 // ============================================================
 /**
  * @enum	ColliderType
@@ -231,7 +250,7 @@ struct ColliderInfo
 
 /**
  * @struct	Collider
- * @brief	当たり判定
+ * @brief	当たり判定（メソッドチェーン対応）
  */
 struct Collider
 {
@@ -274,6 +293,7 @@ struct Collider
 	Collider& setGroup(Layer l)
 	{
 		this->layer = l;
+		this->mask = PhysicsConfig::GetMask(l); // マスクも更新
 		return *this;
 	}
 

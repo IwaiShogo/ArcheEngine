@@ -181,8 +181,9 @@
     <ClInclude Include="Source\Game\Systems\Logic\InputSystem.h" />
     <ClInclude Include="Source\Game\Systems\Logic\LifetimeSystem.h" />
     <ClInclude Include="Source\Game\Systems\Physics\CollisionSystem.h" />
+    <ClInclude Include="Source\Game\Systems\Physics\PhysicsEvents.h" />
     <ClInclude Include="Source\Game\Systems\Physics\PhysicsSystem.h" />
-    <ClInclude Include="Source\Game\Systems\Physics\SpatialGrid.h" />
+    <ClInclude Include="Source\Game\Systems\Physics\SpatialHash.h" />
     <ClInclude Include="Source\Game\Utils\Prefab.h" />
     <ClInclude Include="Source\main.h" />
   </ItemGroup>
@@ -209,6 +210,7 @@
     <ClCompile Include="Source\Game\Scenes\SceneTitle.cpp" />
     <ClCompile Include="Source\Game\Systems\Graphics\RenderSystem.cpp" />
     <ClCompile Include="Source\Game\Systems\Physics\CollisionSystem.cpp" />
+    <ClCompile Include="Source\Game\Systems\Physics\PhysicsSystem.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>

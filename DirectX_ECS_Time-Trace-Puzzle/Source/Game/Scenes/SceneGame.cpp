@@ -32,7 +32,9 @@ void SceneGame::Initialize()
 	//IScene::Initialize();
 	m_world.getRegistry().clear();
 
-	// --- システムの登録 ---
+	// ------------------------------------------------------------
+	// システムの登録
+	// ------------------------------------------------------------
 	// 1. 入力
 	auto inputSys = m_world.registerSystem<InputSystem>();
 	inputSys->SetContext(m_context);
@@ -71,7 +73,23 @@ void SceneGame::Initialize()
 	Editor::Instance().Initialize();
 #endif // _DEBUG
 
+	// ------------------------------------------------------------
+	// レイヤーの設定
+	// ------------------------------------------------------------
+	PhysicsConfig::Reset();
+
+	// "Player" レイヤー設定
+	PhysicsConfig::Configure(Layer::Player)
+		.collidesWith(Layer::Enemy | Layer::Wall | Layer::Item);
+
+	// "Enemy" レイヤー設定
+	PhysicsConfig::Configure(Layer::Enemy)
+		.collidesWith(Layer::Player | Layer::Wall);
+
+
+	// ------------------------------------------------------------
 	// Entityの生成
+	// ------------------------------------------------------------
 	// Camera
 	m_world.create_entity()
 		.add<Tag>("MainCamera")
@@ -84,7 +102,7 @@ void SceneGame::Initialize()
 		.add<Tag>("Player")
 		.add<Transform>(XMFLOAT3(0.0f, 0.0f, 0.0f))
 		.add<Rigidbody>(BodyType::Dynamic)
-		.add<Collider>()
+		.add<Collider>(Collider::CreateCapsule(0.5f, 2.0f, Layer::Player))
 		.add<PlayerInput>()
 		.add<MeshComponent>("hero", XMFLOAT3(0.1f, 0.1f, 0.1f));
 
