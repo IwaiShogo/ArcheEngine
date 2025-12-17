@@ -31,6 +31,7 @@
 #include "Engine/Graphics/Renderers/SpriteRenderer.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
 #include "Engine/Graphics/Renderers/BillboardRenderer.h"
+#include "Engine/Graphics/Text/TextRenderer.h"
 #include "Engine/Graphics/Core/RenderTarget.h"
 
 // ImGuiのヘッダ
@@ -70,6 +71,7 @@ private:
 	std::unique_ptr<SpriteRenderer>		m_spriteRenderer;
 	std::unique_ptr<ModelRenderer>		m_modelRenderer;
 	std::unique_ptr<BillboardRenderer>	m_billboardRenderer;
+	std::unique_ptr<TextRenderer>		m_textRenderer;
 	Context m_appContext;
 
 	// エディタ用レンダーターゲット

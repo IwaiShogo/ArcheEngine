@@ -33,6 +33,9 @@ using EntityPair = std::pair<Entity, Entity>;
 static std::map<EntityPair, bool> g_prevContacts;
 static SpatialHash g_spatialHash;	// 空間ハッシュインスタンス
 
+Observer CollisionSystem::m_observer;
+bool CollisionSystem::m_isInitialized = false;
+
 // =================================================================
 // 数学・幾何ヘルパー関数
 // =================================================================
@@ -1529,4 +1532,14 @@ void CollisionSystem::Update(Registry& registry)
 
 	// 7. 物理応答
 	PhysicsSystem::Solve(registry, contactsForSolver);
+}
+
+void CollisionSystem::Reset()
+{
+	g_prevContacts.clear();
+	g_spatialHash.Clear();
+
+	// Observerリセット
+	m_observer.clear();
+	m_isInitialized = false;
 }

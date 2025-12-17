@@ -204,6 +204,8 @@ void Application::Initialize()
 	m_billboardRenderer = std::make_unique<BillboardRenderer>(m_device.Get(), m_context.Get());
 	m_billboardRenderer->Initialize();
 
+	m_textRenderer = std::make_unique<TextRenderer>(m_device.Get(), m_context.Get());
+	
 	Context context;
 	context.renderer = m_primitiveRenderer.get();
 	context.spriteRenderer = m_spriteRenderer.get();
@@ -288,6 +290,13 @@ void Application::Render()
 		// シーンマネージャに一時的にセットして描画
 		m_sceneManager.SetContext(sceneCtx);
 		m_sceneManager.Render();
+
+		m_textRenderer->Render(
+			m_sceneManager.GetWorld().getRegistry(),
+			m_renderTargetView.Get(),
+			m_sceneWindowSize.x,
+			m_sceneWindowSize.y
+		);
 	}
 
 	// ----------------------------------------------------
@@ -310,6 +319,13 @@ void Application::Render()
 		// シーンマネージャにセットして描画
 		m_sceneManager.SetContext(gameCtx);
 		m_sceneManager.Render();
+
+		m_textRenderer->Render(
+			m_sceneManager.GetWorld().getRegistry(),
+			m_renderTargetView.Get(),
+			m_sceneWindowSize.x,
+			m_sceneWindowSize.y
+		);
 	}
 
 	// 設定を元に戻す（Editor表示用）
@@ -488,6 +504,12 @@ void Application::Render()
 	m_sceneManager.GetContext().debug.useDebugCamera = false;
 	m_sceneManager.Render();
 
+	m_textRenderer->Render(
+		m_sceneManager.GetWorld().getRegistry(),
+		m_renderTargetView.Get(),
+		(float)Config::SCREEN_WIDTH,
+		(float)Config::SCREEN_HEIGHT
+	);
 #endif
 
 	m_swapChain->Present(Config::VSYNC_ENABLED ? 1: 0, 0);

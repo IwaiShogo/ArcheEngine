@@ -83,6 +83,9 @@
     <Filter Include="Source\Engine\Physics">
       <UniqueIdentifier>{3aed2441-5955-436b-aedf-a7b210d7e59e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\Graphics\Text">
+      <UniqueIdentifier>{df20ee47-ce81-4e76-bdee-d9870176284f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Library\ImGui\imconfig.h">
@@ -253,6 +256,15 @@
     <ClInclude Include="Source\Engine\Core\StringId.h">
       <Filter>Source\Engine\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\Resource\SceneSerializer.h">
+      <Filter>Source\Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\Text\FontManager.h">
+      <Filter>Source\Engine\Graphics\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\Text\TextRenderer.h">
+      <Filter>Source\Engine\Graphics\Text</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Library\ImGui\imgui.cpp">
@@ -332,6 +344,12 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\Physics\PhysicsSystem.cpp">
       <Filter>Source\Engine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\Text\FontManager.cpp">
+      <Filter>Source\Engine\Graphics\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Graphics\Text\TextRenderer.cpp">
+      <Filter>Source\Engine\Graphics\Text</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

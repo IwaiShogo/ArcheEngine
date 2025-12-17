@@ -22,6 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
+#include "Engine/Core/StringId.h"
 #include "Engine/Graphics/Core/Texture.h"
 #include "Engine/Graphics/Core/Model.h"
 #include "Engine/Audio/Sound.h"
@@ -29,6 +30,15 @@
 class ResourceManager
 {
 public:
+	// リソースの種類定義
+	enum class ResourceType
+	{
+		Texture,
+		Model,
+		Sound,
+		Font
+	};
+
 	// シングルトン取得
 	static ResourceManager& Instance()
 	{
@@ -45,11 +55,20 @@ public:
 	void LoadAll();
 
 	// テクスチャを取得
-	std::shared_ptr<Texture> GetTexture(const std::string& key);
+	std::shared_ptr<Texture> GetTexture(StringId key);
 	// モデル取得
-	std::shared_ptr<Model> GetModel(const std::string& key);
+	std::shared_ptr<Model> GetModel(StringId key);
 	// 音声取得
-	std::shared_ptr<Sound> GetSound(const std::string& key);
+	std::shared_ptr<Sound> GetSound(StringId key);
+
+
+	// --- エディタ連携用機能 ---
+
+	// IDから元のファイルパスを取得（表示用）
+	std::string GetPathByKey(StringId key, ResourceType type);
+
+	// パスをキーとして動的に登録
+	void RegisterResource(StringId key, const std::string& path, ResourceType type);
 
 	// デバッグ描画
 	void OnInspector();
@@ -69,17 +88,15 @@ private:
 
 	ID3D11Device* m_device = nullptr;
 
-	// テクスチャ用キャッシュ
-	std::map<std::string, std::string> m_texturePaths;
-	std::map<std::string, std::shared_ptr<Texture>> m_textures;
+	// パス管理用（StringId -> FilePath）
+	std::unordered_map<StringId, std::string> m_texturePaths;
+	std::unordered_map<StringId, std::string> m_modelPaths;
+	std::unordered_map<StringId, std::string> m_soundPaths;
 
-	// モデル用キャッシュ
-	std::map<std::string, std::string> m_modelPaths;
-	std::map<std::string, std::shared_ptr<Model>> m_models;
-
-	// サウンド用キャッシュ
-	std::map<std::string, std::string> m_soundPaths;
-	std::map<std::string, std::shared_ptr<Sound>> m_sounds;
+	// リソース本体（StringId -> Resource）
+	std::unordered_map<StringId, std::shared_ptr<Texture>> m_textures;
+	std::unordered_map<StringId, std::shared_ptr<Model>> m_models;
+	std::unordered_map<StringId, std::shared_ptr<Sound>> m_sounds;
 };
 
 #endif // !___RESOURCE_MANAGER_H___

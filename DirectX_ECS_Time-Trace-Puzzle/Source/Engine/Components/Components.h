@@ -57,19 +57,19 @@ struct Transform
 	XMFLOAT3 rotation;	// pitch, yaw, roll (Euler angles in degrees or radians)
 	XMFLOAT3 scale;		// x, y, z
 
+	XMFLOAT4X4 worldMatrix;
+
 	// 行列取得ヘルパー
 	XMMATRIX GetWorldMatrix() const
 	{
-		return	XMMatrixScaling(scale.x, scale.y, scale.z) *
-				XMMatrixRotationRollPitchYaw(
-					XMConvertToRadians(rotation.x),
-					XMConvertToRadians(rotation.y),
-					XMConvertToRadians(rotation.z)) *
-				XMMatrixTranslation(position.x, position.y, position.z);
+		return XMLoadFloat4x4(&worldMatrix);
 	}
 
 	Transform(XMFLOAT3 p = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 r = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 s = { 1.0f, 1.0f, 1.0f })
-		: position(p), rotation(r), scale(s) {}
+		: position(p), rotation(r), scale(s)
+	{
+		XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+	}
 };
 
 /**
@@ -343,7 +343,7 @@ struct Collider
 	// ------------------------------------------------------------
 	// Static Creator Methods
 	// ------------------------------------------------------------
-	struct Collider CreateBox(float x, float y, float z, Layer l = Layer::Default)
+	static Collider CreateBox(float x, float y, float z, Layer l = Layer::Default)
 	{
 		return Collider(ColliderInfo{ ColliderType::Box, l, false, { x, y, z }, { 0,0,0 } });
 	}
@@ -429,11 +429,11 @@ struct PlayerInput
  */
 struct MeshComponent
 {
-	std::string modelKey;	// ResourceManagerのキー
+	StringId modelKey;	// ResourceManagerのキー
 	XMFLOAT3 scaleOffset;	// モデル固有のスケール補正（アセットが巨大/極小な場合用）
 	XMFLOAT4 color;			// マテリアルカラー乗算用
 
-	MeshComponent(const std::string& key = "", const XMFLOAT3& scale = {1,1,1}, const XMFLOAT4& c = {1, 1, 1, 1})
+	MeshComponent(StringId key = "", const XMFLOAT3& scale = {1,1,1}, const XMFLOAT4& c = {1, 1, 1, 1})
 		: modelKey(key), scaleOffset(scale), color(c) {}
 };
 
@@ -443,12 +443,12 @@ struct MeshComponent
  */
 struct SpriteComponent
 {
-	std::string textureKey;	// ResourceManagerで使うキー
+	StringId textureKey;	// ResourceManagerで使うキー
 	float width, height;	// 描画サイズ（ピクセル）
 	XMFLOAT4 color;			// 色と透明度
 	XMFLOAT2 pivot;			// 中心点（0.0 ~ 1.0）デフォルトは左上（0, 0）
 
-	SpriteComponent(const std::string& key = "", float w = 0.0f, float h = 0.0f, const XMFLOAT4& c = { 1, 1, 1, 1 }, const XMFLOAT2& p = { 0, 0 })
+	SpriteComponent(StringId key = "", float w = 0.0f, float h = 0.0f, const XMFLOAT4& c = { 1, 1, 1, 1 }, const XMFLOAT2& p = { 0, 0 })
 		: textureKey(key), width(w), height(h), color(c), pivot(p) {}
 };
 
@@ -458,13 +458,33 @@ struct SpriteComponent
  */
 struct BillboardComponent
 {
-	std::string textureKey;
+	StringId textureKey;
 	XMFLOAT2 size;	// 幅、高さ
 	XMFLOAT4 color;
 
-	BillboardComponent(const std::string& key = "", float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1,1,1,1 })
+	BillboardComponent(StringId key = "", float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1,1,1,1 })
 		: textureKey(key), size({ w, h }), color(c) {
 	}
+};
+
+/**
+ * @struct	TextComponent
+ * @brief	テキスト描画（DirectWrite）
+ */
+struct TextComponent
+{
+	std::string text;
+	StringId fontKey;	// フォント名（例: "Meiryo", "CustomFont"）
+	float fontSize;		// 基本サイズ（1080p基準など）
+	XMFLOAT4 color;		// カラー
+	XMFLOAT2 offset;	// 親Transformからのオフセット
+
+	// レイアウト設定
+	float maxWidth = 0.0f;	// 0なら制限なし
+	bool centerAlign = false;
+
+	TextComponent(const std::string& t = "Text", StringId font = "Default", float size = 24.0f, const XMFLOAT4& c = { 1, 1, 1, 1 })
+		: text(t), fontKey(font), fontSize(size), color(c), offset({ 0, 0 }) {}
 };
 
 // ============================================================
@@ -477,7 +497,7 @@ struct BillboardComponent
  */
 struct AudioSource
 {
-	std::string soundKey;	// ResourceManagerのキー
+	StringId soundKey;	// ResourceManagerのキー
 	float volume;			// 基本音量
 	float range;			// 音が聞こえる最大距離（3Dサウンド用）
 	bool isLoop;			// ループするか
@@ -486,7 +506,7 @@ struct AudioSource
 	// 内部状態管理用
 	bool isPlaying = false;
 
-	AudioSource(const std::string& key = "", float vol = 1.0f, float r = 20.0f, bool loop = false, bool awake = false)
+	AudioSource(StringId key = "", float vol = 1.0f, float r = 20.0f, bool loop = false, bool awake = false)
 		: soundKey(key), volume(vol), range(r), isLoop(loop), playOnAwake(awake) {}
 };
 

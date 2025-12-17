@@ -27,6 +27,7 @@
 #include "Engine/Core/Context.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Scene/SceneManager.h"
+#include "Engine/Resource/SceneSerializer.h"
 
 class SystemWindow
 	: public EditorWindow
@@ -70,6 +71,29 @@ public:
 		}
 		ImGui::Text("Total Time: %.2f s", Time::TotalTime());
 		ImGui::Separator();
+
+		// シーン操作
+		ImGui::Separator();
+		ImGui::Text("Scene Management");
+
+		static char sceneNameBuf[64] = "Scene01";
+		ImGui::InputText("Filename", sceneNameBuf, sizeof(sceneNameBuf));
+
+		if (ImGui::Button("Save Scene"))
+		{
+			std::string path = "Resources/Scenes/" + std::string(sceneNameBuf) + ".json";
+			// ディレクトリ作成
+			std::filesystem::create_directories("Resources/Scenes");
+			SceneSerializer::SaveScene(world, path);
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Load Scene"))
+		{
+			std::string path = "Resources/Scenes/" + std::string(sceneNameBuf) + ".json";
+			SceneSerializer::LoadScene(world, path);
+		}
 
 		// 2. 表示切替
 		if (ImGui::CollapsingHeader("Display Settings", ImGuiTreeNodeFlags_DefaultOpen))

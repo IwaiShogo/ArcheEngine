@@ -125,13 +125,25 @@ void SceneGame::Initialize()
 	m_world.create_entity()
 		.add<Tag>("Enemy")
 		.add<Transform>(XMFLOAT3(5.0f, 0.0f, 0.0f))
-		.add<Collider>();
+		.add<Collider>()
+		.add<Rigidbody>();
 
 	// UI
 	m_world.create_entity()
 		.add<Tag>("UI")
 		.add<Transform>(XMFLOAT3(50.0f, 50.0f, 0.0f))
 		.add<SpriteComponent>("test", 64.0f, 64.0f);
+
+	m_world.create_entity()
+		.add<Tag>("Floor")
+		.add<Transform>(XMFLOAT3(1.0f, 0.0f, 0.0f))
+		.add<Collider>(Collider::CreateBox(10.0f, 1.0f, 10.0f))
+		.add<Rigidbody>(BodyType::Static);
+
+	m_world.create_entity()
+		.add<Tag>("Text")
+		.add<Transform>(XMFLOAT3(10.0f, 10.0f, 0.0f))
+		.add<TextComponent>("Draw Text");
 }
 
 void SceneGame::Finalize()

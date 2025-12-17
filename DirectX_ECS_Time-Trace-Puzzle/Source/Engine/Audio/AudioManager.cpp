@@ -22,11 +22,6 @@
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Core/Time.h"
-#include "imgui.h"
-
-#include <iostream>
-#include <algorithm>
-#include <cmath>
 
 void AudioManager::Initialize()
 {
@@ -116,7 +111,7 @@ void AudioManager::Finalize()
 	CoUninitialize();
 }
 
-void AudioManager::PlaySE(const std::string& key, float volume, float pitch)
+void AudioManager::PlaySE(StringId key, float volume, float pitch)
 {
 	// 1. データ取得 (ResourceManager経由)
 	 auto sound = ResourceManager::Instance().GetSound(key);
@@ -145,7 +140,7 @@ void AudioManager::PlaySE(const std::string& key, float volume, float pitch)
 	
 }
 
-void AudioManager::Play3DSE(const std::string& key, const XMFLOAT3& emitterPos, const XMFLOAT3& listenerPos, float range, float volume)
+void AudioManager::Play3DSE(StringId key, const XMFLOAT3& emitterPos, const XMFLOAT3& listenerPos, float range, float volume)
 {
 	float dx = emitterPos.x - listenerPos.x;
 	float dy = emitterPos.y - listenerPos.y;
@@ -161,7 +156,7 @@ void AudioManager::Play3DSE(const std::string& key, const XMFLOAT3& emitterPos, 
 	m_soundEvents.push_back({ key, emitterPos, 1.5f });
 }
 
-void AudioManager::PlayBGM(const std::string& key, float volume, bool loop)
+void AudioManager::PlayBGM(StringId key, float volume, bool loop)
 {
 	// 既に再生中なら止める
 	StopBGM();

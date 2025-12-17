@@ -21,6 +21,7 @@
 #define ___COLLISION_SYSTEM_H___
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Physics/PhysicsSystem.h"
@@ -31,8 +32,6 @@
  */
 namespace Physics
 {
-	using namespace DirectX;
-	
 	/**
 	 * @struct	Sphere
 	 * @brief	球
@@ -91,6 +90,8 @@ public:
 
 	static Entity Raycast(Registry& registry, const XMFLOAT3& rayOrigin, const XMFLOAT3& rayDir, float& outDist);
 
+	static void Reset();
+
 private:
 	// --- 内部処理 ---
 	void UpdateWorldCollider(Registry& registry, Entity e, const Transform& t, const Collider& c, WorldCollider& wc);
@@ -115,8 +116,8 @@ private:
 
 private:
 	// 変更検知用
-	Observer m_observer;
-	bool m_isInitialized = false;
+	static Observer m_observer;
+	static bool m_isInitialized;
 };
 
 #endif // !___COLLISION_SYSTEM_H___

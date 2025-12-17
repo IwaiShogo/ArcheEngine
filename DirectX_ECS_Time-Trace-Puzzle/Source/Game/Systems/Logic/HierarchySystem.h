@@ -43,31 +43,45 @@ public:
 					// 1. ローカル行列を作る (S * R * T)
 					DirectX::XMMATRIX localMat =
 						DirectX::XMMatrixScaling(t.scale.x, t.scale.y, t.scale.z) *
-						DirectX::XMMatrixRotationRollPitchYaw(t.rotation.x, t.rotation.y, t.rotation.z) *
+						DirectX::XMMatrixRotationRollPitchYaw(
+							DirectX::XMConvertToRadians(t.rotation.x), // 度数法なら変換が必要
+							DirectX::XMConvertToRadians(t.rotation.y),
+							DirectX::XMConvertToRadians(t.rotation.z)) *
 						DirectX::XMMatrixTranslation(t.position.x, t.position.y, t.position.z);
 
 					// 2. 親の行列を掛けてワールド行列にする
-					// 結果を Transform 自身の GetWorldMatrix() に保存！
-					t.GetWorldMatrix() = localMat * parentMatrix;
+					DirectX::XMMATRIX worldMat = localMat * parentMatrix;
 
-					// 3. 子供たちにも自分のワールド行列を渡して更新させる
+					// ★修正: 計算結果をメンバ変数にストアする
+					DirectX::XMStoreFloat4x4(&t.worldMatrix, worldMat);
+
+					// 3. 子供たちにも「今計算したワールド行列」を渡して更新させる
 					if (registry.has<Relationship>(entity)) {
 						for (Entity child : registry.get<Relationship>(entity).children) {
-							updateMatrix(child, t.GetWorldMatrix());
+							// ★修正: 計算済みの worldMat を渡す
+							updateMatrix(child, worldMat);
 						}
 					}
 				}
 			};
 
-		// --- ルート（親なし）エンティティを探して更新開始 ---
+		// --- ルート（親を持たないエンティティ）から更新開始 ---
+
+		// 1. 全エンティティから「Relationshipを持つが、Parentが無効」なものを探す
+		//	  もしくは「Relationshipを持っていない」エンティティもルート扱い
+
+		// ここでは全エンティティを走査してルートを探す簡易実装
 		registry.view<Transform>().each([&](Entity e, Transform& t) {
 			bool isRoot = true;
 			if (registry.has<Relationship>(e)) {
-				if (registry.get<Relationship>(e).parent != NullEntity) isRoot = false;
+				// 親がいるならルートではない
+				if (registry.get<Relationship>(e).parent != NullEntity) {
+					isRoot = false;
+				}
 			}
 
 			if (isRoot) {
-				// ルートの親行列は単位行列
+				// ルートの親行列は「単位行列」
 				updateMatrix(e, DirectX::XMMatrixIdentity());
 			}
 			});

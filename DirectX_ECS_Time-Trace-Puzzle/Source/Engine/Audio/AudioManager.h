@@ -23,21 +23,13 @@
 #define ___AUDIO_MANAGER_H___
 
 // ===== インクルード =====
-#include <xaudio2.h>
-#include <wrl/client.h>
-#include <memory>
-#include <string>
-#include <map>
-#include <vector>
-#include <DirectXMath.h>
+#include "Engine/pch.h"
 #include "Engine/Audio/Sound.h"
-
-using namespace DirectX;
-using Microsoft::WRL::ComPtr;
+#include "Engine/Core/StringId.h"
 
 struct SoundEvent
 {
-	std::string key;
+	StringId key;
 	XMFLOAT3 position;
 	float time;	// 残り表示時間
 };
@@ -62,11 +54,11 @@ public:
 	// --- 再生機能 ---
 
 	// SE再生 (Fire and Forget: 鳴らしっぱなし)
-	void PlaySE(const std::string& key, float volume = 1.0f, float pitch = 0.0f);
-	void Play3DSE(const std::string& key, const XMFLOAT3& emitterPos, const XMFLOAT3& listenerPos, float range, float volume);
+	void PlaySE(StringId key, float volume = 1.0f, float pitch = 0.0f);
+	void Play3DSE(StringId key, const XMFLOAT3& emitterPos, const XMFLOAT3& listenerPos, float range, float volume);
 
 	// BGM再生 (ループ再生、BGMは同時に1つだけ)
-	void PlayBGM(const std::string& key, float volume = 1.0f, bool loop = true);
+	void PlayBGM(StringId key, float volume = 1.0f, bool loop = true);
 	void StopBGM(float fadeOutSeconds = 0.0f);
 
 	// --- 全体設定 ---

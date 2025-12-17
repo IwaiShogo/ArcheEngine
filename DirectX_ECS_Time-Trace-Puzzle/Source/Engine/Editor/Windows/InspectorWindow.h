@@ -88,7 +88,7 @@ public:
 				MeshComponent& m = reg.get<MeshComponent>(selected);
 
 				// ファイル選択 (Modelsフォルダ)
-				FileSelector("Model", m.modelKey, "Resources/Models", ".fbx"); // .objなども可
+				FileSelector("Model", m.modelKey, "Resources/Models", ".fbx", ResourceManager::ResourceType::Model); // .objなども可
 
 				ImGui::ColorEdit4("Color", &m.color.x);
 				ImGui::DragFloat3("Scale Offset", &m.scaleOffset.x, 0.01f);
@@ -102,7 +102,7 @@ public:
 			if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
 				SpriteComponent& s = reg.get<SpriteComponent>(selected);
 
-				FileSelector("Texture", s.textureKey, "Resources/Textures", ".png");
+				FileSelector("Texture", s.textureKey, "Resources/Textures", ".png", ResourceManager::ResourceType::Texture);
 
 				ImGui::DragFloat("Width", &s.width);
 				ImGui::DragFloat("Height", &s.height);
@@ -118,7 +118,7 @@ public:
 			if (ImGui::CollapsingHeader("Billboard", ImGuiTreeNodeFlags_DefaultOpen)) {
 				BillboardComponent& b = reg.get<BillboardComponent>(selected);
 
-				FileSelector("Texture", b.textureKey, "Resources/Textures", ".png");
+				FileSelector("Texture", b.textureKey, "Resources/Textures", ".png", ResourceManager::ResourceType::Texture);
 
 				ImGui::DragFloat2("Size", &b.size.x);
 				ImGui::ColorEdit4("Color", &b.color.x);
@@ -132,7 +132,7 @@ public:
 			if (ImGui::CollapsingHeader("Audio Source", ImGuiTreeNodeFlags_DefaultOpen)) {
 				AudioSource& a = reg.get<AudioSource>(selected);
 
-				FileSelector("Sound", a.soundKey, "Resources/Sounds", ".wav");
+				FileSelector("Sound", a.soundKey, "Resources/Sounds", ".wav", ResourceManager::ResourceType::Sound);
 
 				ImGui::SliderFloat("Volume", &a.volume, 0.0f, 1.0f);
 				ImGui::DragFloat("Range", &a.range, 0.1f);
@@ -284,46 +284,64 @@ public:
 
 private:
 	// --------------------------------------------------------
-	// ファイル選択ヘルパー（ディレクトリ内を走査してコンボボックス表示）
+	// リソース選択用ヘルパー (StringId & ResourceType対応)
 	// --------------------------------------------------------
-	void FileSelector(const char* label, std::string& currentVal, const std::string& dir, const std::string& filterExt)
+	void FileSelector(const char* label, StringId& currentId, const std::string& dir, const std::string& filterExt, ResourceManager::ResourceType type)
 	{
-		if (ImGui::BeginCombo(label, currentVal.c_str()))
+		// 1. 表示名の取得
+		// StringIdからパスを取得を試みる
+		std::string preview = ResourceManager::Instance().GetPathByKey(currentId, type);
+
+		// 見つからない場合（未登録 or ID=0）
+		if (preview.empty()) {
+			if (currentId.GetHash() == 0) preview = "None";
+			else preview = currentId.c_str(); // Debug時のみハッシュ値または元文字列
+		}
+
+		// 2. コンボボックス描画
+		if (ImGui::BeginCombo(label, preview.c_str()))
 		{
 			namespace fs = std::filesystem;
 			if (fs::exists(dir)) {
-				// ディレクトリ内のファイルを列挙
 				for (const auto& entry : fs::recursive_directory_iterator(dir)) {
 					if (!entry.is_regular_file()) continue;
 
 					// 拡張子フィルタ
-					if (entry.path().extension() == filterExt) {
-						// パスを相対パス文字列として取得 (例: "Resources/Models/hero.fbx")
-						// ※Windowsのパス区切り文字 '\\' を '/' に統一すると扱いやすいですが、
-						// ResourceManagerがどちらでも読めるならそのままでOK
+					std::string ext = entry.path().extension().string();
+					if (ext == filterExt) { // 大文字小文字無視は省略
 						std::string path = entry.path().string();
-						std::replace(path.begin(), path.end(), '\\', '/'); // 統一
+						std::replace(path.begin(), path.end(), '\\', '/');
 
-						// ResourceManagerのキーとして扱うために、パス全体を使うか、
-						// あるいはファイル名だけ使うかはプロジェクトの方針次第ですが、
-						// ResourceManager::GetXXX は「登録済みキー」または「ファイルパス」を受け取るので
-						// ここではファイルパスを直接設定します。
+						StringId pathId(path);
+						bool isSelected = (currentId == pathId);
 
-						bool isSelected = (currentVal == path);
-						if (ImGui::Selectable(entry.path().filename().string().c_str(), isSelected)) {
-							currentVal = path;
-							// 必要ならここでリソースをロードする（ResourceManagerがよしなにやってくれるはず）
+						if (ImGui::Selectable(path.c_str(), isSelected)) {
+							// ★重要: 選択されたらResourceManagerに「パスをキーとして」登録する
+							ResourceManager::Instance().RegisterResource(pathId, path, type);
+							currentId = pathId;
 						}
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
+						if (isSelected) ImGui::SetItemDefaultFocus();
 					}
 				}
 			}
 			ImGui::EndCombo();
 		}
-		// D&D受け入れ (CreatorWindowなどからD&Dできるようにする場合)
-		// if (ImGui::BeginDragDropTarget()) ...
+
+		// 3. ドラッグ＆ドロップ受け入れ
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_PATH"))
+			{
+				const char* droppedPath = (const char*)payload->Data;
+				StringId newId(droppedPath);
+
+				// ドロップされたらResourceManagerに登録する
+				ResourceManager::Instance().RegisterResource(newId, droppedPath, type);
+
+				currentId = newId;
+			}
+			ImGui::EndDragDropTarget();
+		}
 	}
 };
 

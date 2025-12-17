@@ -20,13 +20,7 @@
 #ifndef ___SOUND_H___
 #define ___SOUND_H___
 
-#include <Windows.h>
-#include <xaudio2.h>
-#include <vector>
-#include <string>
-
-// ƒ‰ƒCƒuƒ‰ƒŠƒŠƒ“ƒN
-#pragma comment(lib, "xaudio2.lib")
+#include "Engine/pch.h"
 
 /**
  * @class	Sound

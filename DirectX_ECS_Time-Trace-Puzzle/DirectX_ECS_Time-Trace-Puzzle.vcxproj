@@ -172,12 +172,15 @@
     <ClInclude Include="Source\Engine\Graphics\Renderers\ModelRenderer.h" />
     <ClInclude Include="Source\Engine\Graphics\Renderers\PrimitiveRenderer.h" />
     <ClInclude Include="Source\Engine\Graphics\Renderers\SpriteRenderer.h" />
+    <ClInclude Include="Source\Engine\Graphics\Text\FontManager.h" />
+    <ClInclude Include="Source\Engine\Graphics\Text\TextRenderer.h" />
     <ClInclude Include="Source\Engine\pch.h" />
     <ClInclude Include="Source\Engine\Physics\CollisionSystem.h" />
     <ClInclude Include="Source\Engine\Physics\PhysicsEvents.h" />
     <ClInclude Include="Source\Engine\Physics\PhysicsSystem.h" />
     <ClInclude Include="Source\Engine\Physics\SpatialHash.h" />
     <ClInclude Include="Source\Engine\Resource\ResourceManager.h" />
+    <ClInclude Include="Source\Engine\Resource\SceneSerializer.h" />
     <ClInclude Include="Source\Engine\Resource\Serializer.h" />
     <ClInclude Include="Source\Engine\Scene\IScene.h" />
     <ClInclude Include="Source\Engine\Scene\SceneManager.h" />
@@ -236,6 +239,8 @@
     <ClCompile Include="Source\Engine\Graphics\Renderers\ModelRenderer.cpp" />
     <ClCompile Include="Source\Engine\Graphics\Renderers\PrimitiveRenderer.cpp" />
     <ClCompile Include="Source\Engine\Graphics\Renderers\SpriteRenderer.cpp" />
+    <ClCompile Include="Source\Engine\Graphics\Text\FontManager.cpp" />
+    <ClCompile Include="Source\Engine\Graphics\Text\TextRenderer.cpp" />
     <ClCompile Include="Source\Engine\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -94,32 +94,10 @@ public:
 		return e;
 	}
 
-private:
-	// --- ヘルパー関数 ---
-
-	// 保存用
-	template<typename T>
-	static void SerializeComponent(Registry& reg, Entity e, json& j, const std::string& key) {
-		if (reg.has<T>(e)) {
-			T& comp = reg.get<T>(e);
-			j[key] = ToJson(comp);
-		}
-	}
-
-	// 読み込み用
-	template<typename T>
-	static void DeserializeComponent(Registry& reg, Entity e, const json& j, const std::string& key) {
-		if (j.contains(key)) {
-			T comp;
-			FromJson(j[key], comp);
-			reg.emplace<T>(e, comp);
-		}
-	}
-
 	// --- 各コンポーネントの変換定義 (ToJson / FromJson) ---
 
 	// Tag
-	static json ToJson(const Tag& c) { return { {"name", c.name.c_str()}}; }
+	static json ToJson(const Tag& c) { return { {"name", c.name.c_str()} }; }
 	static void FromJson(const json& j, Tag& c) { c.name = j["name"].get<std::string>(); }
 
 	// Transform
@@ -144,16 +122,41 @@ private:
 		c.fov = j["fov"]; c.nearZ = j["near"]; c.farZ = j["far"]; c.aspect = j["aspect"];
 	}
 
+	// --------------------------------------------------------
+	// Relationship (親子関係) の保存・読み込み
+	// --------------------------------------------------------
+	static json ToJson(const Relationship& c) {
+		json j;
+		j["parent"] = (uint32_t)c.parent;
+
+		j["children"] = json::array();
+		for (Entity child : c.children) {
+			j["children"].push_back((uint32_t)child);
+		}
+		return j;
+	}
+
+	static void FromJson(const json& j, Relationship& c) {
+		if (j.contains("parent")) c.parent = (Entity)j["parent"].get<uint32_t>();
+
+		if (j.contains("children")) {
+			c.children.clear();
+			for (auto& childJson : j["children"]) {
+				c.children.push_back((Entity)childJson.get<uint32_t>());
+			}
+		}
+	}
+
 	// MeshComponent
 	static json ToJson(const MeshComponent& c) {
 		return {
-			{"key", c.modelKey},
+			{"key", c.modelKey.c_str()},
 			{"scale", {c.scaleOffset.x, c.scaleOffset.y, c.scaleOffset.z}},
 			{"color", {c.color.x, c.color.y, c.color.z, c.color.w}}
 		};
 	}
 	static void FromJson(const json& j, MeshComponent& c) {
-		c.modelKey = j["key"];
+		c.modelKey = StringId(j["key"].get<std::string>());
 		auto s = j["scale"]; c.scaleOffset = { s[0], s[1], s[2] };
 		auto col = j["color"]; c.color = { col[0], col[1], col[2], col[3] };
 	}
@@ -161,13 +164,13 @@ private:
 	// SpriteComponent
 	static json ToJson(const SpriteComponent& c) {
 		return {
-			{"key", c.textureKey}, {"w", c.width}, {"h", c.height},
+			{"key", c.textureKey.c_str()}, {"w", c.width}, {"h", c.height},
 			{"col", {c.color.x, c.color.y, c.color.z, c.color.w}},
 			{"piv", {c.pivot.x, c.pivot.y}}
 		};
 	}
 	static void FromJson(const json& j, SpriteComponent& c) {
-		c.textureKey = j["key"];
+		c.textureKey = StringId(j["key"].get<std::string>());
 		c.width = j["w"]; c.height = j["h"];
 		auto col = j["col"]; c.color = { col[0], col[1], col[2], col[3] };
 		auto piv = j["piv"]; c.pivot = { piv[0], piv[1] };
@@ -176,12 +179,12 @@ private:
 	// BillboardComponent
 	static json ToJson(const BillboardComponent& c) {
 		return {
-			{"key", c.textureKey}, {"w", c.size.x}, {"h", c.size.y},
+			{"key", c.textureKey.c_str()}, {"w", c.size.x}, {"h", c.size.y},
 			{"col", {c.color.x, c.color.y, c.color.z, c.color.w}}
 		};
 	}
 	static void FromJson(const json& j, BillboardComponent& c) {
-		c.textureKey = j["key"];
+		c.textureKey = StringId(j["key"].get<std::string>());
 		c.size = { j["w"], j["h"] };
 		auto col = j["col"]; c.color = { col[0], col[1], col[2], col[3] };
 	}
@@ -206,7 +209,11 @@ private:
 		json j;
 		j["type"] = (int)c.type;
 		j["offset"] = { c.offset.x, c.offset.y, c.offset.z };
-		// タイプに応じて保存内容を変える
+
+		// レイヤーとマスクを保存
+		j["layer"] = (uint32_t)c.layer;
+		j["mask"] = (uint32_t)c.mask;
+
 		if (c.type == ColliderType::Box) {
 			j["boxSize"] = { c.boxSize.x, c.boxSize.y, c.boxSize.z };
 		}
@@ -220,9 +227,14 @@ private:
 		j["isTrigger"] = c.isTrigger;
 		return j;
 	}
+
 	static void FromJson(const json& j, Collider& c) {
 		c.type = (ColliderType)j["type"];
 		auto o = j["offset"]; c.offset = { o[0], o[1], o[2] };
+
+		// レイヤーとマスクを復元
+		if (j.contains("layer")) c.layer = (Layer)j["layer"].get<uint32_t>();
+		if (j.contains("mask"))  c.mask = (Layer)j["mask"].get<uint32_t>();
 
 		if (j.contains("boxSize")) {
 			auto s = j["boxSize"]; c.boxSize = { s[0], s[1], s[2] };
@@ -246,12 +258,12 @@ private:
 	// AudioSource
 	static json ToJson(const AudioSource& c) {
 		return {
-			{"key", c.soundKey}, {"vol", c.volume},
+			{"key", c.soundKey.c_str()}, {"vol", c.volume},
 			{"range", c.range}, {"loop", c.isLoop}, {"awake", c.playOnAwake}
 		};
 	}
 	static void FromJson(const json& j, AudioSource& c) {
-		c.soundKey = j["key"];
+		c.soundKey = StringId(j["key"].get<std::string>());
 		c.volume = j["vol"];
 		c.range = j["range"];
 		c.isLoop = j["loop"];
@@ -265,6 +277,28 @@ private:
 	// Lifetime
 	static json ToJson(const Lifetime& c) { return { {"time", c.time} }; }
 	static void FromJson(const json& j, Lifetime& c) { c.time = j["time"]; }
+
+private:
+	// --- ヘルパー関数 ---
+
+	// 保存用
+	template<typename T>
+	static void SerializeComponent(Registry& reg, Entity e, json& j, const std::string& key) {
+		if (reg.has<T>(e)) {
+			T& comp = reg.get<T>(e);
+			j[key] = ToJson(comp);
+		}
+	}
+
+	// 読み込み用
+	template<typename T>
+	static void DeserializeComponent(Registry& reg, Entity e, const json& j, const std::string& key) {
+		if (j.contains(key)) {
+			T comp;
+			FromJson(j[key], comp);
+			reg.emplace<T>(e, comp);
+		}
+	}
 };
 
 #endif // !___SERIALIZER_H___

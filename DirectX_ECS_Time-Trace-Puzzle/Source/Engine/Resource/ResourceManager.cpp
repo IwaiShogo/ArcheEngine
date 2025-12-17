@@ -21,6 +21,7 @@
 #include "Engine/pch.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
+#include "Engine/Core/Logger.h"
 
 // ファイルヘッダ構造体
 struct RIFF_HEADER
@@ -66,12 +67,8 @@ void ResourceManager::LoadManifest(const std::string& jsonPath) {
 			for (auto& element : j["textures"].items()) {
 				std::string key = element.key();
 				std::string path = element.value()["path"];
-
-				// パスを登録
+				// パスを登録 (std::string -> StringId は暗黙変換される)
 				m_texturePaths[key] = path;
-
-				// ログ (任意)
-				// OutputDebugStringA(("Registered Texture: " + key + " -> " + path + "\n").c_str());
 			}
 		}
 		// "models" セクションを読み込む
@@ -79,8 +76,6 @@ void ResourceManager::LoadManifest(const std::string& jsonPath) {
 			for (auto& element : j["models"].items()) {
 				std::string key = element.key();
 				std::string path = element.value()["path"];
-
-				// パスを登録
 				m_modelPaths[key] = path;
 			}
 		}
@@ -89,8 +84,6 @@ void ResourceManager::LoadManifest(const std::string& jsonPath) {
 			for (auto& element : j["sounds"].items()) {
 				std::string key = element.key();
 				std::string path = element.value()["path"];
-
-				// パスを登録
 				m_soundPaths[key] = path;
 			}
 		}
@@ -116,71 +109,96 @@ void ResourceManager::LoadAll()
 	}
 }
 
-// キー名から取得
-std::shared_ptr<Texture> ResourceManager::GetTexture(const std::string& key) {
-	// 1. キーが登録されているか確認
-	auto itPath = m_texturePaths.find(key);
-	if (itPath == m_texturePaths.end()) {
-		OutputDebugStringA(("Texture Key Not Found: " + key + "\n").c_str());
-
-		// 未登録の場合、キー自体をパスとみなしてトライする（開発中の利便性のため）
-		// return LoadTextureFromFile(key); 
-		return nullptr;
-	}
-
-	std::string filepath = itPath->second;
-
-	// 2. キャッシュチェック
-	auto itCache = m_textures.find(filepath);
+// キー名から取得 (引数を StringId に変更)
+std::shared_ptr<Texture> ResourceManager::GetTexture(StringId key) {
+	// 1. キャッシュチェック (StringIdで高速検索)
+	auto itCache = m_textures.find(key);
 	if (itCache != m_textures.end()) {
 		return itCache->second;
 	}
 
+	// 2. パスリストチェック
+	auto itPath = m_texturePaths.find(key);
+	if (itPath == m_texturePaths.end()) {
+		// 未登録の場合はnullptr
+		// OutputDebugStringA("Texture Key Not Found\n"); 
+		return nullptr;
+	}
+
 	// 3. ロードしてキャッシュ
-	return LoadTextureFromFile(filepath);
+	std::string filepath = itPath->second;
+	auto texture = LoadTextureFromFile(filepath);
+	if (texture) {
+		m_textures[key] = texture;
+	}
+	return texture;
 }
 
-std::shared_ptr<Model> ResourceManager::GetModel(const std::string& key)
+std::shared_ptr<Model> ResourceManager::GetModel(StringId key)
 {
+	auto itCache = m_models.find(key);
+	if (itCache != m_models.end()) return itCache->second;
+
 	auto itPath = m_modelPaths.find(key);
 	if (itPath == m_modelPaths.end()) return nullptr;
 
 	std::string filepath = itPath->second;
-	auto itCache = m_models.find(filepath);
-	if (itCache != m_models.end()) return itCache->second;
-
-	return LoadModelFromFile(filepath);
+	auto model = LoadModelFromFile(filepath);
+	if (model) {
+		m_models[key] = model;
+	}
+	return model;
 }
 
-std::shared_ptr<Sound> ResourceManager::GetSound(const std::string& key)
+std::shared_ptr<Sound> ResourceManager::GetSound(StringId key)
 {
-	// 1. キー登録チェック
-	auto itPath = m_soundPaths.find(key);
-	std::string filepath;
-
-	if (itPath != m_soundPaths.end())
-	{
-		filepath = itPath->second;
-	}
-	else
-	{
-		filepath = key;
-	}
-
-	// 2. キャッシュをチェック
-	auto itCache = m_sounds.find(filepath);
+	auto itCache = m_sounds.find(key);
 	if (itCache != m_sounds.end()) return itCache->second;
 
-	// 3. ロード
-	return LoadWav(filepath);
+	auto itPath = m_soundPaths.find(key);
+	if (itPath == m_soundPaths.end()) return nullptr;
+
+	std::string filepath = itPath->second;
+	auto sound = LoadWav(filepath);
+	if (sound) {
+		m_sounds[key] = sound;
+	}
+	return sound;
 }
 
-// 内部ロード関数 (前回のLoadTextureの中身を移動)
-std::shared_ptr<Texture> ResourceManager::LoadTextureFromFile(const std::string& filepath) {
-	// ※ 前回の LoadTexture の中身をそのままここにコピペしてください ※
-	// (キャッシュチェック部分は削除してOKですが、残っていても二重チェックになるだけなので問題ありません)
+std::string ResourceManager::GetPathByKey(StringId key, ResourceType type)
+{
+	if (type == ResourceType::Texture) {
+		auto it = m_texturePaths.find(key);
+		if (it != m_texturePaths.end()) return it->second;
+	}
+	else if (type == ResourceType::Model) {
+		auto it = m_modelPaths.find(key);
+		if (it != m_modelPaths.end()) return it->second;
+	}
+	else if (type == ResourceType::Sound) {
+		auto it = m_soundPaths.find(key);
+		if (it != m_soundPaths.end()) return it->second;
+	}
+	return ""; // 見つからない
+}
 
-	// --- 以下コピペ用再掲 ---
+void ResourceManager::RegisterResource(StringId key, const std::string& path, ResourceType type)
+{
+	// 既に登録済みなら何もしない（上書き防止）
+	if (type == ResourceType::Texture) {
+		if (m_texturePaths.find(key) == m_texturePaths.end()) m_texturePaths[key] = path;
+	}
+	else if (type == ResourceType::Model) {
+		if (m_modelPaths.find(key) == m_modelPaths.end()) m_modelPaths[key] = path;
+	}
+	else if (type == ResourceType::Sound) {
+		if (m_soundPaths.find(key) == m_soundPaths.end()) m_soundPaths[key] = path;
+	}
+}
+
+// 内部ロード関数
+std::shared_ptr<Texture> ResourceManager::LoadTextureFromFile(const std::string& filepath) {
 	if (!std::filesystem::exists(filepath)) {
 		OutputDebugStringA(("Texture Not Found: " + filepath + "\n").c_str());
 		return nullptr;
@@ -193,29 +211,25 @@ std::shared_ptr<Texture> ResourceManager::LoadTextureFromFile(const std::string&
 
 	if (ext == ".dds" || ext == ".DDS")
 		hr = DirectX::LoadFromDDSFile(wpath.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
-	else if (ext == ".tga" || ext == ".TGA") {}
-		//hr = DirectX::LoadFromTGAFile(wpath.c_str(), nullptr, image);
 	else
 		hr = DirectX::LoadFromWICFile(wpath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, image);
 
 	if (FAILED(hr)) return nullptr;
 
 	auto texture = std::make_shared<Texture>();
-	texture->filepath = filepath;
+	texture->filepath = filepath; // ここで保存されたパスを使います
 	texture->width = static_cast<int>(image.GetMetadata().width);
 	texture->height = static_cast<int>(image.GetMetadata().height);
 
 	hr = DirectX::CreateShaderResourceView(m_device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), &texture->srv);
 	if (FAILED(hr)) return nullptr;
 
-	m_textures[filepath] = texture; // パスでキャッシュ
 	return texture;
 }
 
 std::shared_ptr<Model> ResourceManager::LoadModelFromFile(const std::string& filepath)
 {
 	Assimp::Importer importer;
-	// 読み込みフラグ: 三角形化 | UV反転（DirectX用） | 法線計算
 	const aiScene* scene = importer.ReadFile(
 		filepath,
 		aiProcess_Triangulate | 
@@ -229,15 +243,11 @@ std::shared_ptr<Model> ResourceManager::LoadModelFromFile(const std::string& fil
 	}
 
 	auto model = std::make_shared<Model>();
-	model->filepath = filepath;
+	model->filepath = filepath; // ここで保存されたパスを使います
 
-	// ディレクトリパスの取得（テクスチャ読み込み用）
 	std::string directory = std::filesystem::path(filepath).parent_path().string();
-
-	// ノード解析開始
 	ProcessNode(scene->mRootNode, scene, model, directory);
 
-	m_models[filepath] = model;
 	return model;
 }
 
@@ -259,9 +269,8 @@ std::shared_ptr<Sound> ResourceManager::LoadWav(const std::string& filepath)
 	}
 
 	auto sound = std::make_shared<Sound>();
-	sound->filepath = filepath;
+	sound->filepath = filepath; // ここで保存されたパスを使います
 
-	// チャンク解析
 	while (!file.eof())
 	{
 		CHUNK_HEADER chunk;
@@ -270,10 +279,7 @@ std::shared_ptr<Sound> ResourceManager::LoadWav(const std::string& filepath)
 
 		if (strncmp(chunk.chunkId, "fmt ", 4) == 0)
 		{
-			// フォーマット情報
 			file.read((char*)&sound->wfx, std::min((size_t)chunk.chunkSize, sizeof(WAVEFORMATEX)));
-
-			// 余分なデータがあればスキップ
 			if (chunk.chunkSize > sizeof(WAVEFORMATEX))
 			{
 				file.seekg(chunk.chunkSize - sizeof(WAVEFORMATEX), std::ios::cur);
@@ -281,44 +287,35 @@ std::shared_ptr<Sound> ResourceManager::LoadWav(const std::string& filepath)
 		}
 		else if (strncmp(chunk.chunkId, "data", 4) == 0)
 		{
-			// 波形データ
 			sound->buffer.resize(chunk.chunkSize);
 			file.read((char*)sound->buffer.data(), chunk.chunkSize);
 
-			// XAudio2用バッファ設定
 			sound->xBuffer.pAudioData = sound->buffer.data();
 			sound->xBuffer.AudioBytes = chunk.chunkSize;
 			sound->xBuffer.Flags = XAUDIO2_END_OF_STREAM;
 
-			// 再生時間の計算
 			if (sound->wfx.nAvgBytesPerSec > 0)
 			{
 				sound->duration = static_cast<float>(chunk.chunkSize) / static_cast<float>(sound->wfx.nAvgBytesPerSec);
 			}
-
-			// 読み込み完了
 			break;
 		}
 		else
 		{
-			// 知らないチャンクはスキップ
 			file.seekg(chunk.chunkSize, std::ios::cur);
 		}
 	}
 
-	m_sounds[filepath] = sound;
 	return sound;
 }
 
 void ResourceManager::ProcessNode(aiNode* node, const aiScene* scene, std::shared_ptr<Model> model, const std::string& directory)
 {
-	// ノード内の全メッシュを処理
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		model->meshes.push_back(ProcessMesh(mesh, scene, directory));
 	}
-	// 子ノードへ
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
 		ProcessNode(node->mChildren[i], scene, model, directory);
@@ -330,16 +327,12 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 	std::vector<ModelVertex> vertices;
 	std::vector<unsigned int> indices;
 
-	// 1. 頂点情報の抽出
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		ModelVertex vertex;
-
-		// 位置
 		vertex.position.x = mesh->mVertices[i].x;
 		vertex.position.y = mesh->mVertices[i].y;
 		vertex.position.z = mesh->mVertices[i].z;
 
-		// 法線
 		if (mesh->HasNormals()) {
 			vertex.normal.x = mesh->mNormals[i].x;
 			vertex.normal.y = mesh->mNormals[i].y;
@@ -349,7 +342,6 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 			vertex.normal = { 0, 1, 0 };
 		}
 
-		// UV (0番目のUVチャンネルのみ使用)
 		if (mesh->mTextureCoords[0]) {
 			vertex.uv.x = mesh->mTextureCoords[0][i].x;
 			vertex.uv.y = mesh->mTextureCoords[0][i].y;
@@ -357,11 +349,9 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 		else {
 			vertex.uv = { 0, 0 };
 		}
-
 		vertices.push_back(vertex);
 	}
 
-	// 2. インデックス情報の抽出
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++) {
@@ -369,30 +359,21 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 		}
 	}
 
-	// 3. マテリアル（テクスチャ）の処理
 	std::shared_ptr<Texture> texture = nullptr;
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-		// Diffuseテクスチャがあるか確認
 		if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 			aiString str;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-
-			// フルパスを作成してロード
 			std::string texPath = directory + "/" + str.C_Str();
-
-			// 内部ロード関数を再利用（LoadTextureFromFileはpublicにしておくと便利かも）
 			texture = LoadTextureFromFile(texPath);
 		}
 	}
 
-	// 4. DirectXバッファの作成
 	Mesh retMesh;
 	retMesh.indexCount = static_cast<unsigned int>(indices.size());
 	retMesh.texture = texture;
 
-	// Vertex Buffer
 	D3D11_BUFFER_DESC vbd = {};
 	vbd.Usage = D3D11_USAGE_DEFAULT;
 	vbd.ByteWidth = sizeof(ModelVertex) * vertices.size();
@@ -401,7 +382,6 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 	vInit.pSysMem = vertices.data();
 	m_device->CreateBuffer(&vbd, &vInit, &retMesh.vertexBuffer);
 
-	// Index Buffer
 	D3D11_BUFFER_DESC ibd = {};
 	ibd.Usage = D3D11_USAGE_DEFAULT;
 	ibd.ByteWidth = sizeof(unsigned int) * indices.size();
@@ -413,47 +393,82 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 	return retMesh;
 }
 
+// ------------------------------------------------------------
+// デバッグ表示 (StringId対応版)
+// ------------------------------------------------------------
 void ResourceManager::OnInspector() {
 	ImGui::Begin("Resource Monitor");
 
+	// ドラッグ用ヘルパー
+	auto SetDragDropSource = [](const std::string& path) {
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			ImGui::SetDragDropPayload("ASSET_PATH", path.c_str(), path.length() + 1);
+			ImGui::Text("%s", path.c_str());
+			ImGui::EndDragDropSource();
+		}
+		};
+
 	// ------------------------------------------------------------
-	// 1. Textures (画像)
+	// 1. Textures
 	// ------------------------------------------------------------
 	if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Text("Loaded: %d", m_textures.size());
+		// パスごとに集約して重複を排除
+		std::map<std::string, std::vector<StringId>> uniquePaths;
+		for (const auto& pair : m_texturePaths) {
+			uniquePaths[pair.second].push_back(pair.first);
+		}
 
-		// テーブル表示
+		ImGui::Text("Unique: %d (Total Keys: %d) / Loaded: %d",
+			uniquePaths.size(), m_texturePaths.size(), m_textures.size());
+
 		if (ImGui::BeginTable("TexTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-			ImGui::TableSetupColumn("Key");
-			ImGui::TableSetupColumn("Size");
+			ImGui::TableSetupColumn("Path");
+			ImGui::TableSetupColumn("Status");
 			ImGui::TableSetupColumn("Preview");
 			ImGui::TableHeadersRow();
 
-			for (const auto& pair : m_textures) {
-				const std::string& path = pair.first; // mapのキー(ファイルパス)
-				auto& tex = pair.second;
+			for (const auto& pair : uniquePaths) {
+				const std::string& path = pair.first;
+				// このパスに対応するリソースがロードされているか確認
+				// LoadTextureFromFileは StringId(path) をキーにキャッシュする仕様なので、それをチェック
+				bool isLoaded = m_textures.find(StringId(path)) != m_textures.end();
+				// 念のため、エイリアスキーでのロードもチェック
+				if (!isLoaded) {
+					for (auto k : pair.second) {
+						if (m_textures.find(k) != m_textures.end()) { isLoaded = true; break; }
+					}
+				}
 
 				ImGui::TableNextRow();
 
-				// Key (Path)
+				// Path
 				ImGui::TableSetColumnIndex(0);
-				ImGui::TextWrapped("%s", path.c_str());
+				ImGui::Selectable(path.c_str());
+				SetDragDropSource(path);
 
-				// Size
+				// Status
 				ImGui::TableSetColumnIndex(1);
-				ImGui::Text("%d x %d", tex->width, tex->height);
+				if (isLoaded) ImGui::TextColored(ImVec4(0, 1, 0, 1), "Loaded");
+				else		  ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "Unloaded");
 
-				// Preview (マウスホバーで拡大表示)
+				// Preview
 				ImGui::TableSetColumnIndex(2);
-				if (tex->srv) {
-					// サムネイル表示 (32x32)
-					ImGui::Image((void*)tex->srv.Get(), ImVec2(32, 32));
+				if (isLoaded) {
+					// ロード済みならキャッシュから取得（キーは何でも良いが、StringId(path)が確実）
+					auto it = m_textures.find(StringId(path));
+					if (it == m_textures.end() && !pair.second.empty()) it = m_textures.find(pair.second[0]);
 
-					// ホバー時のツールチップ拡大表示
-					if (ImGui::IsItemHovered()) {
-						ImGui::BeginTooltip();
-						ImGui::Image((void*)tex->srv.Get(), ImVec2(256, 256));
-						ImGui::EndTooltip();
+					if (it != m_textures.end()) {
+						auto& tex = it->second;
+						if (tex && tex->srv) {
+							ImGui::Image((void*)tex->srv.Get(), ImVec2(32, 32));
+							SetDragDropSource(path); // 画像もドラッグ可能に
+							if (ImGui::IsItemHovered()) {
+								ImGui::BeginTooltip();
+								ImGui::Image((void*)tex->srv.Get(), ImVec2(256, 256));
+								ImGui::EndTooltip();
+							}
+						}
 					}
 				}
 			}
@@ -462,20 +477,42 @@ void ResourceManager::OnInspector() {
 	}
 
 	// ------------------------------------------------------------
-	// 2. Models (3Dモデル)
+	// 2. Models
 	// ------------------------------------------------------------
 	if (ImGui::CollapsingHeader("Models")) {
-		ImGui::Text("Loaded: %d", m_models.size());
+		std::map<std::string, std::vector<StringId>> uniquePaths;
+		for (const auto& pair : m_modelPaths) uniquePaths[pair.second].push_back(pair.first);
 
-		for (const auto& pair : m_models) {
+		ImGui::Text("Unique: %d / Loaded: %d", uniquePaths.size(), m_models.size());
+
+		for (const auto& pair : uniquePaths) {
 			const std::string& path = pair.first;
-			auto& model = pair.second;
+			bool isLoaded = m_models.find(StringId(path)) != m_models.end();
+			if (!isLoaded) {
+				for (auto k : pair.second) { if (m_models.find(k) != m_models.end()) { isLoaded = true; break; } }
+			}
 
-			if (ImGui::TreeNode(path.c_str())) {
-				ImGui::Text("Mesh Count: %d", model->meshes.size());
-				// メッシュごとの詳細
-				for (size_t i = 0; i < model->meshes.size(); ++i) {
-					ImGui::Text("  Mesh %d: %d indices", i, model->meshes[i].indexCount);
+			// ツリーノード表示
+			bool nodeOpen = ImGui::TreeNode(path.c_str());
+			SetDragDropSource(path);
+
+			if (nodeOpen) {
+				if (isLoaded) {
+					auto it = m_models.find(StringId(path));
+					if (it == m_models.end() && !pair.second.empty()) it = m_models.find(pair.second[0]);
+
+					if (it != m_models.end()) {
+						auto& model = it->second;
+						ImGui::TextColored(ImVec4(0, 1, 0, 1), "[Loaded]");
+						ImGui::Text("Mesh Count: %d", model->meshes.size());
+					}
+				}
+				else {
+					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "[Unloaded]");
+					ImGui::SameLine();
+					if (ImGui::SmallButton("Load")) {
+						GetModel(StringId(path)); // パスIDでロード
+					}
 				}
 				ImGui::TreePop();
 			}
@@ -483,25 +520,45 @@ void ResourceManager::OnInspector() {
 	}
 
 	// ------------------------------------------------------------
-	// 3. Sounds (音声)
+	// 3. Sounds
 	// ------------------------------------------------------------
 	if (ImGui::CollapsingHeader("Sounds")) {
-		ImGui::Text("Loaded: %d", m_sounds.size());
+		std::map<std::string, std::vector<StringId>> uniquePaths;
+		for (const auto& pair : m_soundPaths) uniquePaths[pair.second].push_back(pair.first);
 
-		for (const auto& pair : m_sounds) {
+		ImGui::Text("Unique: %d / Loaded: %d", uniquePaths.size(), m_sounds.size());
+
+		for (const auto& pair : uniquePaths) {
 			const std::string& path = pair.first;
-			auto& sound = pair.second;
+			bool isLoaded = m_sounds.find(StringId(path)) != m_sounds.end();
+			if (!isLoaded) {
+				for (auto k : pair.second) { if (m_sounds.find(k) != m_sounds.end()) { isLoaded = true; break; } }
+			}
 
-			ImGui::Text("%s", path.c_str());
+			ImGui::Selectable(path.c_str());
+			SetDragDropSource(path);
 			ImGui::SameLine();
-			ImGui::TextDisabled("(%.2f sec)", sound->duration);
 
-			// 再生テストボタン
-			ImGui::SameLine();
-			std::string btnLabel = "Play##" + path;
-			if (ImGui::Button(btnLabel.c_str()))
-			{
-				AudioManager::Instance().PlaySE(path);
+			if (isLoaded) {
+				auto it = m_sounds.find(StringId(path));
+				if (it == m_sounds.end() && !pair.second.empty()) it = m_sounds.find(pair.second[0]);
+
+				if (it != m_sounds.end()) {
+					auto& sound = it->second;
+					ImGui::TextColored(ImVec4(0, 1, 0, 1), "[Loaded]");
+					ImGui::SameLine();
+					if (ImGui::Button(("Play##" + path).c_str())) {
+						// 再生時は StringId(path) を使う（AudioManager側でこれをキーに検索するため）
+						AudioManager::Instance().PlaySE(StringId(path));
+					}
+				}
+			}
+			else {
+				ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "[Unloaded]");
+				ImGui::SameLine();
+				if (ImGui::SmallButton(("Load##" + path).c_str())) {
+					GetSound(StringId(path));
+				}
 			}
 		}
 	}

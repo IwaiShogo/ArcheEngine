@@ -378,6 +378,22 @@ public:
 		nextEntity = 1;
 	}
 
+	// @brief	全ての有効なエンティティに対して関数を実行する。
+	// @param	func 実行する関数 void(Entity)
+	template<typename Func>
+	void each(Func func)
+	{
+		// 0番から現在発行されている最大IDまで走査
+		for (Entity i = 0; i < nextEntity; ++i)
+		{
+			// 有効（削除されていない）なら実行
+			if (valid(i))
+			{
+				func(i);
+			}
+		}
+	}
+
 	// ============================================================
 	// Multi-View Class (Chainable)
 	// ============================================================ 

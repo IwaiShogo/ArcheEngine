@@ -29,6 +29,17 @@
 #include <assimp/postprocess.h>
 #include <DirectXTex.h>
 
+// AudioManager
+#include <xaudio2.h>
+#pragma comment(lib, "xaudio2.lib")
+
+// Direct2D / DirectWrite
+#include <d2d1.h>
+#include <d2d1_1.h>
+#include <dwrite.h>
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+
 // --- DirectX ---
 #include <d3d11.h>
 #include <dxgi1_4.h>
@@ -60,6 +71,7 @@
 #include <set>
 #include <random>
 #include <cstdint>
+#include <filesystem>
 
 // --- Libraries ---
 #include <json.hpp>	// nlohmann/json

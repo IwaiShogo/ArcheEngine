@@ -30,7 +30,9 @@ public:
 	// デフォルトコンストラクタ
 	StringId() : m_hash(0)
 	{
+#ifdef _DEBUG
 		m_debugString = "Empty";
+#endif // _DEBUG
 	}
 
 	// 文字列から生成
