@@ -25,7 +25,7 @@
 #include "Engine/Graphics/Renderers/PrimitiveRenderer.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 
 class RenderSystem
 	: public ISystem

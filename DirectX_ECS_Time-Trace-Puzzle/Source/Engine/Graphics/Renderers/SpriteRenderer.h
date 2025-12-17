@@ -21,14 +21,8 @@
 #define ___SPRITE_RENDERER_H___
 
 // ===== インクルード =====
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <wrl/client.h>
-#include <string>
+#include "Engine/pch.h"
 #include "Engine/Graphics/Core/Texture.h"
-
-using namespace DirectX;
-using Microsoft::WRL::ComPtr;
 
 class SpriteRenderer
 {

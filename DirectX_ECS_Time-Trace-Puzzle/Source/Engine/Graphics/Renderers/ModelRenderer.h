@@ -21,13 +21,8 @@
 #define ___MODEL_RENDERER_H___
 
 // ===== インクルード =====
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <wrl/client.h>
+#include "Engine/pch.h"
 #include "Engine/Graphics/Core/Model.h" // Model定義
-
-using namespace DirectX;
-using Microsoft::WRL::ComPtr;
 
 class ModelRenderer {
 public:

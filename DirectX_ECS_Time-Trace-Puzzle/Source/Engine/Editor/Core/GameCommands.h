@@ -21,7 +21,7 @@
 #define ___GAME_COMMANDS_H___
 
 // ===== インクルード =====
-#include "Game/Scenes/SceneManager.h"
+#include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Logger.h"
 #include "Engine/ECS/ECS.h"
 #include "Game/Utils/Prefab.h"
@@ -58,8 +58,8 @@ namespace GameCommands
 		// scene [title/game]: シーン遷移
 		Logger::RegisterCommand("scene", [&](auto args) {
 			if (args.empty()) return;
-			if (args[0] == "title") SceneManager::ChangeScene(SceneType::Title);
-			else if (args[0] == "game") SceneManager::ChangeScene(SceneType::Game);
+			if (args[0] == "title")		SceneManager::Instance().ChangeScene("Title");
+			else if (args[0] == "game")	SceneManager::Instance().ChangeScene("Game");
 			Logger::Log("Switching scene...");
 			});
 
@@ -123,7 +123,7 @@ namespace GameCommands
 		Logger::RegisterCommand("list", [&world](auto args) {
 			Logger::Log("--- Entity List ---");
 			world.getRegistry().view<Tag>().each([&](Entity e, Tag& tag) {
-				std::string msg = "ID:" + std::to_string(e) + " [" + tag.name + "]";
+				std::string msg = "ID:" + std::to_string(e) + " [" + tag.name.c_str() + "]";
 				// 座標も表示してみる
 				if (world.getRegistry().has<Transform>(e)) {
 					auto& t = world.getRegistry().get<Transform>(e);

@@ -21,10 +21,7 @@
 #define ___TIME_H___
 
 // ===== インクルード =====
-#include <Windows.h>
-#include <thread>	// Sleep用
-
-#pragma comment(lib, "winmm.lib")
+#include "Engine/pch.h"
 
 class Time
 {

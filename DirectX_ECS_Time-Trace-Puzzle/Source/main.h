@@ -20,16 +20,7 @@
 #ifndef ___MAIN_H___
 #define ___MAIN_H___
 
-namespace Config
-{
-	// ウィンドウ設定
-	static const int SCREEN_WIDTH = 1280;
-	static const int SCREEN_HEIGHT = 720;
-	static const char* WINDOW_TITLE = "Time Trace Puzzle (DX11 + ECS)";
-
-	// レンダリング設定
-	static const unsigned int FRAME_RATE = 60;	// 目標FPS（リフレッシュレートの分子）
-	static const bool VSYNC_ENABLED = false;		// 垂直同期（true: 60fps固定、false: 無制限）
-}
+// ===== インクルード =====
+#include "Engine/Config.h"	// Engine側の定義を使用
 
 #endif // !___MAIN_H___

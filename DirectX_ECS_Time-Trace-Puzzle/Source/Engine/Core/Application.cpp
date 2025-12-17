@@ -18,17 +18,18 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Core/Application.h"
+#include "Engine/Config.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Editor/Tools/ThumbnailGenerator.h"
-#include "ImGuizmo.h"
-#include "main.h"
-#include <string>
-#include <stdexcept>
+
+#include "Engine/Components/Components.h"
+#include "Engine/Physics/CollisionSystem.h"
 
 Application::Application(HWND hwnd)
 	: m_hwnd(hwnd)
@@ -46,8 +47,6 @@ Application::~Application()
 
 	// オーディオ
 	AudioManager::Instance().Finalize();
-
-	// ComPtrを使用しているため、明示的なReleaseは不要
 }
 
 void Application::Initialize()
@@ -220,7 +219,7 @@ void Application::Initialize()
 	m_sceneManager.SetContext(context);
 	m_appContext = context;
 	m_sceneManager.SetContext(m_appContext);
-	m_sceneManager.Initialize(SceneType::Title);
+	m_sceneManager.Initialize();
 }
 
 void Application::Update()

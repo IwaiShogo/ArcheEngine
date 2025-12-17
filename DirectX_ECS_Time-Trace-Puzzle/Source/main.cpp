@@ -18,10 +18,13 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "main.h"
 #include "Engine/Core/Application.h"
 
-#include <Windows.h>
+// ゲーム固有のシーンをインクルード
+#include "Game/Scenes/SceneTitle.h"
+#include "Game/Scenes/SceneGame.h"
 
 // ImGuiのハンドラを定義（前方宣言）
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -77,6 +80,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	try
 	{
 		app.Initialize();
+
+		auto& sceneManager = app.GetSceneManager();
+		sceneManager.RegisterScene<SceneTitle>("Title");
+		sceneManager.RegisterScene<SceneGame>("Game");
+
+		// 最初のシーンを開始
+		sceneManager.ChangeScene("Title");
 	}
 	catch (const std::exception& e)
 	{

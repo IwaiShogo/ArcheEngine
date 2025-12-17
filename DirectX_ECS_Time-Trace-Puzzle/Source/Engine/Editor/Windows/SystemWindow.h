@@ -21,12 +21,12 @@
 #define ___SYSTEM_WINDOW_H___
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Context.h"
-#include "imgui.h"
 #include "Engine/Core/Input.h"
-#include "Game/Scenes/SceneManager.h"
+#include "Engine/Scene/SceneManager.h"
 
 class SystemWindow
 	: public EditorWindow
@@ -214,7 +214,8 @@ public:
 			// リスタート
 			if (ImGui::Button("Restart Scene", ImVec2(-1, 0)))
 			{
-				SceneManager::ChangeScene(SceneType::Game);
+				auto sceneManager = SceneManager::Instance();
+				sceneManager.ChangeScene(sceneManager.GetCurrentSceneName());
 			}
 		}
 
@@ -223,12 +224,12 @@ public:
 		{
 			if (ImGui::Button("Title", ImVec2(100, 0)))
 			{
-				SceneManager::ChangeScene(SceneType::Title);
+				SceneManager::Instance().ChangeScene("Title");
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Game", ImVec2(100, 0)))
 			{
-				SceneManager::ChangeScene(SceneType::Game);
+				SceneManager::Instance().ChangeScene("Game");
 			}
 		}
 
@@ -278,7 +279,7 @@ public:
 			reg.view<Tag>().each([&](Entity e, Tag& tag) {
 				count++;
 				// クリックで選択可能にする
-				if (ImGui::Selectable((std::to_string(e) + ": " + tag.name).c_str(), selected == e)) {
+				if (ImGui::Selectable((std::to_string(e) + ": " + tag.name.c_str()).c_str(), selected == e)) {
 					selected = e;
 				}
 				});

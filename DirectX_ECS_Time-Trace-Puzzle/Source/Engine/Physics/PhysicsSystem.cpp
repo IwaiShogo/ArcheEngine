@@ -19,13 +19,8 @@
  *********************************************************************/
 
 // ===== インクルード =====
-#define NOMINMAX
-#include "Game/Systems/Physics/PhysicsSystem.h"
-#include <cmath>
-#include <algorithm>
-#include <random>
-
-using namespace DirectX;
+#include "Engine/pch.h"
+#include "Engine/Physics/PhysicsSystem.h"
 
 // ===== 定数・マクロ定義 =====
 static const float GRAVITY = 9.81f;

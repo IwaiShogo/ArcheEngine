@@ -18,14 +18,9 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
-#include "imgui.h"
-
-#include <DirectXTex.h>
-#include <filesystem>
-#include <iostream>
-#include <fstream>
 
 // ファイルヘッダ構造体
 struct RIFF_HEADER

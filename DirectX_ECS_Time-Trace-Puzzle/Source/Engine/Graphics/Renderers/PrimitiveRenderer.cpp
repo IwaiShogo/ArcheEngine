@@ -18,12 +18,8 @@
  *********************************************************************/
 
 // ===== インクルード =====
-#define NOMINMAX
+#include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/PrimitiveRenderer.h"
-#include <d3dcompiler.h>
-#include <stdexcept>
-
-#pragma comment(lib, "d3dcompiler.lib")
 
 // 立方体の頂点データ
 struct Vertex

@@ -20,14 +20,10 @@
 #ifndef ___THUMBNAIL_GENERATOR_H___
 #define ___THUMBNAIL_GENERATOR_H___
 
+#include "Engine/pch.h"
 #include "Engine/Graphics/Core/RenderTarget.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
-#include <map>
-#include <string>
-#include <filesystem>
-#include <fstream>
-#include <json.hpp>
 
 class ThumbnailGenerator {
 public:

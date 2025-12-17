@@ -21,10 +21,9 @@
 #define ___HIERARCHY_WINDOW_H___
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
-#include "Game/Components/Components.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "Engine/Components/Components.h"
 
 class HierarchyWindow
 	: public EditorWindow

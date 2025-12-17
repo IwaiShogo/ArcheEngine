@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Resource/ResourceManager.h"
 

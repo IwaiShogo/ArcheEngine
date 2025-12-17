@@ -21,18 +21,10 @@
 #define ___RESOURCE_MANAGER_H___
 
 // ===== インクルード =====
-#include <map>
-#include <string>
-#include <memory>
-#include <d3d11.h>
+#include "Engine/pch.h"
 #include "Engine/Graphics/Core/Texture.h"
 #include "Engine/Graphics/Core/Model.h"
 #include "Engine/Audio/Sound.h"
-
-#include "json.hpp"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 class ResourceManager
 {

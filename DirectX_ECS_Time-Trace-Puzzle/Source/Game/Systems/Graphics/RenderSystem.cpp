@@ -18,6 +18,7 @@
  *********************************************************************/
 
  // ===== インクルード =====
+#include "Engine/pch.h"
 #define NOMINMAX
 #include "Game/Systems/Graphics/RenderSystem.h"
 #include "Engine/Audio/AudioManager.h"
@@ -80,14 +81,14 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 				XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 				if (registry.has<Tag>(e))
 				{
-					std::string name = registry.get<Tag>(e).name;
+					std::string name = registry.get<Tag>(e).name.c_str();
 					if (name == "Player") color = { 0.0f, 1.0f, 0.0f, 1.0f };
 					if (name == "Enemy") color = { 1.0f, 0.0f, 0.0f, 1.0f };
 				}
 
 				// ワールド座標計算
 				XMVECTOR scale, rot, pos;
-				XMMatrixDecompose(&scale, &rot, &pos, t.worldMatrix);
+				XMMatrixDecompose(&scale, &rot, &pos, t.GetWorldMatrix());
 
 				XMFLOAT3 gPos, gScale;
 				XMStoreFloat3(&gPos, pos);
@@ -97,7 +98,7 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 				
 				// オフセット運用
 				XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
-				XMVECTOR centerVec = XMVector3Transform(offsetVec, t.worldMatrix);
+				XMVECTOR centerVec = XMVector3Transform(offsetVec, t.GetWorldMatrix());
 				XMFLOAT3 center;
 				XMStoreFloat3(&center, centerVec);
 

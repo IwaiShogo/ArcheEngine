@@ -18,13 +18,28 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Game/Scenes/SceneGame.h"
-#include "Game/Scenes/SceneManager.h"
-#include "Game/Utils/Prefab.h"
+#include "Engine/Core/Input.h"
+#include "Engine/Components/Components.h"
+
+// エンジン側
+#include "Engine/Physics/CollisionSystem.h"
+#include "Engine/Physics/PhysicsSystem.h"
+
+// ゲーム側（未だ移動出来ていない）
+#include "Game/Systems/Graphics/RenderSystem.h"
+#include "Game/Systems/Logic/InputSystem.h"
+#include "Game/Systems/Graphics/SpriteRenderSystem.h"
+#include "Game/Systems/Graphics/ModelRenderSystem.h"
+#include "Game/Systems/Audio/AudioSystem.h"
+#include "Game/Systems/Logic/LifetimeSystem.h"
+#include "Game/Systems/Logic/HierarchySystem.h"
+#include "Game/Systems/Graphics/BillboardSystem.h"
+
+#include "Engine/Scene/SceneManager.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Editor/Core/GameCommands.h"
-#include <DirectXMath.h>
-#include <string>
 
 void SceneGame::Initialize()
 {
@@ -128,24 +143,10 @@ void SceneGame::Finalize()
 
 void SceneGame::Update()
 {
-	IScene::Update();
-
-	if (Input::GetButtonDown(Button::A))
-	{
-		XMFLOAT3 playerPos = { 0, 0, 0 };
-		m_world.getRegistry().view<Tag, Transform>().each([&](Entity e, Tag& tag, Transform& t)
-			{
-				if (tag.name == "Player")
-				{
-					Prefab::CreateSoundEffect(m_world, "jump", t.position, 1.0f, 30.0f);
-
-					Logger::Log("Spawned Jump Sound!");
-				}
-			});
-	}
+	m_world.Tick();
 }
 
 void SceneGame::Render()
 {
-	IScene::Render();
+	m_world.Render(*m_context);
 }

@@ -21,13 +21,7 @@
 #define ___INPUT_H___
 
 // ===== インクルード =====
-#include <Windows.h>
-#include <Xinput.h>
-#include <cmath>
-#include <array>
-
-// ライブラリのリンク
-#pragma comment(lib, "xinput.lib")
+#include "Engine/pch.h"
 
 /**
  * @enum	Axis

@@ -56,9 +56,6 @@
     <Filter Include="Source\Engine\Graphics\Renderers">
       <UniqueIdentifier>{13500492-97ac-413d-a8a0-129de0479ba1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Game\Components">
-      <UniqueIdentifier>{c5829e1f-99a3-4660-afb5-e11680f0905c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Game\Scenes">
       <UniqueIdentifier>{91b41ae2-7306-4e9c-977d-5d5cccfbe6c9}</UniqueIdentifier>
     </Filter>
@@ -77,8 +74,14 @@
     <Filter Include="Source\Game\Systems\Logic">
       <UniqueIdentifier>{e610b1e4-16c3-4084-aaed-97163c33f12e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Game\Systems\Physics">
-      <UniqueIdentifier>{f3fe21c3-9c7b-4d54-b6aa-3bb46097c76e}</UniqueIdentifier>
+    <Filter Include="Source\Engine\Scene">
+      <UniqueIdentifier>{df04eec7-dd16-4add-8743-fe77946a2e60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Components">
+      <UniqueIdentifier>{19098248-ef34-4b61-8a18-e812e5404b08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Physics">
+      <UniqueIdentifier>{3aed2441-5955-436b-aedf-a7b210d7e59e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -187,16 +190,7 @@
     <ClInclude Include="Source\Engine\Resource\Serializer.h">
       <Filter>Source\Engine\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Components\Components.h">
-      <Filter>Source\Game\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Scenes\IScene.h">
-      <Filter>Source\Game\Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Scenes\SceneGame.h">
-      <Filter>Source\Game\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\Scenes\SceneManager.h">
       <Filter>Source\Game\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\Scenes\SceneTitle.h">
@@ -226,20 +220,38 @@
     <ClInclude Include="Source\Game\Systems\Logic\LifetimeSystem.h">
       <Filter>Source\Game\Systems\Logic</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Systems\Physics\CollisionSystem.h">
-      <Filter>Source\Game\Systems\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Game\Utils\Prefab.h">
       <Filter>Source\Game\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Systems\Physics\PhysicsSystem.h">
-      <Filter>Source\Game\Systems\Physics</Filter>
+    <ClInclude Include="Source\Engine\pch.h">
+      <Filter>Source\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Systems\Physics\PhysicsEvents.h">
-      <Filter>Source\Game\Systems\Physics</Filter>
+    <ClInclude Include="Source\Engine\Scene\IScene.h">
+      <Filter>Source\Engine\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Systems\Physics\SpatialHash.h">
-      <Filter>Source\Game\Systems\Physics</Filter>
+    <ClInclude Include="Source\Engine\Scene\SceneManager.h">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Config.h">
+      <Filter>Source\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Components\Components.h">
+      <Filter>Source\Engine\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Physics\CollisionSystem.h">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Physics\PhysicsEvents.h">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Physics\PhysicsSystem.h">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Physics\SpatialHash.h">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Core\StringId.h">
+      <Filter>Source\Engine\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -309,11 +321,17 @@
     <ClCompile Include="Source\Game\Systems\Graphics\RenderSystem.cpp">
       <Filter>Source\Game\Systems\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Systems\Physics\CollisionSystem.cpp">
-      <Filter>Source\Game\Systems\Physics</Filter>
+    <ClCompile Include="Source\Engine\pch.cpp">
+      <Filter>Source\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Systems\Physics\PhysicsSystem.cpp">
-      <Filter>Source\Game\Systems\Physics</Filter>
+    <ClCompile Include="Source\Engine\Scene\SceneManager.cpp">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Physics\CollisionSystem.cpp">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Physics\PhysicsSystem.cpp">
+      <Filter>Source\Engine\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

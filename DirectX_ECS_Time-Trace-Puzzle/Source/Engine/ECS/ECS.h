@@ -28,21 +28,10 @@
 #define ___ECS_H___
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Context.h"
 #include "Engine/Core/Logger.h"
-
-#include <vector>
-#include <memory>
-#include <algorithm>
-#include <type_traits>
-#include <cassert>
-#include <tuple>
-#include <typeindex>
-#include <unordered_map>
-#include <functional>
-#include <set>
-#include <chrono>
 
 // ------------------------------------------------------------
 // 基本定義

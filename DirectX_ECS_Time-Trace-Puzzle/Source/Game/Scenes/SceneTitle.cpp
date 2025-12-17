@@ -18,25 +18,25 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Game/Scenes/SceneTitle.h"
-#include "Game/Scenes/SceneManager.h"
-#include <iostream>
+#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/Input.h"
 
 void SceneTitle::Initialize()
 {
-	IScene::Initialize();
+	// 初期化処理
 }
 
 void SceneTitle::Finalize()
 {
-	std::cout << "Title Scene Finalized" << std::endl;
 }
 
 void SceneTitle::Update()
 {
 	if (Input::GetKeyDown(VK_SPACE))
 	{
-		SceneManager::ChangeScene(SceneType::Game);
+		SceneManager::Instance().ChangeScene("Game");
 	}
 }
 

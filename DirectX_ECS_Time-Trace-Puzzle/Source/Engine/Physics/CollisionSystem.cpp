@@ -18,19 +18,13 @@
  *********************************************************************/
 
 // ===== インクルード =====
-#define NOMINMAX
-#include "Game/Systems/Physics/CollisionSystem.h"
-#include "Game/Systems/Physics/PhysicsEvents.h"
-#include "Game/Systems/Physics/SpatialHash.h"
+#include "Engine/pch.h"
+#include "Engine/Physics/CollisionSystem.h"
+#include "Engine/Physics/PhysicsEvents.h"
+#include "Engine/Physics/SpatialHash.h"
 #include "Engine/Core/Time.h"
-#include <cmath>
-#include <iostream>
-#include <algorithm>
-#include <vector>
-#include <set>
 
 using namespace Physics;
-using namespace DirectX;
 
 // ペア管理用
 using EntityPair = std::pair<Entity, Entity>;
@@ -445,13 +439,13 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 		{
 			// ワールド行列の分解
 			XMVECTOR scale, rotQuat, pos;
-			XMMatrixDecompose(&scale, &rotQuat, &pos, t.worldMatrix);
+			XMMatrixDecompose(&scale, &rotQuat, &pos, t.GetWorldMatrix());
 			XMFLOAT3 gScale; XMStoreFloat3(&gScale, scale);
 			XMMATRIX rotMat = XMMatrixRotationQuaternion(rotQuat);
 
 			// 中心座標の計算
 			XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
-			XMVECTOR centerVec = XMVector3Transform(offsetVec, t.worldMatrix);
+			XMVECTOR centerVec = XMVector3Transform(offsetVec, t.GetWorldMatrix());
 			XMFLOAT3 center; XMStoreFloat3(&center, centerVec);
 
 			bool hit = false;
@@ -1173,14 +1167,14 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 {
 	// ワールド行列の分解 (Scale, Rotation, Position)
 	XMVECTOR scale, rotQuat, pos;
-	XMMatrixDecompose(&scale, &rotQuat, &pos, t.worldMatrix);
+	XMMatrixDecompose(&scale, &rotQuat, &pos, t.GetWorldMatrix());
 	XMFLOAT3 gScale; XMStoreFloat3(&gScale, scale);
 	XMMATRIX rotMat = XMMatrixRotationQuaternion(rotQuat);
 
 	// オフセット込みの中心座標
 	XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
 	offsetVec = XMVectorSetW(offsetVec, 1.0f);
-	XMVECTOR centerVec = XMVector3TransformCoord(offsetVec, t.worldMatrix);
+	XMVECTOR centerVec = XMVector3TransformCoord(offsetVec, t.GetWorldMatrix());
 
 	// AABB計算用の最小/最大
 	XMVECTOR vMin, vMax;

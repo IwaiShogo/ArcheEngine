@@ -24,11 +24,11 @@
 #define ___INSPECTOR_WINDOW_H___
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Resource/Serializer.h"
-#include "imgui.h"
 
 class InspectorWindow : public EditorWindow
 {
@@ -47,10 +47,12 @@ public:
 		Tag& tag = reg.get<Tag>(selected);
 		ImGui::Text("ID: %d", selected);
 
-		char nameBuf[256];
-		strcpy_s(nameBuf, sizeof(nameBuf), tag.name.c_str());
-		if (ImGui::InputText("Name", nameBuf, sizeof(nameBuf))) {
-			tag.name = nameBuf;
+		char buffer[256];
+		strcpy_s(buffer, tag.name.c_str());
+
+		if (ImGui::InputText("Tag", buffer, sizeof(buffer)))
+		{
+			tag.name = buffer;
 		}
 
 		ImGui::Separator();
@@ -264,7 +266,7 @@ public:
 
 		// Save Prefab
 		if (ImGui::Button("Save as Prefab")) {
-			std::string path = "Resources/Prefabs/" + reg.get<Tag>(selected).name + ".json";
+			std::string path = std::string("Resources/Prefabs/") + reg.get<Tag>(selected).name.c_str() + ".json";
 			Serializer::SaveEntity(reg, selected, path);
 			Logger::Log("Saved Prefab: " + path);
 		}

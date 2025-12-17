@@ -21,13 +21,9 @@
 #define ___COMPONENTS_H___
 
 // ===== インクルード =====
-#define NOMINMAX
-#include <DirectXMath.h>
-#include <vector>
-#include <string>
-#include "main.h"
-
-using namespace DirectX;
+#include "Engine/pch.h"
+#include "Engine/Core/StringId.h"
+#include "Engine/Config.h"
 
 // ============================================================
 // 基本コンポーネント
@@ -38,10 +34,17 @@ using namespace DirectX;
  */
 struct Tag
 {
-	std::string name;
+	StringId name;
 
-	Tag(const std::string& n = "Entity")
-		: name(n) {}
+	// コンストラクタ
+	Tag() = default;
+	Tag(const char* str) : name(str) {}
+	Tag(const std::string& str) : name(str) {}
+	Tag(const StringId& id) : name(id) {}
+
+	// 比較演算子（StringIdの比較に委譲）
+	bool operator==(const Tag& other) const { return name == other.name; }
+	bool operator==(const StringId& strId) const { return name == strId; }
 };
 
 /**
@@ -54,14 +57,19 @@ struct Transform
 	XMFLOAT3 rotation;	// pitch, yaw, roll (Euler angles in degrees or radians)
 	XMFLOAT3 scale;		// x, y, z
 
-	// ワールド行列
-	DirectX::XMMATRIX worldMatrix;
+	// 行列取得ヘルパー
+	XMMATRIX GetWorldMatrix() const
+	{
+		return	XMMatrixScaling(scale.x, scale.y, scale.z) *
+				XMMatrixRotationRollPitchYaw(
+					XMConvertToRadians(rotation.x),
+					XMConvertToRadians(rotation.y),
+					XMConvertToRadians(rotation.z)) *
+				XMMatrixTranslation(position.x, position.y, position.z);
+	}
 
 	Transform(XMFLOAT3 p = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 r = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 s = { 1.0f, 1.0f, 1.0f })
-		: position(p), rotation(r), scale(s)
-	{
-		worldMatrix = DirectX::XMMatrixIdentity();
-	}
+		: position(p), rotation(r), scale(s) {}
 };
 
 /**

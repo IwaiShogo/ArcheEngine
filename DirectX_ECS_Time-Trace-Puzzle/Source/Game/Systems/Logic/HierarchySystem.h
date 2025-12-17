@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 #include <functional>
 
 class HierarchySystem
@@ -47,13 +47,13 @@ public:
 						DirectX::XMMatrixTranslation(t.position.x, t.position.y, t.position.z);
 
 					// 2. 親の行列を掛けてワールド行列にする
-					// 結果を Transform 自身の worldMatrix に保存！
-					t.worldMatrix = localMat * parentMatrix;
+					// 結果を Transform 自身の GetWorldMatrix() に保存！
+					t.GetWorldMatrix() = localMat * parentMatrix;
 
 					// 3. 子供たちにも自分のワールド行列を渡して更新させる
 					if (registry.has<Relationship>(entity)) {
 						for (Entity child : registry.get<Relationship>(entity).children) {
-							updateMatrix(child, t.worldMatrix);
+							updateMatrix(child, t.GetWorldMatrix());
 						}
 					}
 				}

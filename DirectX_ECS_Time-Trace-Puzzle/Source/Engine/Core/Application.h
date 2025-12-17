@@ -21,12 +21,12 @@
 #define ___APPLICATION_H___
 
 // ===== インクルード =====
-#include <Windows.h>
-#include <d3d11.h>
-#include <wrl/client.h>	// ComPtr用
-#include <memory>
+#include "Engine/pch.h"
+#include "Engine/Config.h"
 #include "Engine/ECS/ECS.h"
-#include "Game/Scenes/SceneManager.h"
+#include "Engine/Scene/SceneManager.h"
+
+// Renderer
 #include "Engine/Graphics/Renderers/PrimitiveRenderer.h"
 #include "Engine/Graphics/Renderers/SpriteRenderer.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
@@ -41,8 +41,6 @@
 // ライブラリのリンク指示
 #pragma comment(lib, "d3d11.lib")
 
-using Microsoft::WRL::ComPtr;
-
 class Application
 {
 public:
@@ -51,6 +49,8 @@ public:
 
 	void Initialize();
 	void Run();	// 1フレームの処理（Update + Render）
+
+	SceneManager& GetSceneManager() { return m_sceneManager; }
 
 private:
 	void Update();

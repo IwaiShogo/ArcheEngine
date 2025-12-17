@@ -21,11 +21,6 @@
 #define ___LOGGER_H___
 
 // ===== インクルード =====
-#include <vector>
-#include <string>
-#include <sstream>
-#include <algorithm>
-#include "imgui.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"

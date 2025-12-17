@@ -25,11 +25,9 @@
 #define ___SERIALIZER_H___
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
-#include <json.hpp>
-#include <fstream>
-#include <string>
+#include "Engine/Components/Components.h"
 
 using json = nlohmann::json;
 
@@ -121,7 +119,7 @@ private:
 	// --- 各コンポーネントの変換定義 (ToJson / FromJson) ---
 
 	// Tag
-	static json ToJson(const Tag& c) { return { {"name", c.name} }; }
+	static json ToJson(const Tag& c) { return { {"name", c.name.c_str()}}; }
 	static void FromJson(const json& j, Tag& c) { c.name = j["name"].get<std::string>(); }
 
 	// Transform

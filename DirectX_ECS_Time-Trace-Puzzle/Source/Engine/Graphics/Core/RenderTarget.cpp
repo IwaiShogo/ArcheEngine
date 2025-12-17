@@ -18,8 +18,8 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Graphics/Core/RenderTarget.h"
-#include <stdexcept>
 
 RenderTarget::RenderTarget(ID3D11Device* device, int width, int height) {
 	Resize(device, width, height);

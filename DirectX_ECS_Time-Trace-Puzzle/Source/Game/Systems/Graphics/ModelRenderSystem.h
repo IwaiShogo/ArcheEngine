@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
 
@@ -70,8 +70,8 @@ public:
 				auto model = ResourceManager::Instance().GetModel(m.modelKey);
 				if (model)
 				{
-					// 計算済みの worldMatrix を取得
-					XMMATRIX world = t.worldMatrix;
+					// 計算済みの GetWorldMatrix() を取得
+					XMMATRIX world = t.GetWorldMatrix();
 
 					// モデル固有のスケール補正 * Transformのスケール
 					if (m.scaleOffset.x != 1.0f || m.scaleOffset.y != 1.0f || m.scaleOffset.z != 1.0f)

@@ -22,8 +22,8 @@
 
 // ===== インクルード =====
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
-#include "Game/Systems/Physics/PhysicsSystem.h"
+#include "Engine/Components/Components.h"
+#include "Engine/Physics/PhysicsSystem.h"
 
 /**
  * @namespace	Physics

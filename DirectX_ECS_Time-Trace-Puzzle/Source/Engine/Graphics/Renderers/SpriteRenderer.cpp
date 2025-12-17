@@ -18,12 +18,9 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/SpriteRenderer.h"
-#include "main.h"
-#include <d3dcompiler.h>
-#include <stdexcept>
-
-#pragma comment(lib, "d3dcompiler.lib")
+#include "Engine/Config.h"
 
 struct Vertex2D {
 	XMFLOAT3 pos;

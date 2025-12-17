@@ -21,14 +21,7 @@
 #define ___PRIMITIVE_RENDERER_H___
 
 // ===== インクルード =====
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <wrl/client.h>
-#include <memory>
-#include <vector>
-
-using namespace DirectX;
-using Microsoft::WRL::ComPtr;
+#include "Engine/pch.h"
 
 class PrimitiveRenderer
 {

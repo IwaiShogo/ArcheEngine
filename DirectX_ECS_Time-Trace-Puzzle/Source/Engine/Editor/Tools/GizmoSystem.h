@@ -20,13 +20,12 @@
 #ifndef ___GIZMO_SYSTEM_H___
 #define ___GIZMO_SYSTEM_H___
 
+#include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Context.h" // Config::SCREEN_WIDTH“™—p
-#include "main.h"
-#include "ImGuizmo.h"
-#include <DirectXMath.h>
+#include "Engine/Config.h"
 
 class GizmoSystem
 {
@@ -55,7 +54,7 @@ public:
 				XMMatrixTranslation(t.position.x, t.position.y, t.position.z);
 
 			float worldM[16];
-			MatrixToFloat16(t.worldMatrix, worldM);
+			MatrixToFloat16(t.GetWorldMatrix(), worldM);
 
 			if (Input::GetKeyDown('L'))
 			{

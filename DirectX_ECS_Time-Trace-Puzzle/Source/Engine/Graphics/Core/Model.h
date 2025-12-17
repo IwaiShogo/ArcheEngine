@@ -21,12 +21,7 @@
 #define ___MODEL_H___
 
  // ===== インクルード =====
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <wrl/client.h>
-#include <vector>
-#include <string>
-#include <memory>
+#include "Engine/pch.h"
 #include "Engine/Graphics/Core/Texture.h"
 
 using namespace DirectX;

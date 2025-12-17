@@ -25,8 +25,6 @@ class PrimitiveRenderer;
 class SpriteRenderer;
 class ModelRenderer;
 class BillboardRenderer;
-// class InputManager;
-// class AudioManager;
 
 //  デバッグ設定（全シーン共有）
 struct DebugSettings

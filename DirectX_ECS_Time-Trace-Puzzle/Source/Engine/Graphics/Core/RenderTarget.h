@@ -22,8 +22,7 @@
 #define ___RENDER_TARGET_H___
 
 // ===== インクルード =====
-#include <d3d11.h>
-#include <wrl/client.h>
+#include"Engine/pch.h"
 
 using Microsoft::WRL::ComPtr;
 

@@ -18,12 +18,8 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
-#include <d3dcompiler.h>
-#include <stdexcept>
-#include "Engine/Graphics/Renderers/ModelRenderer.h"
-
-#pragma comment(lib, "d3dcompiler.lib")
 
 ModelRenderer::ModelRenderer(ID3D11Device* device, ID3D11DeviceContext* context)
 	: m_device(device), m_context(context) {}

@@ -20,11 +20,10 @@
 #ifndef ___EDITOR_H___
 #define ___EDITOR_H___
 
-// ===== インクルード =====
+// ===== インクルード ====
+#include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Core/Context.h"
-#include <vector>
-#include <memory>
 
 // 各ウィンドウの親クラス
 class EditorWindow

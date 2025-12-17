@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/ECS/ECS.h"
-#include "Game/Components/Components.h"
+#include "Engine/Components/Components.h"
 #include "Engine/Graphics/Renderers/BillboardRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
 

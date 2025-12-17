@@ -21,7 +21,9 @@
 #define ___SCENE_GAME_H___
 
 // ===== インクルード =====
-#include "Game/Scenes/IScene.h"
+#include "Engine/pch.h"
+#include "Engine/Scene/IScene.h"
+#include "Engine/ECS/ECS.h"
 
 /**
  * @class	SceneGame
@@ -31,10 +33,18 @@ class SceneGame
 	: public IScene
 {
 public:
+	SceneGame() = default;
+	~SceneGame() = default;
+
 	void Initialize() override;
 	void Finalize() override;
 	void Update() override;
 	void Render() override;
+
+	World& GetWorld() override { return m_world; }
+
+private:
+	World m_world;
 };
 
 #endif // !___SCENE_GAME_H___

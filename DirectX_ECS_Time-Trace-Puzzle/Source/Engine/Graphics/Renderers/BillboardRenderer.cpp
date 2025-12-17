@@ -18,11 +18,8 @@
  *********************************************************************/
 
 // ===== インクルード =====
+#include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/BillboardRenderer.h"
-#include <d3dcompiler.h>
-#include <stdexcept>
-
-#pragma comment(lib, "d3dcompiler.lib")
 
 struct BillboardVertex {
 	XMFLOAT3 pos; // オフセット位置 (-0.5 ~ 0.5)
