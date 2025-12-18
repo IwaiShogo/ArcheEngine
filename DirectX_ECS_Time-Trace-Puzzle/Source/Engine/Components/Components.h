@@ -24,6 +24,7 @@
 #include "Engine/pch.h"
 #include "Engine/Core/StringId.h"
 #include "Engine/Config.h"
+#include "Engine/ECS/EntityDef.h"
 
 // ============================================================
 // 基本コンポーネント
@@ -444,12 +445,10 @@ struct MeshComponent
 struct SpriteComponent
 {
 	StringId textureKey;	// ResourceManagerで使うキー
-	float width, height;	// 描画サイズ（ピクセル）
 	XMFLOAT4 color;			// 色と透明度
-	XMFLOAT2 pivot;			// 中心点（0.0 ~ 1.0）デフォルトは左上（0, 0）
 
-	SpriteComponent(StringId key = "", float w = 0.0f, float h = 0.0f, const XMFLOAT4& c = { 1, 1, 1, 1 }, const XMFLOAT2& p = { 0, 0 })
-		: textureKey(key), width(w), height(h), color(c), pivot(p) {}
+	SpriteComponent(StringId key = "", const XMFLOAT4& c = { 1, 1, 1, 1 })
+		: textureKey(key), color(c) {}
 };
 
 /**
@@ -537,6 +536,98 @@ struct Camera
 	Camera(float f = XM_PIDIV4, float n = 0.1f, float r = 1000.0f, float a = static_cast<float>(Config::SCREEN_WIDTH) / static_cast<float>(Config::SCREEN_HEIGHT))
 		: fov(f), nearZ(n), farZ(r), aspect(a) {
 	}
+};
+
+// ============================================================
+// 2D / UI関連
+// ============================================================
+
+/**
+ * @struct	Transform2D
+ * @brief	UIや2Dオブジェクト専用の座標・サイズ管理
+ */
+struct Transform2D
+{
+	// --- 基本パラメータ ---
+	XMFLOAT2 position = { 0.0f, 0.0f };			// アンカー中心からのオフセット座標
+	XMFLOAT2 size = { 100.0f, 100.0f };			// 幅と高さ
+	XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };	// 回転（X, Y, Z）
+	XMFLOAT2 scale = { 1.0f, 1.0f };			// スケール
+
+	// --- UIレイアウト用 ---
+	XMFLOAT2 pivot = { 0.5f, 0.5f };			// 回転・拡大縮小の中心（0.0 = 左上, 0.5 = 中央, 1.0 = 右下）
+
+	// アンカー（親のどの位置を基準にするか 0.0 ~ 1.0）
+	// 例: min{0.5, 0.5}, max{0.5, 0.5} = 親の中央に固定
+	//     min{0, 0}, max{1, 1} = 親全体にストレッチ（全画面など）
+	XMFLOAT2 anchorMin = { 0.5f, 0.5f };
+	XMFLOAT2 anchorMax = { 0.5f, 0.5f };
+
+	// 描画順（手前に表示したいものは大きくする）
+	int zIndex = 0;
+
+	// --- 内部計算用（Systemが書き込む）---
+	// 描画用の変換行列（Direct2D用）
+	D2D1_MATRIX_3X2_F worldMatrix = D2D1::IdentityMatrix();
+
+	// 計算済みのスクリーン矩形 { left, up, right, bottom }
+	// マウス判定（当たり判定）などで使用
+	XMFLOAT4 calculatedRect = { 0, 0, 0, 0 };
+
+	// コンストラクタ
+	// ------------------------------------------------------------
+	// 1. デフォルト
+	Transform2D() = default;
+
+	// 2. 位置のみ指定 (サイズは100x100)
+	Transform2D(const XMFLOAT2& pos)
+		: position(pos)
+	{
+		calculatedRect = { pos.x, pos.y, pos.x + size.x, pos.y + size.y };
+	}
+
+	// 3. 位置とサイズ指定
+	Transform2D(const XMFLOAT2& pos, const XMFLOAT2& sz)
+		: position(pos), size(sz)
+	{
+		calculatedRect = { pos.x, pos.y, pos.x + sz.x, pos.y + sz.y };
+	}
+
+	// 4. floatで直接指定 (x, y, w, h) - これが一番楽かもしれません
+	Transform2D(float x, float y, float w, float h)
+		: position({ x, y }), size({ w, h })
+	{
+		calculatedRect = { x, y, x + w, y + h };
+	}
+
+	// 5. 位置・サイズ・アンカー指定 (UI配置用)
+	// anchorを1つ渡すと、min/max両方にセットします（固定配置）
+	Transform2D(const XMFLOAT2& pos, const XMFLOAT2& sz, const XMFLOAT2& anchor)
+		: position(pos), size(sz), anchorMin(anchor), anchorMax(anchor)
+	{
+		calculatedRect = { pos.x, pos.y, pos.x + sz.x, pos.y + sz.y };
+	}
+};
+
+/**
+ * @struct	Canvas
+ * @brief	UIのルート要素。画面サイズ情報を提供するタグ的なコンポーネント
+ */
+struct Canvas
+{
+	bool isScreenSpace = true;	// trueなら画面解像度に合わせる
+	XMFLOAT2 referenceSize = { 1920.0f, 1080.0f };	// 基準解像度
+
+	// デフォルトコンストラクタ
+	Canvas() = default;
+
+	// 引数付きコンストラクタ
+	Canvas(bool isScreen, const XMFLOAT2& size)
+		: isScreenSpace(isScreen), referenceSize(size) {}
+
+	// 引数付きコンストラクタ
+	Canvas(bool isScreen, float w, float h)
+		: isScreenSpace(isScreen), referenceSize({ w, h }) {}
 };
 
 #endif // !___COMPONENTS_H___

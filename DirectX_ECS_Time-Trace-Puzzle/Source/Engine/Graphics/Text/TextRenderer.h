@@ -48,9 +48,6 @@ private:
 	std::unordered_map<ID3D11RenderTargetView*, ComPtr<ID2D1RenderTarget>> m_d2dTargets;
 
 	ComPtr<ID2D1SolidColorBrush> m_brush;
-
-	// Šî€‰ğ‘œ“x‚Ì‚‚³i‚±‚Ì‚‚³‚Ì‚ÉfontSize‚ª“™”{‚É‚È‚éj
-	const float BASE_SCREEN_HEIGHT = 1080.0f;
 };
 
 #endif // !___TEXT_RENDERER_H___

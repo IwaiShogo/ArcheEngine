@@ -114,6 +114,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)Library\DirectXTex;$(ProjectDir)Library\Assimp\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>x64\Debug\DirectXTex.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -135,6 +138,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)Library\DirectXTex;$(ProjectDir)Library\Assimp\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>x64\Release\DirectXTex.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Library\ImGui\imconfig.h" />
@@ -157,6 +163,7 @@
     <ClInclude Include="Source\Engine\Core\StringId.h" />
     <ClInclude Include="Source\Engine\Core\Time.h" />
     <ClInclude Include="Source\Engine\ECS\ECS.h" />
+    <ClInclude Include="Source\Engine\ECS\EntityDef.h" />
     <ClInclude Include="Source\Engine\Editor\Core\Editor.h" />
     <ClInclude Include="Source\Engine\Editor\Core\GameCommands.h" />
     <ClInclude Include="Source\Engine\Editor\Tools\GizmoSystem.h" />
@@ -173,6 +180,7 @@
     <ClInclude Include="Source\Engine\Graphics\Renderers\PrimitiveRenderer.h" />
     <ClInclude Include="Source\Engine\Graphics\Renderers\SpriteRenderer.h" />
     <ClInclude Include="Source\Engine\Graphics\Text\FontManager.h" />
+    <ClInclude Include="Source\Engine\Graphics\Text\PrivateFontLoader.h" />
     <ClInclude Include="Source\Engine\Graphics\Text\TextRenderer.h" />
     <ClInclude Include="Source\Engine\pch.h" />
     <ClInclude Include="Source\Engine\Physics\CollisionSystem.h" />
@@ -195,6 +203,7 @@
     <ClInclude Include="Source\Game\Systems\Logic\HierarchySystem.h" />
     <ClInclude Include="Source\Game\Systems\Logic\InputSystem.h" />
     <ClInclude Include="Source\Game\Systems\Logic\LifetimeSystem.h" />
+    <ClInclude Include="Source\Game\Systems\Logic\UISystem.h" />
     <ClInclude Include="Source\Game\Utils\Prefab.h" />
     <ClInclude Include="Source\main.h" />
   </ItemGroup>

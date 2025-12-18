@@ -32,12 +32,14 @@
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Context.h"
 #include "Engine/Core/Logger.h"
+#include "Engine/Components/Components.h"
+#include "EntityDef.h"
 
 // ------------------------------------------------------------
 // 基本定義
 // ------------------------------------------------------------
-using Entity = uint32_t;
-const Entity NullEntity = 0xFFFFFFFF;
+//using Entity = uint32_t;
+//const Entity NullEntity = 0xFFFFFFFF;
 
 class ComponentFamily
 {
@@ -461,7 +463,7 @@ public:
 				: view(v), current(c), end(e)
 			{
 				// 最初が有効化チェック、無効なら進める
-				if(current != end && !isValid(*current))
+				if(current != end && !view->isValid(*current))
 				{
 					++(*this);
 				}
@@ -477,7 +479,7 @@ public:
 				do
 				{
 					++current;
-				} while (current != end && !isValid(*current));
+				} while (current != end && !view->isValid(*current));
 				return *this;
 			}
 
@@ -753,6 +755,30 @@ public:
 	{
 		registry->emplace<T>(entity, std::forward<Args>(args)...);
 		return *this;
+	}
+
+	// 親を設定するメソッド
+	EntityHandle& setParent(Entity parentId)
+	{
+		// 1. 自分にRelationshipを追加
+		if (!registry->has<Relationship>(entity))
+		{
+			registry->emplace<Relationship>(entity);
+		}
+		auto& myRel = registry->get<Relationship>(entity);
+		myRel.parent = parentId;
+
+		// 2. 親のRelationshipを取得
+		if (!registry->has<Relationship>(parentId))
+		{
+			registry->emplace<Relationship>(parentId);
+		}
+		auto& parentRel = registry->get<Relationship>(parentId);
+
+		// 3. 親の子リストに自分を追加
+		parentRel.children.push_back(entity);
+
+		return *this;	// チェーン出来るように自分を返す
 	}
 
 	template<typename T>

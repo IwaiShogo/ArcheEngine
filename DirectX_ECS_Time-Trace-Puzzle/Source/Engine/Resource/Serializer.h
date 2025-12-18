@@ -164,16 +164,13 @@ public:
 	// SpriteComponent
 	static json ToJson(const SpriteComponent& c) {
 		return {
-			{"key", c.textureKey.c_str()}, {"w", c.width}, {"h", c.height},
+			{"key", c.textureKey.c_str()},
 			{"col", {c.color.x, c.color.y, c.color.z, c.color.w}},
-			{"piv", {c.pivot.x, c.pivot.y}}
 		};
 	}
 	static void FromJson(const json& j, SpriteComponent& c) {
 		c.textureKey = StringId(j["key"].get<std::string>());
-		c.width = j["w"]; c.height = j["h"];
 		auto col = j["col"]; c.color = { col[0], col[1], col[2], col[3] };
-		auto piv = j["piv"]; c.pivot = { piv[0], piv[1] };
 	}
 
 	// BillboardComponent

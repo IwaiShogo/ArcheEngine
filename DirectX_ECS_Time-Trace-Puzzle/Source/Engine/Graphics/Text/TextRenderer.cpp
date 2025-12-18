@@ -21,6 +21,7 @@
 #include "Engine/pch.h"
 #include "Engine/Graphics/Text/TextRenderer.h"
 #include "Engine/Components/Components.h"
+#include "Engine/Config.h"
 
 TextRenderer::TextRenderer(ID3D11Device* device, ID3D11DeviceContext* context)
 	: m_device(device), m_context(context)
@@ -47,15 +48,25 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 	// 2. 描画開始
 	d2dRT->BeginDraw();
 
-	// 3. スケール計算（基準高さ1080pに対する現在の比率）
-	// これにより、画面が小さくなっても文字が「画面に対して同じ大きさ」に見える
-	float scale = viewportHeight / BASE_SCREEN_HEIGHT;
+	// 基準解像度
+	float baseWidth = static_cast<float>(Config::SCREEN_WIDTH);
+	float baseHeight = static_cast<float>(Config::SCREEN_HEIGHT);
+	if (baseWidth == 0) baseWidth = 1920.0f;
+	if (baseHeight == 0) baseHeight = 1080.0f;
 
-	registry.view<TextComponent, Transform>().each([&](Entity e, TextComponent& text, Transform& trans)
+	// 現在のビューポートとの比率を計算
+	float scaleX = viewportWidth / baseWidth;
+	float scaleY = viewportHeight / baseHeight;
+	float uniformScale = (scaleX < scaleY) ? scaleX : scaleY;
+
+	// 画面全体をフィットさせるための行列
+	D2D1_MATRIX_3X2_F screenScaleMatrix = D2D1::Matrix3x2F::Scale(uniformScale, uniformScale);
+
+	registry.view<TextComponent, Transform2D>().each([&](Entity e, TextComponent& text, Transform2D& trans)
 	{
 		// フォントサイズを計算し、キャッシュキーに含める
 		// これにより、サイズが変わるたびに別のフォントとしてキャッシュ・取得されるようになる。
-		int scaledFontSize = (int)(text.fontSize * scale);
+		int scaledFontSize = (int)(text.fontSize * uniformScale);
 		if (scaledFontSize < 1) scaledFontSize = 1; // 0以下防止
 
 		// キー生成: フォント名 + サイズ + 太字 + 斜体
@@ -82,29 +93,24 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 		if (format) {
 			// 配置設定
 			format->SetTextAlignment(text.centerAlign ? DWRITE_TEXT_ALIGNMENT_CENTER : DWRITE_TEXT_ALIGNMENT_LEADING);
-			format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+			format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 			// ブラシ色設定
 			if (!m_brush) d2dRT->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1), &m_brush);
 			m_brush->SetColor(D2D1::ColorF(text.color.x, text.color.y, text.color.z, text.color.w));
 
-			// 座標計算
-			float scaledPosX = trans.position.x * scale;
-			float scaledPosY = trans.position.y * scale;
-
-			float screenX = (viewportWidth * 0.5f) + scaledPosX + (text.offset.x * scale);
-			float screenY = (viewportHeight * 0.5f) - scaledPosY - (text.offset.y * scale);
-
 			// 矩形定義
 			D2D1_RECT_F layoutRect = D2D1::RectF(
-				screenX,
-				screenY,
-				screenX + (text.maxWidth > 0 ? text.maxWidth * scale : 2000.0f),
-				screenY + (text.fontSize * scale * 2.0f) // 高さ概算
+				trans.calculatedRect.x,
+				trans.calculatedRect.y,
+				trans.calculatedRect.z,
+				trans.calculatedRect.w
 			);
 
 			// 文字列変換
 			std::wstring wText = std::wstring(text.text.begin(), text.text.end());
+
+			d2dRT->SetTransform(trans.worldMatrix * screenScaleMatrix);
 
 			// 描画
 			d2dRT->DrawText(
@@ -152,7 +158,10 @@ ID2D1RenderTarget* TextRenderer::GetD2DRenderTarget(ID3D11RenderTargetView* rtv)
 		&target
 	);
 
-	if (SUCCEEDED(hr)) {
+	if (SUCCEEDED(hr))
+	{
+		target->SetDpi(96.0f, 96.0f);
+
 		m_d2dTargets[rtv] = target;
 		return target.Get();
 	}

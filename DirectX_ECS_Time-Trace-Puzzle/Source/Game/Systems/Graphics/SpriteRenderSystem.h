@@ -43,19 +43,20 @@ public:
 		// 2D描画開始
 		m_renderer->Begin();
 
-		registry.view<SpriteComponent, Transform>().each([&](Entity e, SpriteComponent& s, Transform& t)
+		registry.view<SpriteComponent, Transform2D>().each([&](Entity e, SpriteComponent& s, Transform2D& t2d)
 			{
 				// テクスチャ取得
 				auto tex = ResourceManager::Instance().GetTexture(s.textureKey);
 				if (tex)
 				{
-					// 座標計算（Pivot考慮）
-					// Transform.position.x, y をスクリーン座標として扱います
-					float x = t.position.x - (s.width * s.pivot.x);
-					float y = t.position.y - (s.width * s.pivot.y);
+					// 座標計算
+					float width = t2d.calculatedRect.z - t2d.calculatedRect.x;
+					float height = t2d.calculatedRect.w - t2d.calculatedRect.y;
+					float centerX = t2d.calculatedRect.x + width * 0.5f;
+					float centerY = t2d.calculatedRect.y + height * 0.5f;
 
 					// 描画
-					m_renderer->Draw(tex.get(), x, y, s.width, s.height, s.color);
+					m_renderer->Draw(tex.get(), centerX - (width * 0.5f), centerY - (height * 0.5f), width, height, s.color);
 				}
 			});
 	}

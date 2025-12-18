@@ -265,6 +265,18 @@
     <ClInclude Include="Source\Engine\Graphics\Text\TextRenderer.h">
       <Filter>Source\Engine\Graphics\Text</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Engine\ECS\EntityDef.h">
+      <Filter>Source\Engine\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Systems\Graphics\TextRenderSystem.h">
+      <Filter>Source\Game\Systems\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Systems\Logic\UISystem.h">
+      <Filter>Source\Game\Systems\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Graphics\Text\PrivateFontLoader.h">
+      <Filter>Source\Engine\Graphics\Text</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Library\ImGui\imgui.cpp">

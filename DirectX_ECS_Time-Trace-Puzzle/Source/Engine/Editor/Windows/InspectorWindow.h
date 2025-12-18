@@ -104,9 +104,6 @@ public:
 
 				FileSelector("Texture", s.textureKey, "Resources/Textures", ".png", ResourceManager::ResourceType::Texture);
 
-				ImGui::DragFloat("Width", &s.width);
-				ImGui::DragFloat("Height", &s.height);
-				ImGui::DragFloat2("Pivot", &s.pivot.x, 0.01f);
 				ImGui::ColorEdit4("Color", &s.color.x);
 
 				if (ImGui::Button("Remove Sprite")) reg.remove<SpriteComponent>(selected);
@@ -244,7 +241,7 @@ public:
 				ImGui::DragFloat("Drag", &rb.drag, 0.01f);
 				ImGui::Checkbox("Use Gravity", &rb.useGravity);
 				if (ImGui::Button("Stop")) rb.velocity = { 0,0,0 };
-				if (ImGui::Button("Remove")) reg.remove<Rigidbody>(selected);
+				if (ImGui::Button("Remove Rigidbody")) reg.remove<Rigidbody>(selected);
 			}
 		}
 		if (reg.has<PlayerInput>(selected)) {
@@ -252,14 +249,14 @@ public:
 				PlayerInput& p = reg.get<PlayerInput>(selected);
 				ImGui::DragFloat("Speed", &p.speed, 0.1f);
 				ImGui::DragFloat("Jump", &p.jumpPower, 0.1f);
-				if (ImGui::Button("Remove")) reg.remove<PlayerInput>(selected);
+				if (ImGui::Button("Remove PlayerInput")) reg.remove<PlayerInput>(selected);
 			}
 		}
 		if (reg.has<Lifetime>(selected)) {
 			if (ImGui::CollapsingHeader("Lifetime", ImGuiTreeNodeFlags_DefaultOpen)) {
 				Lifetime& l = reg.get<Lifetime>(selected);
 				ImGui::DragFloat("Time Left", &l.time);
-				if (ImGui::Button("Remove")) reg.remove<Lifetime>(selected);
+				if (ImGui::Button("Remove Lifetime")) reg.remove<Lifetime>(selected);
 			}
 		}
 
@@ -275,7 +272,7 @@ public:
 		if (ImGui::BeginPopup("AddComponentPopup")) {
 			// ここに全てのコンポーネントを追加
 			if (!reg.has<MeshComponent>(selected) && ImGui::Selectable("Mesh")) reg.emplace<MeshComponent>(selected, "hero");
-			if (!reg.has<SpriteComponent>(selected) && ImGui::Selectable("Sprite")) reg.emplace<SpriteComponent>(selected, "player", 100, 100);
+			if (!reg.has<SpriteComponent>(selected) && ImGui::Selectable("Sprite")) reg.emplace<SpriteComponent>(selected, "player");
 			if (!reg.has<BillboardComponent>(selected) && ImGui::Selectable("Billboard")) reg.emplace<BillboardComponent>(selected, "star");
 			if (!reg.has<Collider>(selected) && ImGui::Selectable("Collider")) reg.emplace<Collider>(selected);
 			if (!reg.has<AudioSource>(selected) && ImGui::Selectable("Audio Source")) reg.emplace<AudioSource>(selected, "jump");

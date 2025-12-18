@@ -23,6 +23,7 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Core/StringId.h"
+#include "Engine/Graphics/Text/PrivateFontLoader.h"
 
 class FontManager
 {
@@ -49,6 +50,10 @@ private:
 	// キャッシュ: キー(StringId) -> TextFormat
 	// 同じ設定のフォントを何度も作らないようにする
 	std::unordered_map<StringId, ComPtr<IDWriteTextFormat>> m_textFormats;
+
+	// カスタムフォント管理用
+	ComPtr<IDWriteFontCollection> m_customCollection;
+	PrivateFontCollectionLoader* m_collectionLoader = nullptr;
 };
 
 #endif // !___FONT_MANAGER_H___

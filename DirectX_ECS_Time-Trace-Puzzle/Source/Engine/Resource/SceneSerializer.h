@@ -178,9 +178,7 @@ public:
 					SpriteComponent c;
 					auto& j = eJson["SpriteComponent"];
 					c.textureKey = StringId(j["key"].get<std::string>());
-					c.width = j["w"]; c.height = j["h"];
 					auto col = j["col"]; c.color = { col[0], col[1], col[2], col[3] };
-					auto piv = j["piv"]; c.pivot = { piv[0], piv[1] };
 					reg.emplace<SpriteComponent>(entity, c);
 				}
 

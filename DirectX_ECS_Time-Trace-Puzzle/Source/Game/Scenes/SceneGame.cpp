@@ -37,6 +37,7 @@
 #include "Game/Systems/Logic/HierarchySystem.h"
 #include "Game/Systems/Graphics/BillboardSystem.h"
 #include "Game/Systems/Graphics/TextRenderSystem.h"
+#include "Game/Systems/Logic/UISystem.h"
 
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Editor/Core/Editor.h"
@@ -62,6 +63,8 @@ void SceneGame::Initialize()
 	m_world.registerSystem<HierarchySystem>();
 	// 5. 衝突判定
 	m_world.registerSystem<CollisionSystem>();
+	// UI
+	m_world.registerSystem<UISystem>();
 	// 6. 描画
 	if (m_context->spriteRenderer)
 	{
@@ -131,27 +134,34 @@ void SceneGame::Initialize()
 		.add<Collider>()
 		.add<Rigidbody>();
 
-	// UI
-	m_world.create_entity()
-		.add<Tag>("UI")
-		.add<Transform>(XMFLOAT3(50.0f, 50.0f, 0.0f))
-		.add<SpriteComponent>("test", 64.0f, 64.0f);
-
 	m_world.create_entity()
 		.add<Tag>("Floor")
 		.add<Transform>(XMFLOAT3(1.0f, 0.0f, 0.0f))
 		.add<Collider>(Collider::CreateBox(10.0f, 1.0f, 10.0f))
 		.add<Rigidbody>(BodyType::Static);
 
+	// UIルート（Canvas）
+	Entity canvas = m_world.create_entity()
+		.add<Tag>("Canvas")
+		.add<Transform2D>(0.0f, 0.0f, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT)
+		.add<Canvas>(true, XMFLOAT2(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT)).id();
+
 	m_world.create_entity()
 		.add<Tag>("Text")
-		.add<Transform>(XMFLOAT3(0.0f, 200.0f, 0.0f))
+		.setParent(canvas)
+		.add<Transform2D>(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(500.0f, 100.0f), XMFLOAT2(0.5f, 0.5f))
 		.add<TextComponent>(
-			"Custom Font Test!",		// テキスト
-			"PixelMplus12-21",					// フォントキー
-			64.0f,						// フォントサイズ
+			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",		// テキスト
+			"Oradano-mincho-GSRR",					// フォントキー
+			80.0f,						// フォントサイズ
 			XMFLOAT4(1, 0.5f, 0.5f, 1)	// 色
 		);
+
+	m_world.create_entity()
+		.add<Tag>("Text")
+		.setParent(canvas)
+		.add<Transform2D>(XMFLOAT2(500.0f, 100.0f), XMFLOAT2(100.0f, 100.0f), XMFLOAT2(0.5f, 0.5f))
+		.add<SpriteComponent>("test");
 }
 
 void SceneGame::Finalize()
