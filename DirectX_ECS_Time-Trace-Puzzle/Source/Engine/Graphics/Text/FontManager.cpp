@@ -22,130 +22,117 @@
 #include "Engine/Graphics/Text/FontManager.h"
 #include "Engine/Core/Logger.h"
 
+FontManager::~FontManager()
+{
+	// 終了時に登録したフォントを削除
+	for (const auto& file : m_registeredFontFiles)
+	{
+		RemoveFontResourceExA(file.c_str(), FR_PRIVATE, 0);
+	}
+}
+
 void FontManager::Initialize()
 {
-	// D2D Factory作成
-	D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
-
-	// DirectWrite Factory作成
-	DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
-
-	if (!m_collectionLoader)
-	{
-		m_collectionLoader = new PrivateFontCollectionLoader();
-		m_collectionLoader->AddRef();
-		m_dwriteFactory->RegisterFontCollectionLoader(m_collectionLoader);
-	}
-
-	// .exe基準の絶対パス
-	char buffer[MAX_PATH]; 
-	GetModuleFileNameA(NULL, buffer, MAX_PATH);	// exeのフルパス取得
+	// ---------------------------------------------------------
+	// 1. カレントディレクトリをexeの場所に強制移動 (Release対策)
+	// ---------------------------------------------------------
+	char buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
 	std::string exePath(buffer);
-	// exe名の部分を削ってディレクトリだけにする
-	std::string exeDir = exePath.substr(0, exePath.find_last_of("\\/"));
+	std::string exeDir = std::filesystem::path(exePath).parent_path().string();
 
-	// 探索候補リスト
-	std::vector<std::string> searchPaths =
-	{
-		exeDir + "\\Resources\\Fonts",	// 1. exeと同じ場所 (Release/配布時)
-		"Resources/Fonts",				// 2. カレントディレクトリ（VSデバッグ時の標準）
-		"../../Resources/Fonts",		// 3. プロジェクトルート（x64/Debugから見た位置）
-		"../../../Resources/Fonts"		// 4. 念のためもう一つ上
-	};
+	// これにより "Resources/Fonts" などの相対パスが確実に通るようになります
+	std::filesystem::current_path(exeDir);
+	Logger::Log("Current Directory set to: " + exeDir);
 
-	std::string validPath = "";
-	for (const auto& path : searchPaths)
-	{
-		if (std::filesystem::exists(path))
-		{
-			validPath = path;
-			break;	// 見つかったら終了
-		}
-	}
+	// ---------------------------------------------------------
+	// 2. Factory作成
+	// ---------------------------------------------------------
+	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
+	if (FAILED(hr)) Logger::LogError("Failed to create D2D Factory!");
 
-	if (!validPath.empty())
-	{
-		Logger::Log("Fonts found at: " + validPath);
-		LoadFonts(validPath);
-	}
-	else
-	{
-		Logger::LogError("FAILED to find Resources/Fonts directory!");
+	hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
+	if (FAILED(hr)) Logger::LogError("Failed to create DWrite Factory!");
+
+	// ---------------------------------------------------------
+	// 3. フォントロード
+	// ---------------------------------------------------------
+	// カレントディレクトリ基準で探す
+	if (std::filesystem::exists("Resources/Fonts")) {
 		LoadFonts("Resources/Fonts");
+	}
+	else {
+		Logger::LogError("Resources/Fonts directory NOT FOUND at: " + std::filesystem::absolute("Resources/Fonts").string());
+	}
+
+	// 最後にシステムフォント一覧を取得して、使える名前をリスト化する
+	m_loadedFontNames.clear();
+	ComPtr<IDWriteFontCollection> sysCollection;
+	m_dwriteFactory->GetSystemFontCollection(&sysCollection);
+
+	if (sysCollection) {
+		UINT32 count = sysCollection->GetFontFamilyCount();
+		for (UINT32 i = 0; i < count; ++i) {
+			ComPtr<IDWriteFontFamily> family;
+			sysCollection->GetFontFamily(i, &family);
+
+			// 名前取得
+			ComPtr<IDWriteLocalizedStrings> names;
+			family->GetFamilyNames(&names);
+			UINT32 index = 0; BOOL exists = false;
+			names->FindLocaleName(L"en-us", &index, &exists);
+			if (!exists) index = 0; // fallback
+
+			UINT32 length = 0;
+			names->GetStringLength(index, &length);
+			std::wstring wname; wname.resize(length + 1);
+			names->GetString(index, &wname[0], length + 1);
+			wname.pop_back(); // null除去
+
+			// string変換
+			int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), NULL, 0, NULL, NULL);
+			std::string name(size_needed, 0);
+			WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), &name[0], size_needed, NULL, NULL);
+
+			// 独自に追加したフォントかどうかは判別しにくいが、
+			// とりあえず全リストがあればユーザーはそこから選べる。
+			// 特にResourcesにあるファイル名に近いものはログに出すなどしてもよい。
+			m_loadedFontNames.push_back(name);
+		}
 	}
 }
 
 void FontManager::LoadFonts(const std::string& directory)
 {
 	namespace fs = std::filesystem;
-	if (!fs::exists(directory)) return;
 
-	// 1. ファイルパスを収集
-	std::vector<std::wstring> fontPaths;
+	Logger::Log("Loading fonts from: " + directory);
+
 	for (const auto& entry : fs::recursive_directory_iterator(directory))
 	{
 		if (entry.is_regular_file())
 		{
 			std::string ext = entry.path().extension().string();
-			if (ext == ".ttf" || ext == ".otf" || ext == ".TTF" || ext == ".OTF")
+			// 小文字変換
+			std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+			if (ext == ".ttf" || ext == ".otf")
 			{
-				// 絶対パスを取得してリストに追加
-				std::filesystem::path absPath = std::filesystem::absolute(entry.path());
-				fontPaths.push_back(absPath.wstring());
-				Logger::Log("Found Font File: " + absPath.string());
+				// 絶対パスを取得
+				std::string absPath = fs::absolute(entry.path()).string();
+
+				// Windows APIでフォントを一時インストール
+				int result = AddFontResourceExA(absPath.c_str(), FR_PRIVATE, 0);
+
+				if (result > 0) {
+					m_registeredFontFiles.push_back(absPath);
+					Logger::Log("Registered Font File: " + entry.path().filename().string());
+				}
+				else {
+					Logger::LogError("Failed to register font: " + absPath);
+				}
 			}
 		}
-	}
-
-	if (fontPaths.empty()) return;
-
-	// 2. ローダーにパスを渡して、カスタムコレクションを作成
-	m_collectionLoader->SetFontPaths(fontPaths);
-
-	// キーは何でもいいが、ローダーに渡される
-	const char* key = "CustomFonts";
-	HRESULT hr = m_dwriteFactory->CreateCustomFontCollection(
-		m_collectionLoader,
-		key,
-		(UINT32)strlen(key),
-		&m_customCollection
-	);
-
-	if (FAILED(hr)) {
-		Logger::LogError("Failed to create custom font collection.");
-		return;
-	}
-
-	// 3. デバッグ: カスタムコレクションの中身を確認
-	m_loadedFontNames.clear();
-
-	UINT32 count = m_customCollection->GetFontFamilyCount();
-	for (UINT32 i = 0; i < count; ++i)
-	{
-		ComPtr<IDWriteFontFamily> family;
-		m_customCollection->GetFontFamily(i, &family);
-		ComPtr<IDWriteLocalizedStrings> names;
-		family->GetFamilyNames(&names);
-
-		// 英語名(en-us)を優先して取得、なければ先頭のものを使う
-		UINT32 index = 0;
-		BOOL exists = false;
-		names->FindLocaleName(L"en-us", &index, &exists);
-		if (!exists) index = 0;
-
-		UINT32 length = 0;
-		names->GetStringLength(index, &length);
-		std::wstring wname; wname.resize(length + 1);
-		names->GetString(index, &wname[0], length + 1);
-		wname.resize(length); // null文字分をトリム
-
-		// wstring -> string
-		int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), NULL, 0, NULL, NULL);
-		std::string name(size_needed, 0);
-		WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), &name[0], size_needed, NULL, NULL);
-
-		m_loadedFontNames.push_back(name);
-		Logger::Log(">>> Loaded Font Family: " + name);
 	}
 }
 
@@ -155,22 +142,13 @@ ComPtr<IDWriteTextFormat> FontManager::GetTextFormat(StringId key, const std::ws
 		return m_textFormats[key];
 	}
 
-	// 重要: 指定されたフォントが「カスタムコレクション」にあるか探す
-	IDWriteFontCollection* targetCollection = nullptr; // nullptrならシステムフォントを使う
-
-	if (m_customCollection) {
-		UINT32 index;
-		BOOL exists;
-		m_customCollection->FindFamilyName(fontFamily.c_str(), &index, &exists);
-		if (exists) {
-			targetCollection = m_customCollection.Get(); // カスタムフォントにあった！
-		}
-	}
-
 	ComPtr<IDWriteTextFormat> format;
+
+	// 第二引数は nullptr (システムコレクション) でOKになる！
+	// AddFontResourceExで登録したフォントはシステムコレクションに含まれるため。
 	HRESULT hr = m_dwriteFactory->CreateTextFormat(
 		fontFamily.c_str(),
-		targetCollection, // ★ここでコレクションを切り替える
+		nullptr,
 		fontWeight,
 		fontStyle,
 		DWRITE_FONT_STRETCH_NORMAL,
@@ -182,6 +160,9 @@ ComPtr<IDWriteTextFormat> FontManager::GetTextFormat(StringId key, const std::ws
 	if (SUCCEEDED(hr)) {
 		m_textFormats[key] = format;
 		return format;
+	}
+	else {
+		Logger::LogError("Failed to create TextFormat for: " + std::string(fontFamily.begin(), fontFamily.end()));
 	}
 	return nullptr;
 }

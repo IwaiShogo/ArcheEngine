@@ -32,20 +32,19 @@ public:
 
 	void Initialize();
 
-	// フォントディレクトリ内の全フォントをメモリにロード
-	void LoadFonts(const std::string& directory);
+	ComPtr<IDWriteTextFormat> GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE fontStyle = DWRITE_FONT_STYLE_NORMAL);
 
-	ComPtr<IDWriteTextFormat> GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE fontSysle = DWRITE_FONT_STYLE_NORMAL);
-
-	IDWriteFactory* GetWriteFactory() const { return m_dwriteFactory.Get(); }
 	ID2D1Factory* GetD2DFactory() const { return m_d2dFactory.Get(); }
 
 	// ロードされたフォント名のリストを取得
 	const std::vector<std::string>& GetLoadedFontNames() const { return m_loadedFontNames; }
 
 private:
+	// フォントディレクトリ内の全フォントをメモリにロード
+	void LoadFonts(const std::string& directory);
+
 	FontManager() = default;
-	~FontManager() = default;
+	~FontManager();
 
 	ComPtr<ID2D1Factory> m_d2dFactory;
 	ComPtr<IDWriteFactory> m_dwriteFactory;
@@ -55,9 +54,9 @@ private:
 	std::unordered_map<StringId, ComPtr<IDWriteTextFormat>> m_textFormats;
 
 	// カスタムフォント管理用
-	ComPtr<IDWriteFontCollection> m_customCollection;
-	PrivateFontCollectionLoader* m_collectionLoader = nullptr;
+	std::vector<std::string> m_registeredFontFiles;
 
+	// GUI表示用
 	std::vector<std::string> m_loadedFontNames;
 };
 

@@ -152,7 +152,7 @@ void SceneGame::Initialize()
 		.add<Transform2D>(XMFLOAT2(0.0f, 50.0f), XMFLOAT2(500.0f, 80.0f), XMFLOAT2(0.2f, 0.0f))
 		.add<TextComponent>(
 			"Text",		// テキスト
-			"PixelMplus12",					// フォントキー
+			"Reggae One",					// フォントキー
 			80.0f,						// フォントサイズ
 			XMFLOAT4(1, 0.5f, 0.5f, 1)	// 色
 		);
