@@ -40,6 +40,9 @@ public:
 	IDWriteFactory* GetWriteFactory() const { return m_dwriteFactory.Get(); }
 	ID2D1Factory* GetD2DFactory() const { return m_d2dFactory.Get(); }
 
+	// ロードされたフォント名のリストを取得
+	const std::vector<std::string>& GetLoadedFontNames() const { return m_loadedFontNames; }
+
 private:
 	FontManager() = default;
 	~FontManager() = default;
@@ -54,6 +57,8 @@ private:
 	// カスタムフォント管理用
 	ComPtr<IDWriteFontCollection> m_customCollection;
 	PrivateFontCollectionLoader* m_collectionLoader = nullptr;
+
+	std::vector<std::string> m_loadedFontNames;
 };
 
 #endif // !___FONT_MANAGER_H___

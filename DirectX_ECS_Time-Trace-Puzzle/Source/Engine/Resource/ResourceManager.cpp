@@ -22,6 +22,7 @@
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Core/Logger.h"
+#include "Engine/Graphics/Text/FontManager.h"
 
 // ファイルヘッダ構造体
 struct RIFF_HEADER
@@ -560,6 +561,35 @@ void ResourceManager::OnInspector() {
 					GetSound(StringId(path));
 				}
 			}
+		}
+	}
+
+	// ------------------------------------------------------------
+	// 4. Fonts (Debug Info)
+	// ------------------------------------------------------------
+	if (ImGui::CollapsingHeader("Fonts (Loaded)")) {
+		const auto& fontNames = FontManager::Instance().GetLoadedFontNames();
+
+		ImGui::Text("Loaded Custom Fonts: %d", fontNames.size());
+
+		if (ImGui::BeginTable("FontsTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+			ImGui::TableSetupColumn("Family Name (Use this key!)");
+			ImGui::TableSetupColumn("Action");
+			ImGui::TableHeadersRow();
+
+			for (const auto& name : fontNames) {
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("%s", name.c_str());
+
+				// クリップボードにコピー機能
+				ImGui::TableSetColumnIndex(1);
+				std::string btnLabel = "Copy##" + name;
+				if (ImGui::Button(btnLabel.c_str())) {
+					ImGui::SetClipboardText(name.c_str());
+				}
+			}
+			ImGui::EndTable();
 		}
 	}
 

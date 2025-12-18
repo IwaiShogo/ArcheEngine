@@ -55,23 +55,20 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 	if (baseHeight == 0) baseHeight = 1080.0f;
 
 	// 現在のビューポートとの比率を計算
-	float scaleX = viewportWidth / baseWidth;
-	float scaleY = viewportHeight / baseHeight;
-	float uniformScale = (scaleX < scaleY) ? scaleX : scaleY;
-
-	// 画面全体をフィットさせるための行列
-	D2D1_MATRIX_3X2_F screenScaleMatrix = D2D1::Matrix3x2F::Scale(uniformScale, uniformScale);
+	float ratioX = viewportWidth / baseWidth;
+	float ratioY = viewportHeight / baseHeight;
+	float uniformScale = (ratioX < ratioY) ? ratioX : ratioY;
 
 	registry.view<TextComponent, Transform2D>().each([&](Entity e, TextComponent& text, Transform2D& trans)
 	{
 		// フォントサイズを計算し、キャッシュキーに含める
 		// これにより、サイズが変わるたびに別のフォントとしてキャッシュ・取得されるようになる。
-		int scaledFontSize = (int)(text.fontSize * uniformScale);
-		if (scaledFontSize < 1) scaledFontSize = 1; // 0以下防止
+		int targetFontSize = (int)text.fontSize;
+		if (targetFontSize < 1) targetFontSize = 1;
 
 		// キー生成: フォント名 + サイズ + 太字 + 斜体
 		std::string uniqueKeyStr = text.fontKey.c_str();
-		uniqueKeyStr += "_" + std::to_string(scaledFontSize);
+		uniqueKeyStr += "_" + std::to_string(targetFontSize);
 		if (text.isBold) uniqueKeyStr += "_B";
 		if (text.isItalic) uniqueKeyStr += "_I";
 		StringId uniqueKey(uniqueKeyStr.c_str());
@@ -85,7 +82,7 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 		auto format = FontManager::Instance().GetTextFormat(
 			uniqueKey,
 			fontNameW, // 個別のフォント名
-			(float)scaledFontSize,
+			(float)targetFontSize,
 			text.isBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, // 太字
 			text.isItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL // 斜体
 		);
@@ -110,7 +107,26 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 			// 文字列変換
 			std::wstring wText = std::wstring(text.text.begin(), text.text.end());
 
-			d2dRT->SetTransform(trans.worldMatrix * screenScaleMatrix);
+			// 平行移動成分 (dx, dy) を取り出し、画面比率(ratioX, ratioY)に合わせて移動
+			float newX = trans.worldMatrix.dx * ratioX;
+			float newY = trans.worldMatrix.dy * ratioY;
+
+			// 2. 回転・スケール成分 (平行移動以外) を取り出す
+			D2D1::Matrix3x2F localMat = reinterpret_cast<D2D1::Matrix3x2F&>(trans.worldMatrix);
+			localMat.dx = 0;
+			localMat.dy = 0;
+
+			// 3. 文字自体のサイズは「アスペクト比維持 (uniformScale)」で拡大縮小
+			D2D1::Matrix3x2F scaleMat = D2D1::Matrix3x2F::Scale(ratioX, ratioY);
+
+			// 4. 合成: [元の回転] * [ユニフォーム拡大]
+			D2D1::Matrix3x2F finalMat = localMat * scaleMat;
+
+			// 5. 最後に計算した「新しい位置」をセット
+			finalMat.dx = newX;
+			finalMat.dy = newY;
+
+			d2dRT->SetTransform(finalMat);
 
 			// 描画
 			d2dRT->DrawText(

@@ -149,10 +149,10 @@ void SceneGame::Initialize()
 	m_world.create_entity()
 		.add<Tag>("Text")
 		.setParent(canvas)
-		.add<Transform2D>(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(500.0f, 100.0f), XMFLOAT2(0.5f, 0.5f))
+		.add<Transform2D>(XMFLOAT2(0.0f, 50.0f), XMFLOAT2(500.0f, 80.0f), XMFLOAT2(0.2f, 0.0f))
 		.add<TextComponent>(
-			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",		// テキスト
-			"Oradano-mincho-GSRR",					// フォントキー
+			"Text",		// テキスト
+			"PixelMplus12",					// フォントキー
 			80.0f,						// フォントサイズ
 			XMFLOAT4(1, 0.5f, 0.5f, 1)	// 色
 		);

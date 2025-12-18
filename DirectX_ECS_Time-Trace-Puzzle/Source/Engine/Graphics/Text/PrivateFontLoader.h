@@ -22,24 +22,26 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
+#include "Engine/Core/Logger.h"
 
 // 1. フォントファイルを列挙するクラス
 class PrivateFontFileEnumerator : public IDWriteFontFileEnumerator
 {
 	IDWriteFactory* m_factory;
 	std::vector<std::wstring> m_filePaths;
-	size_t m_currentIndex = -1;
+	size_t m_currentIndex = static_cast<size_t>(-1);
 	ComPtr<IDWriteFontFile> m_currentFile;
 
 	ULONG m_refCount = 0;
 
 public:
 	PrivateFontFileEnumerator(IDWriteFactory* factory, const std::vector<std::wstring>& paths)
-		: m_factory(factory), m_filePaths(paths) {
-		m_factory->AddRef();
+		: m_factory(factory), m_filePaths(paths)
+	{
+		if (m_factory) m_factory->AddRef();
 	}
 
-	~PrivateFontFileEnumerator() { m_factory->Release(); }
+	~PrivateFontFileEnumerator() { if (m_factory) m_factory->Release(); }
 
 	// IUnknown
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void** ppvObject) override {
@@ -58,15 +60,44 @@ public:
 	// IDWriteFontFileEnumerator
 	HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasCurrentFile) override {
 		*hasCurrentFile = FALSE;
-		m_currentIndex++;
-		if (m_currentIndex < m_filePaths.size()) {
+
+		// 有効なファイルが見つかるか、リストが終わるまでループする（スキップ機能）
+		while (true)
+		{
+			m_currentIndex++;
+
+			// リストの末尾に達したら終了
+			if (m_currentIndex >= m_filePaths.size()) {
+				return S_OK;
+			}
+
 			m_currentFile.Reset();
-			HRESULT hr = m_factory->CreateFontFileReference(m_filePaths[m_currentIndex].c_str(), nullptr, &m_currentFile);
-			if (SUCCEEDED(hr)) *hasCurrentFile = TRUE;
-			return hr;
+
+			// フォントファイル参照を作成
+			HRESULT hr = m_factory->CreateFontFileReference(
+				m_filePaths[m_currentIndex].c_str(),
+				nullptr,
+				&m_currentFile
+			);
+
+			if (SUCCEEDED(hr)) {
+				// 成功したらこのファイルを採用してループを抜ける
+				*hasCurrentFile = TRUE;
+				return S_OK;
+			}
+			else {
+				// 失敗した場合、ログを出力して次のファイルへ進む（ループ継続）
+				// std::wstring を std::string に変換してログ出力
+				std::wstring wpath = m_filePaths[m_currentIndex];
+				int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wpath[0], (int)wpath.size(), NULL, 0, NULL, NULL);
+				std::string strTo(size_needed, 0);
+				WideCharToMultiByte(CP_UTF8, 0, &wpath[0], (int)wpath.size(), &strTo[0], size_needed, NULL, NULL);
+
+				Logger::LogError("Skipping invalid font file: " + strTo);
+			}
 		}
-		return S_OK;
 	}
+
 	HRESULT STDMETHODCALLTYPE GetCurrentFontFile(IDWriteFontFile** fontFile) override {
 		*fontFile = m_currentFile.Get();
 		if (*fontFile) (*fontFile)->AddRef();

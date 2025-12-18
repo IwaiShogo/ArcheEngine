@@ -117,6 +117,8 @@ void FontManager::LoadFonts(const std::string& directory)
 	}
 
 	// 3. デバッグ: カスタムコレクションの中身を確認
+	m_loadedFontNames.clear();
+
 	UINT32 count = m_customCollection->GetFontFamilyCount();
 	for (UINT32 i = 0; i < count; ++i)
 	{
@@ -125,14 +127,25 @@ void FontManager::LoadFonts(const std::string& directory)
 		ComPtr<IDWriteLocalizedStrings> names;
 		family->GetFamilyNames(&names);
 
-		UINT32 length = 0;
-		names->GetStringLength(0, &length);
-		std::wstring wname; wname.resize(length + 1);
-		names->GetString(0, &wname[0], length + 1);
+		// 英語名(en-us)を優先して取得、なければ先頭のものを使う
+		UINT32 index = 0;
+		BOOL exists = false;
+		names->FindLocaleName(L"en-us", &index, &exists);
+		if (!exists) index = 0;
 
-		// このログに出た名前を使ってください！
-		std::string name(wname.begin(), wname.end() - 1);
-		Logger::Log(">>> Custom Font Loaded: " + name);
+		UINT32 length = 0;
+		names->GetStringLength(index, &length);
+		std::wstring wname; wname.resize(length + 1);
+		names->GetString(index, &wname[0], length + 1);
+		wname.resize(length); // null文字分をトリム
+
+		// wstring -> string
+		int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), NULL, 0, NULL, NULL);
+		std::string name(size_needed, 0);
+		WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), &name[0], size_needed, NULL, NULL);
+
+		m_loadedFontNames.push_back(name);
+		Logger::Log(">>> Loaded Font Family: " + name);
 	}
 }
 
