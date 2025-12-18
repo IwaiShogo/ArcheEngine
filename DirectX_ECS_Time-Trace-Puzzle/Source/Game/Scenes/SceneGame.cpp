@@ -36,6 +36,7 @@
 #include "Game/Systems/Logic/LifetimeSystem.h"
 #include "Game/Systems/Logic/HierarchySystem.h"
 #include "Game/Systems/Graphics/BillboardSystem.h"
+#include "Game/Systems/Graphics/TextRenderSystem.h"
 
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Editor/Core/Editor.h"
@@ -66,6 +67,7 @@ void SceneGame::Initialize()
 	{
 		m_world.registerSystem<SpriteRenderSystem>(m_context->spriteRenderer);
 	}
+
 	if (m_context->billboardRenderer)
 	{
 		m_world.registerSystem<BillboardSystem>(m_context->billboardRenderer);
@@ -78,6 +80,7 @@ void SceneGame::Initialize()
 	{
 		m_world.registerSystem<RenderSystem>(m_context->renderer);
 	}
+	m_world.registerSystem<TextRenderSystem>(m_context->device, m_context->context);
 	// 7. オーディオ
 	m_world.registerSystem<AudioSystem>();
 #ifdef _DEBUG
@@ -142,8 +145,13 @@ void SceneGame::Initialize()
 
 	m_world.create_entity()
 		.add<Tag>("Text")
-		.add<Transform>(XMFLOAT3(10.0f, 10.0f, 0.0f))
-		.add<TextComponent>("Draw Text");
+		.add<Transform>(XMFLOAT3(0.0f, 200.0f, 0.0f))
+		.add<TextComponent>(
+			"Custom Font Test!",		// テキスト
+			"PixelMplus12-21",					// フォントキー
+			64.0f,						// フォントサイズ
+			XMFLOAT4(1, 0.5f, 0.5f, 1)	// 色
+		);
 }
 
 void SceneGame::Finalize()

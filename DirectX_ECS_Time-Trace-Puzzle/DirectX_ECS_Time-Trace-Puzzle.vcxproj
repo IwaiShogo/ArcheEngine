@@ -191,6 +191,7 @@
     <ClInclude Include="Source\Game\Systems\Graphics\ModelRenderSystem.h" />
     <ClInclude Include="Source\Game\Systems\Graphics\RenderSystem.h" />
     <ClInclude Include="Source\Game\Systems\Graphics\SpriteRenderSystem.h" />
+    <ClInclude Include="Source\Game\Systems\Graphics\TextRenderSystem.h" />
     <ClInclude Include="Source\Game\Systems\Logic\HierarchySystem.h" />
     <ClInclude Include="Source\Game\Systems\Logic\InputSystem.h" />
     <ClInclude Include="Source\Game\Systems\Logic\LifetimeSystem.h" />

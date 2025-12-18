@@ -480,11 +480,15 @@ struct TextComponent
 	XMFLOAT2 offset;	// 親Transformからのオフセット
 
 	// レイアウト設定
-	float maxWidth = 0.0f;	// 0なら制限なし
+	float maxWidth = 0.0f;		// 0なら制限なし
 	bool centerAlign = false;
 
-	TextComponent(const std::string& t = "Text", StringId font = "Default", float size = 24.0f, const XMFLOAT4& c = { 1, 1, 1, 1 })
-		: text(t), fontKey(font), fontSize(size), color(c), offset({ 0, 0 }) {}
+	// スタイルオプション
+	bool isBold = false;
+	bool isItalic = false;
+
+	TextComponent(const std::string& t = "Text", StringId font = "Meiryo", float size = 24.0f, const XMFLOAT4& c = { 1,1,1,1 })
+		: text(t), fontKey(font), fontSize(size), color(c), offset({ 0,0 }) {}
 };
 
 // ============================================================

@@ -78,10 +78,11 @@ private:
 	std::unique_ptr<RenderTarget> m_sceneRT;
 	std::unique_ptr<RenderTarget> m_gameRT;
 
+	ImVec2 m_sceneWindowSize = { 0, 0 };
+	ImVec2 m_gameWindowSize = { 0, 0 };
+
 	// シーンマネージャー
 	SceneManager m_sceneManager;
-
-	ImVec2 m_sceneWindowSize = { (float)Config::SCREEN_WIDTH, (float)Config::SCREEN_HEIGHT };
 };
 
 #endif // !___APPLICATION_H___

@@ -127,6 +127,32 @@ public:
 			}
 		}
 
+		if (reg.has<TextComponent>(selected)) {
+			if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen)) {
+				TextComponent& t = reg.get<TextComponent>(selected);
+
+				char buf[256]; strcpy_s(buf, t.text.c_str());
+				if (ImGui::InputTextMultiline("Content", buf, sizeof(buf))) t.text = buf;
+
+				// フォント名入力（簡易版）
+				char fontBuf[64]; strcpy_s(fontBuf, t.fontKey.c_str());
+				if (ImGui::InputText("Font", fontBuf, sizeof(fontBuf))) t.fontKey = StringId(fontBuf);
+
+				ImGui::DragFloat("Size", &t.fontSize, 0.5f, 1.0f, 300.0f);
+				ImGui::ColorEdit4("Color", &t.color.x);
+				ImGui::DragFloat2("Offset", &t.offset.x);
+
+				// スタイル設定
+				ImGui::Checkbox("Bold", &t.isBold);
+				ImGui::SameLine();
+				ImGui::Checkbox("Italic", &t.isItalic);
+
+				ImGui::Checkbox("Center Align", &t.centerAlign);
+
+				if (ImGui::Button("Remove Text")) reg.remove<TextComponent>(selected);
+			}
+		}
+
 		// 5. AudioSource
 		if (reg.has<AudioSource>(selected)) {
 			if (ImGui::CollapsingHeader("Audio Source", ImGuiTreeNodeFlags_DefaultOpen)) {

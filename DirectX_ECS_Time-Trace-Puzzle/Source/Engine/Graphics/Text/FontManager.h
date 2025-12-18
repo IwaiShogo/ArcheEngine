@@ -31,7 +31,10 @@ public:
 
 	void Initialize();
 
-	ComPtr<IDWriteTextFormat> GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL);
+	// フォントディレクトリ内の全フォントをメモリにロード
+	void LoadFonts(const std::string& directory);
+
+	ComPtr<IDWriteTextFormat> GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE fontSysle = DWRITE_FONT_STYLE_NORMAL);
 
 	IDWriteFactory* GetWriteFactory() const { return m_dwriteFactory.Get(); }
 	ID2D1Factory* GetD2DFactory() const { return m_d2dFactory.Get(); }

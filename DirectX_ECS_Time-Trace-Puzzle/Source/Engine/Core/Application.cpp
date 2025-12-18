@@ -56,7 +56,7 @@ void Application::Initialize()
 	scd.BufferCount = 1;
 	scd.BufferDesc.Width = Config::SCREEN_WIDTH;
 	scd.BufferDesc.Height = Config::SCREEN_HEIGHT;
-	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	scd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	scd.BufferDesc.RefreshRate.Numerator = Config::FRAME_RATE;
 	scd.BufferDesc.RefreshRate.Denominator = 1;
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -64,6 +64,13 @@ void Application::Initialize()
 	scd.SampleDesc.Count = 1;
 	scd.SampleDesc.Quality = 0;
 	scd.Windowed = TRUE;
+
+	// フラグ設定
+	UINT creationFlags = 0;
+#ifdef _DEBUG
+	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif // _DEBUG
+	creationFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
 	// 2. デバイスとスワップチェーンの作成
 	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
@@ -73,7 +80,7 @@ void Application::Initialize()
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		0,
+		creationFlags,
 		featureLevels,
 		1,
 		D3D11_SDK_VERSION,
@@ -204,6 +211,7 @@ void Application::Initialize()
 	m_billboardRenderer = std::make_unique<BillboardRenderer>(m_device.Get(), m_context.Get());
 	m_billboardRenderer->Initialize();
 
+	// テキストレンダラー
 	m_textRenderer = std::make_unique<TextRenderer>(m_device.Get(), m_context.Get());
 	
 	Context context;
@@ -211,6 +219,8 @@ void Application::Initialize()
 	context.spriteRenderer = m_spriteRenderer.get();
 	context.modelRenderer = m_modelRenderer.get();
 	context.billboardRenderer = m_billboardRenderer.get();
+	context.device = m_device.Get();
+	context.context = m_context.Get();
 
 	// サムネイル生成器の初期化
 	ThumbnailGenerator::Instance().Initialize(m_device.Get(), m_context.Get(), m_modelRenderer.get());
@@ -271,6 +281,11 @@ void Application::Render()
 		m_sceneRT->Resize(m_device.Get(), (int)m_sceneWindowSize.x, (int)m_sceneWindowSize.y);
 	}
 
+	if (m_gameWindowSize.y > 0)
+	{
+		m_gameRT->Resize(m_device.Get(), (int)m_gameWindowSize.x, (int)m_gameWindowSize.y);
+	}
+
 	// ----------------------------------------------------
 	// 2. Scene View (RT) への描画
 	// ----------------------------------------------------
@@ -290,13 +305,6 @@ void Application::Render()
 		// シーンマネージャに一時的にセットして描画
 		m_sceneManager.SetContext(sceneCtx);
 		m_sceneManager.Render();
-
-		m_textRenderer->Render(
-			m_sceneManager.GetWorld().getRegistry(),
-			m_renderTargetView.Get(),
-			m_sceneWindowSize.x,
-			m_sceneWindowSize.y
-		);
 	}
 
 	// ----------------------------------------------------
@@ -319,13 +327,6 @@ void Application::Render()
 		// シーンマネージャにセットして描画
 		m_sceneManager.SetContext(gameCtx);
 		m_sceneManager.Render();
-
-		m_textRenderer->Render(
-			m_sceneManager.GetWorld().getRegistry(),
-			m_renderTargetView.Get(),
-			m_sceneWindowSize.x,
-			m_sceneWindowSize.y
-		);
 	}
 
 	// 設定を元に戻す（Editor表示用）
@@ -451,7 +452,7 @@ void Application::Render()
 	ImGui::Begin("Game");
 	{
 		ImVec2 size = ImGui::GetContentRegionAvail();
-		m_gameRT->Resize(m_device.Get(), (int)size.x, (int)size.y);
+		m_gameWindowSize = size;
 		ImGui::Image(m_gameRT->GetID(), size);
 	}
 	ImGui::End();

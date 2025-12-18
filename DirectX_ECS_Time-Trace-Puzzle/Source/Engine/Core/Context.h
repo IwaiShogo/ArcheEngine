@@ -53,10 +53,15 @@ struct DebugSettings
 
 struct Context
 {
+	// Renderer
 	PrimitiveRenderer*	renderer = nullptr; 
 	SpriteRenderer*		spriteRenderer = nullptr;
 	ModelRenderer*		modelRenderer = nullptr;
 	BillboardRenderer*	billboardRenderer = nullptr;
+
+	// DirectX Device & Context
+	ID3D11Device* device = nullptr;
+	ID3D11DeviceContext* context = nullptr;
 
 	DebugSettings debug;
 };

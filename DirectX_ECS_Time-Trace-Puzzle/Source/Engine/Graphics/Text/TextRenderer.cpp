@@ -37,6 +37,9 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 {
 	if (!rtv) return;
 
+	// キャッシュをクリア
+	m_d2dTargets.clear();
+
 	// 1. D2D RenderTargetの取得
 	ID2D1RenderTarget* d2dRT = GetD2DRenderTarget(rtv);
 	if (!d2dRT) return;
@@ -48,12 +51,32 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 	// これにより、画面が小さくなっても文字が「画面に対して同じ大きさ」に見える
 	float scale = viewportHeight / BASE_SCREEN_HEIGHT;
 
-	registry.view<TextComponent, Transform>().each([&](Entity e, TextComponent& text, Transform& trans) {
-		// フォント取得（なければデフォルト作成）
+	registry.view<TextComponent, Transform>().each([&](Entity e, TextComponent& text, Transform& trans)
+	{
+		// フォントサイズを計算し、キャッシュキーに含める
+		// これにより、サイズが変わるたびに別のフォントとしてキャッシュ・取得されるようになる。
+		int scaledFontSize = (int)(text.fontSize * scale);
+		if (scaledFontSize < 1) scaledFontSize = 1; // 0以下防止
+
+		// キー生成: フォント名 + サイズ + 太字 + 斜体
+		std::string uniqueKeyStr = text.fontKey.c_str();
+		uniqueKeyStr += "_" + std::to_string(scaledFontSize);
+		if (text.isBold) uniqueKeyStr += "_B";
+		if (text.isItalic) uniqueKeyStr += "_I";
+		StringId uniqueKey(uniqueKeyStr.c_str());
+
+		// フォント名: コンポーネントの fontKey を使う
+		// StringId -> std::string -> std::wstring 変換
+		std::string fontNameStr = text.fontKey.c_str();
+		std::wstring fontNameW(fontNameStr.begin(), fontNameStr.end());
+		if (fontNameStr == "Default") fontNameW = L"Meiryo"; // デフォルト処理
+
 		auto format = FontManager::Instance().GetTextFormat(
-			text.fontKey,
-			L"Meiryo", // デフォルトはメイリオ
-			text.fontSize * scale // ★ここでスケーリング適用
+			uniqueKey,
+			fontNameW, // 個別のフォント名
+			(float)scaledFontSize,
+			text.isBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, // 太字
+			text.isItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL // 斜体
 		);
 
 		if (format) {
@@ -65,15 +88,12 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 			if (!m_brush) d2dRT->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1), &m_brush);
 			m_brush->SetColor(D2D1::ColorF(text.color.x, text.color.y, text.color.z, text.color.w));
 
-			// 座標計算 (スクリーン座標変換)
-			// 本来は3D空間の座標をProjectしてスクリーン座標にする必要があるが、
-			// ここでは簡易的に「Transform.position.x/y をスクリーン上の割合(0.0-1.0)またはピクセル」として扱うか、
-			// 2D UIとして扱う設計にするのが一般的。
+			// 座標計算
+			float scaledPosX = trans.position.x * scale;
+			float scaledPosY = trans.position.y * scale;
 
-			// 今回は「Transform.position」を「スクリーン中心(0,0)からのピクセル座標」として扱ってみます。
-			// 必要に応じて「3Dワールド座標から変換」する処理に変えてください。
-			float screenX = (viewportWidth * 0.5f) + trans.position.x + (text.offset.x * scale);
-			float screenY = (viewportHeight * 0.5f) - trans.position.y - (text.offset.y * scale);
+			float screenX = (viewportWidth * 0.5f) + scaledPosX + (text.offset.x * scale);
+			float screenY = (viewportHeight * 0.5f) - scaledPosY - (text.offset.y * scale);
 
 			// 矩形定義
 			D2D1_RECT_F layoutRect = D2D1::RectF(
@@ -95,7 +115,7 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 				m_brush.Get()
 			);
 		}
-		});
+	});
 
 	// 4. 描画終了
 	d2dRT->EndDraw();

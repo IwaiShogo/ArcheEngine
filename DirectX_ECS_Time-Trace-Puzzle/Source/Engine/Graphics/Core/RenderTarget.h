@@ -43,6 +43,8 @@ public:
 
 	int GetWidth() const { return m_width; }
 	int GetHeight() const { return m_height; }
+	
+	ID3D11RenderTargetView* GetRTV() const { return m_rtv.Get(); }
 
 	// リサイズ対応（ウィンドウサイズが変わった時用）
 	void Resize(ID3D11Device* device, int width, int height);
