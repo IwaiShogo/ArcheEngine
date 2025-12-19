@@ -128,7 +128,20 @@ public:
 			if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen)) {
 				TextComponent& t = reg.get<TextComponent>(selected);
 
-				char buf[256]; strcpy_s(buf, t.text.c_str());
+				char buf[1024];
+				// 安全のためクリア
+				memset(buf, 0, sizeof(buf));
+				// std::string (UTF-8)をバッファにコピー
+				if (t.text.size() < sizeof(buf))
+				{
+					strcpy_s(buf, t.text.c_str());
+				}
+				else
+				{
+					// 文字列が長すぎる場合は切り詰め
+					memcpy(buf, t.text.data(), sizeof(buf) - 1);
+				}
+
 				if (ImGui::InputTextMultiline("Content", buf, sizeof(buf))) t.text = buf;
 
 				// フォント名入力（簡易版）

@@ -32,8 +32,39 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (uMsg == WM_IME_CHAR)
+	{
+		auto& io = ImGui::GetIO();
+		DWORD wChar = (DWORD)wParam;
+
+		// 1バイト文字（英数など）はそのまま
+		if (wChar <= 127)
+		{
+			io.AddInputCharacter((unsigned int)wChar);
+		}
+		else
+		{
+			// 2バイト文字（Shift-JIS）の場合
+			// Windowsからの入力はリトルエンディアンで来るため、バイト順を調整して変換します
+			BYTE low = (BYTE)(wChar & 0x00FF);
+			BYTE high = (BYTE)((wChar & 0xFF00) >> 8);
+
+			// メモリ上の配置を Shift-JIS の並び順 (上位->下位) に合わせる
+			WORD sortedChar = MAKEWORD(high, low);
+
+			// Shift-JIS (CP_ACP) -> UTF-16 (wchar_t) に変換
+			wchar_t wBuf[2] = { 0 };
+			MultiByteToWideChar(CP_ACP, 0, (LPCSTR)&sortedChar, 2, wBuf, 2);
+
+			// UTF-16としてImGuiに渡す（ImGui内部でUTF-8に変換される）
+			io.AddInputCharacter(wBuf[0]);
+		}
+		return 0; // ImGuiのデフォルト処理と重複しないようにここで終了
+	}
+	// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
 	// ImGuiへのメッセージを渡す
-	if(ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) return true;
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) return true;
 
 	if (uMsg == WM_DESTROY)
 	{

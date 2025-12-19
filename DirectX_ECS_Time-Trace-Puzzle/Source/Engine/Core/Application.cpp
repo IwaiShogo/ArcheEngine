@@ -167,6 +167,22 @@ void Application::Initialize()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	// ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+	// 日本語フォントの読み込み
+	// ------------------------------------------------------------
+	// Windows標準の「メイリオ」などを読み込む
+	static const ImWchar* glyphRanges = io.Fonts->GetGlyphRangesJapanese();
+
+	// フォントサイズ 18.0f で読み込み
+	ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\meiryo.ttc", 18.0f, nullptr, glyphRanges);
+
+	// もし読み込みに失敗した場合の保険
+	if (font == nullptr)
+	{
+		io.Fonts->AddFontDefault();
+	}
+	// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
 	// ドッキングとマルチビューポートを有効化
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	// キーボード操作有効
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		// ウィンドウドッキング有効
