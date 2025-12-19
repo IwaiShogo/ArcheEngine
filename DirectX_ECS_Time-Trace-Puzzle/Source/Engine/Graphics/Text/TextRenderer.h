@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	TextRenderer.h
  * @brief	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___TEXT_RENDERER_H___
 #define ___TEXT_RENDERER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Graphics/Text/FontManager.h"
@@ -31,20 +31,20 @@ public:
 	TextRenderer(ID3D11Device* device, ID3D11DeviceContext* context);
 	~TextRenderer();
 
-	// •`‰æÀs
-	// renderTargetView: •`‰ææ‚ÌRTViDebug‚ÍƒV[ƒ“RTARelease‚ÍBackBufferj
-	// viewportWidth/Height: Œ»İ‚Ì•`‰æ—ÌˆæƒTƒCƒY
+	// æç”»å®Ÿè¡Œ
+	// renderTargetView: æç”»å…ˆã®RTVï¼ˆDebugæ™‚ã¯ã‚·ãƒ¼ãƒ³RTã€Releaseæ™‚ã¯BackBufferï¼‰
+	// viewportWidth/Height: ç¾åœ¨ã®æç”»é ˜åŸŸã‚µã‚¤ã‚º
 	void Render(Registry& registry, ID3D11RenderTargetView* rtv, float viewportWidth, float viewportHeight);
 
 private:
-	// D3D11ƒeƒNƒXƒ`ƒƒ‚ÉŠÖ˜A•t‚¯‚ç‚ê‚½D2DƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ğì¬Eæ“¾
+	// D3D11ãƒ†ã‚¯ã‚¹ãƒãƒ£ã«é–¢é€£ä»˜ã‘ã‚‰ã‚ŒãŸD2Dãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’ä½œæˆãƒ»å–å¾—
 	ID2D1RenderTarget* GetD2DRenderTarget(ID3D11RenderTargetView* rtv);
 
 	ID3D11Device* m_device;
 	ID3D11DeviceContext* m_context;
 
-	// RTVƒ|ƒCƒ“ƒ^‚ğƒL[‚É‚µ‚ÄD2Dƒ^[ƒQƒbƒg‚ğƒLƒƒƒbƒVƒ…
-	// iDebug/ReleaseØ‚è‘Ö‚¦‚âƒŠƒTƒCƒY‚É‘Î‰j
+	// RTVãƒã‚¤ãƒ³ã‚¿ã‚’ã‚­ãƒ¼ã«ã—ã¦D2Dã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’ã‚­ãƒ£ãƒƒã‚·ãƒ¥
+	// ï¼ˆDebug/Releaseåˆ‡ã‚Šæ›¿ãˆã‚„ãƒªã‚µã‚¤ã‚ºæ™‚ã«å¯¾å¿œï¼‰
 	std::unordered_map<ID3D11RenderTargetView*, ComPtr<ID2D1RenderTarget>> m_d2dTargets;
 
 	ComPtr<ID2D1SolidColorBrush> m_brush;

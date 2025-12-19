@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Input.h
- * @brief	ƒL[ƒ{[ƒhAƒRƒ“ƒgƒ[ƒ‰[‘€ì
+ * @brief	ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã€ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼æ“ä½œ
  * 
  * @details	
  * 
@@ -8,36 +8,36 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/24	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/24	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___INPUT_H___
 #define ___INPUT_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 
 /**
  * @enum	Axis
- * @brief	²‚Ìí—Ş
+ * @brief	è»¸ã®ç¨®é¡
  */
 enum class Axis
 {
-	Horizontal,	// ‰¡•ûŒüiADA–îˆó¶‰EA¶ƒXƒeƒBƒbƒNXj
-	Vertical,	// c•ûŒüiWSA–îˆóã‰ºA¶ƒXƒeƒBƒbƒNYj
-	RightHorizontal,	// ‰EƒXƒeƒBƒbƒN
-	RightVertical,		// ‰EƒXƒeƒBƒbƒN
+	Horizontal,	// æ¨ªæ–¹å‘ï¼ˆADã€çŸ¢å°å·¦å³ã€å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Xï¼‰
+	Vertical,	// ç¸¦æ–¹å‘ï¼ˆWSã€çŸ¢å°ä¸Šä¸‹ã€å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯Yï¼‰
+	RightHorizontal,	// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯
+	RightVertical,		// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯
 };
 
 /**
  * @enum	Button
- * @brief	ƒ{ƒ^ƒ“‚Ìí—Ş
+ * @brief	ãƒœã‚¿ãƒ³ã®ç¨®é¡
  */
 enum class Button
 {
@@ -45,78 +45,78 @@ enum class Button
 	Start, Back,
 	LShoulder, RShoulder,
 	Up, Down, Left, Right,
-	MaxCount	// ƒ{ƒ^ƒ“‚Ì‘”Šm”F—p
+	MaxCount	// ãƒœã‚¿ãƒ³ã®ç·æ•°ç¢ºèªç”¨
 };
 
 class Input
 {
 public:
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	static void Initialize();
 
-	// –ˆƒtƒŒ[ƒ€ŒÄ‚Ô
+	// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶
 	static void Update();
 
-	// --- æ“¾ŠÖ” ---
-	// ²‚Ì’l‚ğæ“¾i-1.0f ~ 1.0fj
-	// ƒL[ƒ{[ƒh‚ÆƒRƒ“ƒgƒ[ƒ‰[‚Ì’l‚ğ‡¬‚µ‚Ä•Ô‚µ‚Ü‚·
+	// --- å–å¾—é–¢æ•° ---
+	// è»¸ã®å€¤ã‚’å–å¾—ï¼ˆ-1.0f ~ 1.0fï¼‰
+	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã¨ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®å€¤ã‚’åˆæˆã—ã¦è¿”ã—ã¾ã™
 	static float GetAxis(Axis axis);
 
-	// Press: ‰Ÿ‚³‚ê‚Ä‚¢‚éŠÔ‚¸‚Á‚Æ true
+	// Press: æŠ¼ã•ã‚Œã¦ã„ã‚‹é–“ãšã£ã¨ true
 	static bool GetButton(Button button);
-	// Trigger: ‰Ÿ‚µ‚½uŠÔ‚¾‚¯ true
+	// Trigger: æŠ¼ã—ãŸç¬é–“ã ã‘ true
 	static bool GetButtonDown(Button button);
-	// Release: —£‚µ‚½uŠÔ‚¾‚¯ true
+	// Release: é›¢ã—ãŸç¬é–“ã ã‘ true
 	static bool GetButtonUp(Button button);
-	// Repeat: ‰Ÿ‚µ‚Á‚Ï‚È‚µ‚Åˆê’èŠÔŠu‚²‚Æ‚É true
+	// Repeat: æŠ¼ã—ã£ã±ãªã—ã§ä¸€å®šé–“éš”ã”ã¨ã« true
 	static bool GetButtonRepeat(Button button);
 
-	// ƒRƒ“ƒgƒ[ƒ‰[‚ªÚ‘±‚³‚ê‚Ä‚¢‚é‚©
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ãŒæ¥ç¶šã•ã‚Œã¦ã„ã‚‹ã‹
 	static bool IsControllerConnected();
 
 	static bool GetKey(int keyCode);
 
-	// ƒ}ƒEƒX‚ÌˆÚ“®—Ê‚ğæ“¾
+	// ãƒã‚¦ã‚¹ã®ç§»å‹•é‡ã‚’å–å¾—
 	static float GetMouseDeltaX();
 	static float GetMouseDeltaY();
 
-	// ƒ}ƒEƒX‚Ì‰Eƒ{ƒ^ƒ“
+	// ãƒã‚¦ã‚¹ã®å³ãƒœã‚¿ãƒ³
 	static bool GetMouseRightButton();
-	// ƒ}ƒEƒX‚Ì¶ƒ{ƒ^ƒ“
+	// ãƒã‚¦ã‚¹ã®å·¦ãƒœã‚¿ãƒ³
 	static bool GetMouseLeftButton();
 
-	static bool GetKeyDown(int keyCode);	// ƒL[ƒ{[ƒh—p‚ÌDown”»’èƒwƒ‹ƒp[
+	static bool GetKeyDown(int keyCode);	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ç”¨ã®Downåˆ¤å®šãƒ˜ãƒ«ãƒ‘ãƒ¼
 
 private:
-	// ƒ{ƒ^ƒ“‚Ìƒ}ƒbƒsƒ“ƒO—pƒwƒ‹ƒp[
+	// ãƒœã‚¿ãƒ³ã®ãƒãƒƒãƒ”ãƒ³ã‚°ç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼
 	static int GetXInputButtonMask(Button button);
 	static int GetKeyboardKey(Button button);
 
-	// ƒfƒbƒhƒ][ƒ“ˆ——p
+	// ãƒ‡ãƒƒãƒ‰ã‚¾ãƒ¼ãƒ³å‡¦ç†ç”¨
 	static float ApplyDeadzone(float value, float deadzone);
 
 private:
-	// XInput‚Ìó‘Ô
-	inline static XINPUT_STATE s_state = {};	// Œ»İ‚ÌƒtƒŒ[ƒ€
-	inline static XINPUT_STATE s_oldState = {};	// 1ƒtƒŒ[ƒ€‘O
+	// XInputã®çŠ¶æ…‹
+	inline static XINPUT_STATE s_state = {};	// ç¾åœ¨ã®ãƒ•ãƒ¬ãƒ¼ãƒ 
+	inline static XINPUT_STATE s_oldState = {};	// 1ãƒ•ãƒ¬ãƒ¼ãƒ å‰
 	inline static bool s_isConnected = false;
 
-	// ƒŠƒs[ƒg§Œä—p
-	// Šeƒ{ƒ^ƒ“‚ª‰½•b‰Ÿ‚³‚ê‘±‚¯‚Ä‚¢‚é‚©
+	// ãƒªãƒ”ãƒ¼ãƒˆåˆ¶å¾¡ç”¨
+	// å„ãƒœã‚¿ãƒ³ãŒä½•ç§’æŠ¼ã•ã‚Œç¶šã‘ã¦ã„ã‚‹ã‹
 	inline static std::array<float, (size_t)Button::MaxCount> s_buttonDuration = { 0 };
 
-	// ƒŠƒs[ƒgİ’èi•bj
-	static constexpr float REPEAT_START_TIME = 0.5f;	// ˜A‘ÅŠJn‚Ü‚Å‚ÌŠÔ
-	static constexpr float REPEAT_INTERVAL = 0.1f;		// ˜A‘ÅŠÔŠu
+	// ãƒªãƒ”ãƒ¼ãƒˆè¨­å®šï¼ˆç§’ï¼‰
+	static constexpr float REPEAT_START_TIME = 0.5f;	// é€£æ‰“é–‹å§‹ã¾ã§ã®æ™‚é–“
+	static constexpr float REPEAT_INTERVAL = 0.1f;		// é€£æ‰“é–“éš”
 
-	// ƒ}ƒEƒX—p
+	// ãƒã‚¦ã‚¹ç”¨
 	inline static POINT s_prevMousePos = {};
 	inline static float s_mouseDeltaX = 0.0f;
 	inline static float s_mouseDeltaY = 0.0f;
 
-	// ƒL[ƒ{[ƒhó‘Ô•Û‘¶—p
-	inline static BYTE s_keyState[256] = {};	// Œ»İ
-	inline static BYTE s_oldKeyState[256] = {};	// 1ƒtƒŒ[ƒ€
+	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰çŠ¶æ…‹ä¿å­˜ç”¨
+	inline static BYTE s_keyState[256] = {};	// ç¾åœ¨
+	inline static BYTE s_oldKeyState[256] = {};	// 1ãƒ•ãƒ¬ãƒ¼ãƒ 
 };
 
 #endif // !___INPUT_H___

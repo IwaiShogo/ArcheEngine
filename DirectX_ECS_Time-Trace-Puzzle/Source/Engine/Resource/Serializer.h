@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Serializer.h
- * @brief	ŠeƒRƒ“ƒ|[ƒlƒ“ƒg‚Ìƒf[ƒ^‚ğ“Ç‚İ‘‚«‚·‚éƒNƒ‰ƒX
+ * @brief	å„ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿æ›¸ãã™ã‚‹ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,23 +8,23 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
  * @note	
- * ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ’Ç‰Á‚µ‚½ÛF
- * 1. SaveEntity()“à‚É“o˜^
- * 2. LoadEntity()“à‚É“o˜^
- * 3. ToJson(), FromJson()‚ğì¬
+ * ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸéš›ï¼š
+ * 1. SaveEntity()å†…ã«ç™»éŒ²
+ * 2. LoadEntity()å†…ã«ç™»éŒ²
+ * 3. ToJson(), FromJson()ã‚’ä½œæˆ
  *********************************************************************/
 
 #ifndef ___SERIALIZER_H___
 #define ___SERIALIZER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
@@ -33,37 +33,37 @@ using json = nlohmann::json;
 
 class Serializer {
 public:
-	// ƒGƒ“ƒeƒBƒeƒB‚ğJSONƒtƒ@ƒCƒ‹‚Æ‚µ‚Ä•Û‘¶iƒvƒŒƒnƒu‰»j
+	// ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’JSONãƒ•ã‚¡ã‚¤ãƒ«ã¨ã—ã¦ä¿å­˜ï¼ˆãƒ—ãƒ¬ãƒãƒ–åŒ–ï¼‰
 	static void SaveEntity(Registry& registry, Entity entity, const std::string& filepath) {
 		if (!registry.has<Tag>(entity)) return;
 
 		json j;
-		// ŠeƒRƒ“ƒ|[ƒlƒ“ƒg‚ğƒ`ƒFƒbƒN‚µ‚Ä•Û‘¶
+		// å„ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦ä¿å­˜
 		SerializeComponent<Tag>(registry, entity, j, "Tag");
 		SerializeComponent<Transform>(registry, entity, j, "Transform");
 		SerializeComponent<Camera>(registry, entity, j, "Camera");
 
-		// ƒŒƒ“ƒ_ƒŠƒ“ƒOŒn
+		// ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ç³»
 		SerializeComponent<MeshComponent>(registry, entity, j, "MeshComponent");
 		SerializeComponent<SpriteComponent>(registry, entity, j, "SpriteComponent");
 		SerializeComponent<BillboardComponent>(registry, entity, j, "BillboardComponent");
 
-		// •¨—E“ü—ÍŒn
+		// ç‰©ç†ãƒ»å…¥åŠ›ç³»
 		SerializeComponent<Rigidbody>(registry, entity, j, "Rigidbody");
 		SerializeComponent<Collider>(registry, entity, j, "Collider");
 		SerializeComponent<PlayerInput>(registry, entity, j, "PlayerInput");
 
-		// ƒI[ƒfƒBƒIE‚»‚Ì‘¼
+		// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªãƒ»ãã®ä»–
 		SerializeComponent<AudioSource>(registry, entity, j, "AudioSource");
 		SerializeComponent<AudioListener>(registry, entity, j, "AudioListener");
 		SerializeComponent<Lifetime>(registry, entity, j, "Lifetime");
 
-		// ƒtƒ@ƒCƒ‹‘‚«o‚µ
+		// ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—
 		std::ofstream o(filepath);
-		o << j.dump(4); // 4ƒXƒy[ƒXƒCƒ“ƒfƒ“ƒg‚ÅŒ©‚â‚·‚­
+		o << j.dump(4); // 4ã‚¹ãƒšãƒ¼ã‚¹ã‚¤ãƒ³ãƒ‡ãƒ³ãƒˆã§è¦‹ã‚„ã™ã
 	}
 
-	// JSONƒtƒ@ƒCƒ‹‚©‚çƒGƒ“ƒeƒBƒeƒB‚ğ¶¬
+	// JSONãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ç”Ÿæˆ
 	static Entity LoadEntity(World& world, const std::string& filepath) {
 		std::ifstream i(filepath);
 		if (!i.is_open()) return NullEntity;
@@ -74,7 +74,7 @@ public:
 		Entity e = world.create_entity().id();
 		Registry& reg = world.getRegistry();
 
-		// ŠeƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ“Ç‚İ‚İ
+		// å„ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’èª­ã¿è¾¼ã¿
 		DeserializeComponent<Tag>(reg, e, j, "Tag");
 		DeserializeComponent<Transform>(reg, e, j, "Transform");
 		DeserializeComponent<Camera>(reg, e, j, "Camera");
@@ -94,7 +94,7 @@ public:
 		return e;
 	}
 
-	// --- ŠeƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì•ÏŠ·’è‹` (ToJson / FromJson) ---
+	// --- å„ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å¤‰æ›å®šç¾© (ToJson / FromJson) ---
 
 	// Tag
 	static json ToJson(const Tag& c) { return { {"name", c.name.c_str()} }; }
@@ -123,7 +123,7 @@ public:
 	}
 
 	// --------------------------------------------------------
-	// Relationship (eqŠÖŒW) ‚Ì•Û‘¶E“Ç‚İ‚İ
+	// Relationship (è¦ªå­é–¢ä¿‚) ã®ä¿å­˜ãƒ»èª­ã¿è¾¼ã¿
 	// --------------------------------------------------------
 	static json ToJson(const Relationship& c) {
 		json j;
@@ -189,7 +189,7 @@ public:
 	// Rigidbody
 	static json ToJson(const Rigidbody& c) {
 		return {
-			{"type", (int)c.type},	// enum‚ğint‚Å•Û‘¶
+			{"type", (int)c.type},	// enumã‚’intã§ä¿å­˜
 			{"vel", {c.velocity.x, c.velocity.y, c.velocity.z}},
 			{"mass", c.mass}, {"drag", c.drag}, {"grav", c.useGravity}
 		};
@@ -207,7 +207,7 @@ public:
 		j["type"] = (int)c.type;
 		j["offset"] = { c.offset.x, c.offset.y, c.offset.z };
 
-		// ƒŒƒCƒ„[‚Æƒ}ƒXƒN‚ğ•Û‘¶
+		// ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ãƒã‚¹ã‚¯ã‚’ä¿å­˜
 		j["layer"] = (uint32_t)c.layer;
 		j["mask"] = (uint32_t)c.mask;
 
@@ -229,7 +229,7 @@ public:
 		c.type = (ColliderType)j["type"];
 		auto o = j["offset"]; c.offset = { o[0], o[1], o[2] };
 
-		// ƒŒƒCƒ„[‚Æƒ}ƒXƒN‚ğ•œŒ³
+		// ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ãƒã‚¹ã‚¯ã‚’å¾©å…ƒ
 		if (j.contains("layer")) c.layer = (Layer)j["layer"].get<uint32_t>();
 		if (j.contains("mask"))  c.mask = (Layer)j["mask"].get<uint32_t>();
 
@@ -267,7 +267,7 @@ public:
 		if (j.contains("awake")) c.playOnAwake = j["awake"];
 	}
 
-	// AudioListener (ƒf[ƒ^‚È‚µ)
+	// AudioListener (ãƒ‡ãƒ¼ã‚¿ãªã—)
 	static json ToJson(const AudioListener& c) { return json::object(); }
 	static void FromJson(const json& j, AudioListener& c) {}
 
@@ -276,9 +276,9 @@ public:
 	static void FromJson(const json& j, Lifetime& c) { c.time = j["time"]; }
 
 private:
-	// --- ƒwƒ‹ƒp[ŠÖ” ---
+	// --- ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•° ---
 
-	// •Û‘¶—p
+	// ä¿å­˜ç”¨
 	template<typename T>
 	static void SerializeComponent(Registry& reg, Entity e, json& j, const std::string& key) {
 		if (reg.has<T>(e)) {
@@ -287,7 +287,7 @@ private:
 		}
 	}
 
-	// “Ç‚İ‚İ—p
+	// èª­ã¿è¾¼ã¿ç”¨
 	template<typename T>
 	static void DeserializeComponent(Registry& reg, Entity e, const json& j, const std::string& key) {
 		if (j.contains(key)) {

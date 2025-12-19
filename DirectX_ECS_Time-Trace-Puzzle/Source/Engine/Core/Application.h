@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Application.h
- * @brief	ƒQ[ƒ€ƒ‹[ƒv
+ * @brief	ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___APPLICATION_H___
 #define ___APPLICATION_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Config.h"
 #include "Engine/ECS/ECS.h"
@@ -34,12 +34,12 @@
 #include "Engine/Graphics/Text/TextRenderer.h"
 #include "Engine/Graphics/Core/RenderTarget.h"
 
-// ImGui‚Ìƒwƒbƒ_
+// ImGuiã®ãƒ˜ãƒƒãƒ€
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
-// ƒ‰ƒCƒuƒ‰ƒŠ‚ÌƒŠƒ“ƒNw¦
+// ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ãƒªãƒ³ã‚¯æŒ‡ç¤º
 #pragma comment(lib, "d3d11.lib")
 
 class Application
@@ -49,7 +49,7 @@ public:
 	~Application();
 
 	void Initialize();
-	void Run();	// 1ƒtƒŒ[ƒ€‚Ìˆ—iUpdate + Renderj
+	void Run();	// 1ãƒ•ãƒ¬ãƒ¼ãƒ ã®å‡¦ç†ï¼ˆUpdate + Renderï¼‰
 
 	SceneManager& GetSceneManager() { return m_sceneManager; }
 
@@ -74,14 +74,14 @@ private:
 	std::unique_ptr<TextRenderer>		m_textRenderer;
 	Context m_appContext;
 
-	// ƒGƒfƒBƒ^—pƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg
+	// ã‚¨ãƒ‡ã‚£ã‚¿ç”¨ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆ
 	std::unique_ptr<RenderTarget> m_sceneRT;
 	std::unique_ptr<RenderTarget> m_gameRT;
 
 	ImVec2 m_sceneWindowSize = { 0, 0 };
 	ImVec2 m_gameWindowSize = { 0, 0 };
 
-	// ƒV[ƒ“ƒ}ƒl[ƒWƒƒ[
+	// ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
 	SceneManager m_sceneManager;
 };
 

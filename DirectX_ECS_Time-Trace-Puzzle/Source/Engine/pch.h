@@ -1,24 +1,24 @@
-// ======================================================================
+ï»¿// ======================================================================
 // Procompiled Header for Engine
-// ‚±‚±‚É’Ç‰Á‚³‚ê‚½ƒwƒbƒ_[‚Íˆê“x‚¾‚¯ƒRƒ“ƒpƒCƒ‹‚³‚êAg‚¢‰ñ‚³‚ê‚Ü‚·B
-// •p”É‚É•ÏX‚³‚ê‚éƒtƒ@ƒCƒ‹‚Í‚±‚±‚É’Ç‰Á‚µ‚È‚¢‚Å‚­‚¾‚³‚¢B
+// ã“ã“ã«è¿½åŠ ã•ã‚ŒãŸãƒ˜ãƒƒãƒ€ãƒ¼ã¯ä¸€åº¦ã ã‘ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ã•ã‚Œã€ä½¿ã„å›ã•ã‚Œã¾ã™ã€‚
+// é »ç¹ã«å¤‰æ›´ã•ã‚Œã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã¯ã“ã“ã«è¿½åŠ ã—ãªã„ã§ãã ã•ã„ã€‚
 // ======================================================================
 
 #ifndef ___PCH_H___
 #define ___PCH_H___
 
-// Windows‚Ìmin/maxƒ}ƒNƒ‚Æ•W€ƒ‰ƒCƒuƒ‰ƒŠ‚Ì‹£‡‚ğ–h‚®
+// Windowsã®min/maxãƒã‚¯ãƒ­ã¨æ¨™æº–ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ç«¶åˆã‚’é˜²ã
 #define NOMINMAX
 
-// Windows API‚ÌŒy—Ê‰»i•s—v‚ÈAPI‚ğœŠOj
+// Windows APIã®è»½é‡åŒ–ï¼ˆä¸è¦ãªAPIã‚’é™¤å¤–ï¼‰
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-// TimeƒNƒ‰ƒX‚Åg—p‚·‚éƒ}ƒ‹ƒ`ƒƒfƒBƒAƒ^ƒCƒ}[API—p
+// Timeã‚¯ãƒ©ã‚¹ã§ä½¿ç”¨ã™ã‚‹ãƒãƒ«ãƒãƒ¡ãƒ‡ã‚£ã‚¢ã‚¿ã‚¤ãƒãƒ¼APIç”¨
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 
-// InputƒNƒ‰ƒX
+// Inputã‚¯ãƒ©ã‚¹
 #include <Xinput.h>
 #include <array>
 #pragma comment(lib, "xinput.lib")
@@ -84,11 +84,11 @@
 #include "ImGuizmo.h"
 
 // --- Common Engine Definitions ---
-// ‚æ‚­g‚¤ComPtr‚âDirectXMath‚ÌnamespceÈ—ª‚È‚Ç
+// ã‚ˆãä½¿ã†ComPtrã‚„DirectXMathã®namespceçœç•¥ãªã©
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
-// ƒƒ‚ƒŠƒŠ[ƒNŒŸo—piDebug—pj
+// ãƒ¡ãƒ¢ãƒªãƒªãƒ¼ã‚¯æ¤œå‡ºç”¨ï¼ˆDebugç”¨ï¼‰
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>

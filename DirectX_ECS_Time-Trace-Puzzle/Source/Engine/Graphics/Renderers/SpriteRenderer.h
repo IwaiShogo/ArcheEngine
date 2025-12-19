@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SpriteRenderer.h
- * @brief	2D•`‰æê—p‚ÌƒŒƒ“ƒ_ƒ‰[ƒNƒ‰ƒX
+ * @brief	2Dæç”»å°‚ç”¨ã®ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/25	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/25	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___SPRITE_RENDERER_H___
 #define ___SPRITE_RENDERER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Core/Texture.h"
 
@@ -32,20 +32,20 @@ public:
 
 	void Initialize();
 
-	// •`‰æŠJn
+	// æç”»é–‹å§‹
 	void Begin();
 
 	/**
-	 * @brief	ƒXƒvƒ‰ƒCƒg•`‰æ
+	 * @brief	ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆæç”»
 	 * 
-	 * @param	[in] texture •`‰æ‚·‚é‰æ‘œ
-	 * @param	[in] x ¶ã‚ÌXÀ•W
-	 * @param	[in] y ¶ã‚ÌYÀ•W
-	 * @param	[in] color F‡‚¢
+	 * @param	[in] texture æç”»ã™ã‚‹ç”»åƒ
+	 * @param	[in] x å·¦ä¸Šã®Xåº§æ¨™
+	 * @param	[in] y å·¦ä¸Šã®Yåº§æ¨™
+	 * @param	[in] color è‰²åˆã„
 	 */
 	void Draw(Texture* texture, float x, float y, const XMFLOAT4& color = { 1, 1, 1, 1 });
 
-	// ƒTƒCƒYw’è”Å
+	// ã‚µã‚¤ã‚ºæŒ‡å®šç‰ˆ
 	void Draw(Texture* texture, float x, float y, float w, float h, const XMFLOAT4& color = { 1, 1, 1, 1 });
 
 private:
@@ -60,9 +60,9 @@ private:
 	ComPtr<ID3D11RasterizerState>	m_rs2D;
 	ComPtr<ID3D11DepthStencilState>	m_ds2D;
 
-	// “§‰ßˆ——p
+	// é€éå‡¦ç†ç”¨
 	ComPtr<ID3D11BlendState> m_blendState;
-	// ƒTƒ“ƒvƒ‰[iƒeƒNƒXƒ`ƒƒ‚Ì“\‚è•ûİ’èj
+	// ã‚µãƒ³ãƒ—ãƒ©ãƒ¼ï¼ˆãƒ†ã‚¯ã‚¹ãƒãƒ£ã®è²¼ã‚Šæ–¹è¨­å®šï¼‰
 	ComPtr<ID3D11SamplerState> m_samplerState;
 
 	struct ConstantBufferData {

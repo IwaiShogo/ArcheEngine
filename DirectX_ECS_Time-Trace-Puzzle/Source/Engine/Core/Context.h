@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Context.h
- * @brief	‹¤—Lƒf[ƒ^‚ğ‚Ü‚Æ‚ß‚é\‘¢‘Ì
+ * @brief	å…±æœ‰ãƒ‡ãƒ¼ã‚¿ã‚’ã¾ã¨ã‚ã‚‹æ§‹é€ ä½“
  * 
  * @details	
  * 
@@ -8,35 +8,35 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___CONTEXT_H___
 #define ___CONTEXT_H___
 
-// ===== ‘O•ûéŒ¾ =====
+// ===== å‰æ–¹å®£è¨€ =====
 class PrimitiveRenderer;
 class SpriteRenderer;
 class ModelRenderer;
 class BillboardRenderer;
 
-//  ƒfƒoƒbƒOİ’èi‘SƒV[ƒ“‹¤—Lj
+//  ãƒ‡ãƒãƒƒã‚°è¨­å®šï¼ˆå…¨ã‚·ãƒ¼ãƒ³å…±æœ‰ï¼‰
 struct DebugSettings
 {
-	// ƒrƒ‹ƒh\¬‚É‚æ‚Á‚ÄƒfƒtƒHƒ‹ƒg’l‚ğØ‚è‘Ö‚¦‚é’è”
+	// ãƒ“ãƒ«ãƒ‰æ§‹æˆã«ã‚ˆã£ã¦ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹å®šæ•°
 #ifdef _DEBUG
-	static constexpr bool DefaultOn = true;	 // Debug‚Í True
+	static constexpr bool DefaultOn = true;	 // Debugæ™‚ã¯ True
 #else
-	static constexpr bool DefaultOn = false; // Release‚Í False
+	static constexpr bool DefaultOn = false; // Releaseæ™‚ã¯ False
 #endif
 
-	// Šeƒtƒ‰ƒO‚ğ’è”‚Å‰Šú‰»
+	// å„ãƒ•ãƒ©ã‚°ã‚’å®šæ•°ã§åˆæœŸåŒ–
 	bool showFps = DefaultOn;
 	bool showGrid = DefaultOn;
 	bool showAxis = DefaultOn;
@@ -45,7 +45,7 @@ struct DebugSettings
 	bool enableMousePicking = DefaultOn;
 	bool useDebugCamera = DefaultOn;
 
-	// ˆÈ‰º‚Ìİ’è‚ÍDebug‚Å‚àÅ‰‚ÍOFF‚É‚µ‚Ä‚¨‚­‚Ì‚ªˆê”Ê“Ii‚¨D‚İ‚Å DefaultOn ‚É‚µ‚Ä‚àOKj
+	// ä»¥ä¸‹ã®è¨­å®šã¯Debugæ™‚ã§ã‚‚æœ€åˆã¯OFFã«ã—ã¦ãŠãã®ãŒä¸€èˆ¬çš„ï¼ˆãŠå¥½ã¿ã§ DefaultOn ã«ã—ã¦ã‚‚OKï¼‰
 	bool wireframeMode = false;
 	bool showDemoWindow = false;
 	bool pauseGame = false;

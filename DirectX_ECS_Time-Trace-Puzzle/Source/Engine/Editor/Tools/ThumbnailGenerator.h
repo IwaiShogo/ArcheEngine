@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ThumbnailGenerator.h
  * @brief	
  * 
@@ -8,13 +8,13 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/30	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/30	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___THUMBNAIL_GENERATOR_H___
@@ -38,23 +38,23 @@ public:
 		m_renderer = renderer;
 	}
 
-	// w’èƒfƒBƒŒƒNƒgƒŠ‚Ì‘SƒvƒŒƒtƒ@ƒu‚ÌƒTƒ€ƒlƒCƒ‹‚ğ¶¬‚·‚é
+	// æŒ‡å®šãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å…¨ãƒ—ãƒ¬ãƒ•ã‚¡ãƒ–ã®ã‚µãƒ ãƒã‚¤ãƒ«ã‚’ç”Ÿæˆã™ã‚‹
 	void GenerateAll(const std::string& prefabDir) {
 		namespace fs = std::filesystem;
 		if (!fs::exists(prefabDir)) return;
 
-		// ˆê“I‚ÈƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg (128x128)
+		// ä¸€æ™‚çš„ãªãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆ (128x128)
 		RenderTarget rt(m_device, 128, 128);
 
-		// ƒJƒƒ‰İ’è (ƒTƒ€ƒlƒCƒ‹—p)
-		// Î‚ß‘O‚©‚çŒ´“_‚ğŒ©‚é
+		// ã‚«ãƒ¡ãƒ©è¨­å®š (ã‚µãƒ ãƒã‚¤ãƒ«ç”¨)
+		// æ–œã‚å‰ã‹ã‚‰åŸç‚¹ã‚’è¦‹ã‚‹
 		DirectX::XMVECTOR eye = DirectX::XMVectorSet(2.0f, 2.0f, -3.0f, 0.0f);
-		DirectX::XMVECTOR target = DirectX::XMVectorSet(0.0f, 0.5f, 0.0f, 0.0f); // ­‚µã‚ğŒ©‚é
+		DirectX::XMVECTOR target = DirectX::XMVectorSet(0.0f, 0.5f, 0.0f, 0.0f); // å°‘ã—ä¸Šã‚’è¦‹ã‚‹
 		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 		DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(eye, target, up);
 		DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, 1.0f, 0.1f, 100.0f);
 
-		// ƒ‰ƒCƒeƒBƒ“ƒO
+		// ãƒ©ã‚¤ãƒ†ã‚£ãƒ³ã‚°
 		DirectX::XMFLOAT3 lightDir = { 0.5f, -1.0f, 0.5f };
 		DirectX::XMFLOAT3 lightColor = { 1.0f, 1.0f, 1.0f };
 
@@ -63,7 +63,7 @@ public:
 				std::string filename = entry.path().filename().string();
 				std::string path = entry.path().string();
 
-				// JSON‚ğ“Ç‚İ‚ñ‚Åƒ‚ƒfƒ‹ƒL[‚ğ’T‚·
+				// JSONã‚’èª­ã¿è¾¼ã‚“ã§ãƒ¢ãƒ‡ãƒ«ã‚­ãƒ¼ã‚’æ¢ã™
 				std::string modelKey = "";
 				try {
 					std::ifstream i(path);
@@ -76,17 +76,17 @@ public:
 				catch (...) { continue; }
 
 				if (!modelKey.empty()) {
-					// ƒ‚ƒfƒ‹æ“¾
+					// ãƒ¢ãƒ‡ãƒ«å–å¾—
 					auto model = ResourceManager::Instance().GetModel(modelKey);
 					if (model) {
-						// •`‰æ
-						rt.Clear(m_context, 0.2f, 0.2f, 0.2f, 1.0f); // ”wŒiƒOƒŒ[
-						rt.Activate(m_context, nullptr); // [“x‚È‚µ(ŠÈˆÕ) ‚Ü‚½‚Í•Ê“r—pˆÓ
+						// æç”»
+						rt.Clear(m_context, 0.2f, 0.2f, 0.2f, 1.0f); // èƒŒæ™¯ã‚°ãƒ¬ãƒ¼
+						rt.Activate(m_context, nullptr); // æ·±åº¦ãªã—(ç°¡æ˜“) ã¾ãŸã¯åˆ¥é€”ç”¨æ„
 
 						m_renderer->Begin(view, proj, lightDir, lightColor);
 						m_renderer->Draw(model, { 0,0,0 }, { 1,1,1 }, { 0,0,0 });
 
-						// ƒeƒNƒXƒ`ƒƒ‚ÌƒRƒs[‚ğì¬‚µ‚Ä•Û‘¶
+						// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ã‚³ãƒ”ãƒ¼ã‚’ä½œæˆã—ã¦ä¿å­˜
 						CreateTextureFromRT(&rt, filename);
 					}
 				}
@@ -94,12 +94,12 @@ public:
 		}
 	}
 
-	// ƒtƒ@ƒCƒ‹–¼‚É‘Î‰‚·‚éƒeƒNƒXƒ`ƒƒID‚ğæ“¾
+	// ãƒ•ã‚¡ã‚¤ãƒ«åã«å¯¾å¿œã™ã‚‹ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’å–å¾—
 	void* GetThumbnailID(const std::string& filename) {
 		if (m_thumbnails.count(filename)) {
 			return m_thumbnails[filename].Get();
 		}
-		return nullptr; // ‚È‚¯‚ê‚Înull
+		return nullptr; // ãªã‘ã‚Œã°null
 	}
 
 private:
@@ -109,23 +109,23 @@ private:
 
 	std::map<std::string, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_thumbnails;
 
-	// RenderTarget‚Ì“à—e‚ğV‚µ‚¢ƒeƒNƒXƒ`ƒƒ‚Æ‚µ‚Ä•Û‘¶‚·‚é
+	// RenderTargetã®å†…å®¹ã‚’æ–°ã—ã„ãƒ†ã‚¯ã‚¹ãƒãƒ£ã¨ã—ã¦ä¿å­˜ã™ã‚‹
 	void CreateTextureFromRT(RenderTarget* rt, const std::string& key) {
-		// RT‚ÌƒeƒNƒXƒ`ƒƒƒŠƒ\[ƒX‚ğæ“¾
+		// RTã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒªã‚½ãƒ¼ã‚¹ã‚’å–å¾—
 		Microsoft::WRL::ComPtr<ID3D11Resource> res;
-		rt->GetSRV()->GetResource(&res); // RenderTargetƒNƒ‰ƒX‚ÉGetSRV()‚ğ’Ç‰Á‚·‚é•K—v‚ ‚è
+		rt->GetSRV()->GetResource(&res); // RenderTargetã‚¯ãƒ©ã‚¹ã«GetSRV()ã‚’è¿½åŠ ã™ã‚‹å¿…è¦ã‚ã‚Š
 
-		// ƒRƒs[—pƒeƒNƒXƒ`ƒƒì¬
+		// ã‚³ãƒ”ãƒ¼ç”¨ãƒ†ã‚¯ã‚¹ãƒãƒ£ä½œæˆ
 		D3D11_TEXTURE2D_DESC desc;
 		((ID3D11Texture2D*)res.Get())->GetDesc(&desc);
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> newTex;
 		m_device->CreateTexture2D(&desc, nullptr, &newTex);
 
-		// ƒRƒs[Às
+		// ã‚³ãƒ”ãƒ¼å®Ÿè¡Œ
 		m_context->CopyResource(newTex.Get(), res.Get());
 
-		// SRVì¬
+		// SRVä½œæˆ
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> newSrv;
 		m_device->CreateShaderResourceView(newTex.Get(), nullptr, &newSrv);
 

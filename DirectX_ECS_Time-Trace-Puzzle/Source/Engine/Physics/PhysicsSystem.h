@@ -1,46 +1,46 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	PhysicsSystem.h
- * @brief	•¨—‹““®
+ * @brief	ç‰©ç†æŒ™å‹•
  * 
  * @details	
- * •¨—‹““®‚ğŒvZ‚µAƒGƒ“ƒeƒBƒeƒB‚Ì“®‚«‚ğŠÇ—‚µ‚Ü‚·B
+ * ç‰©ç†æŒ™å‹•ã‚’è¨ˆç®—ã—ã€ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã®å‹•ãã‚’ç®¡ç†ã—ã¾ã™ã€‚
  * 
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/01	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/01	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/12/16	ÅIXV“ú
- * 			ì‹Æ“à—eF	- •¨—ƒVƒXƒeƒ€‚ÌŠî–{“I‚ÈƒtƒŒ[ƒ€ƒ[ƒN‚ğ’Ç‰Á
+ * @update	2025/12/16	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- ç‰©ç†ã‚·ã‚¹ãƒ†ãƒ ã®åŸºæœ¬çš„ãªãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¯ãƒ¼ã‚¯ã‚’è¿½åŠ 
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___PHYSICS_SYSTEM_H___
 #define ___PHYSICS_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Core/Time.h"
 
-// ÚGî•ñ
+// æ¥è§¦æƒ…å ±
 namespace Physics
 {
 	struct Contact
 	{
-		Entity a, b;				// Õ“Ë‚µ‚½2‚Â‚ÌƒGƒ“ƒeƒBƒeƒB
-		DirectX::XMFLOAT3 normal;	// A -> B‚Ì–@ü
-		float depth;				// ‚ß‚è‚İ—Ê
+		Entity a, b;				// è¡çªã—ãŸ2ã¤ã®ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£
+		DirectX::XMFLOAT3 normal;	// A -> Bã®æ³•ç·š
+		float depth;				// ã‚ã‚Šè¾¼ã¿é‡
 	};
 }
 
 /**
  * @class	PhysicsSystem
- * @brief	•¨—‹““®
+ * @brief	ç‰©ç†æŒ™å‹•
  */
 class PhysicsSystem
 	: public ISystem
@@ -48,10 +48,10 @@ class PhysicsSystem
 public:
 	PhysicsSystem() { m_systemName = "Physics System"; }
 
-	// •¨—ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“XVid—ÍA‘¬“xXVj
+	// ç‰©ç†ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³æ›´æ–°ï¼ˆé‡åŠ›ã€é€Ÿåº¦æ›´æ–°ï¼‰
 	void Update(Registry& registry) override;
 
-	// Õ“Ë‰ğŒˆiCollisionSystem‚©‚çŒÄ‚Î‚ê‚éj
+	// è¡çªè§£æ±ºï¼ˆCollisionSystemã‹ã‚‰å‘¼ã°ã‚Œã‚‹ï¼‰
 	static void Solve(Registry& registry, const std::vector<Physics::Contact>& contacts);
 };
 

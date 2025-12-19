@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	CollisionSystem.cpp
- * @brief	Õ“ËŒŸo
+ * @brief	è¡çªæ¤œå‡º
  * 
  * @details	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/24	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/24	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Physics/CollisionSystem.h"
 #include "Engine/Physics/PhysicsEvents.h"
@@ -26,26 +26,26 @@
 
 using namespace Physics;
 
-// ƒyƒAŠÇ——p
+// ãƒšã‚¢ç®¡ç†ç”¨
 using EntityPair = std::pair<Entity, Entity>;
 
-// ˆÈ‘O‚ÌÚGó‘Ô‚ğ•Û‚·‚éƒXƒ^ƒeƒBƒbƒN•Ï”
+// ä»¥å‰ã®æ¥è§¦çŠ¶æ…‹ã‚’ä¿æŒã™ã‚‹ã‚¹ã‚¿ãƒ†ã‚£ãƒƒã‚¯å¤‰æ•°
 static std::map<EntityPair, bool> g_prevContacts;
-static SpatialHash g_spatialHash;	// ‹óŠÔƒnƒbƒVƒ…ƒCƒ“ƒXƒ^ƒ“ƒX
+static SpatialHash g_spatialHash;	// ç©ºé–“ãƒãƒƒã‚·ãƒ¥ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 
 Observer CollisionSystem::m_observer;
 bool CollisionSystem::m_isInitialized = false;
 
 // =================================================================
-// ”ŠwEŠô‰½ƒwƒ‹ƒp[ŠÖ”
+// æ•°å­¦ãƒ»å¹¾ä½•ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°
 // =================================================================
 
-// ƒxƒNƒgƒ‹‚Ì’·‚³‚Ì“ñæ
+// ãƒ™ã‚¯ãƒˆãƒ«ã®é•·ã•ã®äºŒä¹—
 float LengthSq(FXMVECTOR v) {
 	return XMVectorGetX(XMVector3LengthSq(v));
 }
 
-// “_P‚ÌAü•ªABã‚Å‚ÌÅ‹ßÚ“_‚ğ‹‚ß‚é
+// ç‚¹Pã®ã€ç·šåˆ†ABä¸Šã§ã®æœ€è¿‘æ¥ç‚¹ã‚’æ±‚ã‚ã‚‹
 XMVECTOR ClosestPointOnSegment(XMVECTOR P, XMVECTOR A, XMVECTOR B)
 {
 	XMVECTOR AP = P - A;
@@ -59,7 +59,7 @@ XMVECTOR ClosestPointOnSegment(XMVECTOR P, XMVECTOR A, XMVECTOR B)
 	return A + AB * t;
 }
 
-// 2‚Â‚Ìü•ªŠÔ‚ÌÅ’Z‹——£‚Ì“ñæ‚ÆA‚»‚ê‚¼‚ê‚Ìü•ªã‚ÌÅ‹ßÚ“_(c1, c2)‚ğ‹‚ß‚é
+// 2ã¤ã®ç·šåˆ†é–“ã®æœ€çŸ­è·é›¢ã®äºŒä¹—ã¨ã€ãã‚Œãã‚Œã®ç·šåˆ†ä¸Šã®æœ€è¿‘æ¥ç‚¹(c1, c2)ã‚’æ±‚ã‚ã‚‹
 float SegmentSegmentDistanceSq(XMVECTOR p1, XMVECTOR q1, XMVECTOR p2, XMVECTOR q2,
 	XMVECTOR& outC1, XMVECTOR& outC2)
 {
@@ -113,7 +113,7 @@ float SegmentSegmentDistanceSq(XMVECTOR p1, XMVECTOR q1, XMVECTOR p2, XMVECTOR q
 	return LengthSq(diff);
 }
 
-// “_P‚©‚çOBB‚Ö‚ÌÅ‹ßÚ“_‚ğ‹‚ß‚é
+// ç‚¹Pã‹ã‚‰OBBã¸ã®æœ€è¿‘æ¥ç‚¹ã‚’æ±‚ã‚ã‚‹
 XMVECTOR ClosestPointOnOBB(XMVECTOR P, const OBB& box) {
 	XMVECTOR d = P - XMLoadFloat3(&box.center);
 	XMVECTOR q = XMLoadFloat3(&box.center);
@@ -131,22 +131,22 @@ XMVECTOR ClosestPointOnOBB(XMVECTOR P, const OBB& box) {
 	return q;
 }
 
-// “_P‚ÌA‰~’Œ•\–Êã‚Å‚ÌÅ‹ßÚ“_‚ğ‹‚ß‚é (C³”Å)
-// cylP: ’†S, cylAxis: ²(³‹K‰»), h: ‚‚³, r: ”¼Œa
+// ç‚¹Pã®ã€å††æŸ±è¡¨é¢ä¸Šã§ã®æœ€è¿‘æ¥ç‚¹ã‚’æ±‚ã‚ã‚‹ (ä¿®æ­£ç‰ˆ)
+// cylP: ä¸­å¿ƒ, cylAxis: è»¸(æ­£è¦åŒ–), h: é«˜ã•, r: åŠå¾„
 XMVECTOR ClosestPointOnCylinder(XMVECTOR P, XMVECTOR cylP, XMVECTOR cylAxis, float h, float r) {
 	XMVECTOR d = P - cylP;
-	// ²•ûŒü‚Ì‹——£ (’†S‚©‚ç)
+	// è»¸æ–¹å‘ã®è·é›¢ (ä¸­å¿ƒã‹ã‚‰)
 	float distY = XMVectorGetX(XMVector3Dot(d, cylAxis));
 
-	// 1. ”¼Œa•ûŒü‚ÌƒxƒNƒgƒ‹‚ğŒvZ
-	// P‚ğ²ã‚É“Š‰e‚µ‚½“_
+	// 1. åŠå¾„æ–¹å‘ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¨ˆç®—
+	// Pã‚’è»¸ä¸Šã«æŠ•å½±ã—ãŸç‚¹
 	XMVECTOR onAxis = cylP + cylAxis * distY;
 	XMVECTOR radial = P - onAxis;
 	float radLenSq = LengthSq(radial);
 
-	// ²ã(’†S)‚É‚¢‚éê‡‚Ì—áŠOˆ—
+	// è»¸ä¸Š(ä¸­å¿ƒ)ã«ã„ã‚‹å ´åˆã®ä¾‹å¤–å‡¦ç†
 	if (radLenSq < 1e-6f) {
-		// “K“–‚È”¼Œa•ûŒü (X²‚©Z²)
+		// é©å½“ãªåŠå¾„æ–¹å‘ (Xè»¸ã‹Zè»¸)
 		XMVECTOR arb = XMVectorSet(1, 0, 0, 0);
 		if (std::abs(XMVectorGetX(XMVector3Dot(cylAxis, arb))) > 0.9f) arb = XMVectorSet(0, 0, 1, 0);
 		radial = XMVector3Normalize(XMVector3Cross(cylAxis, arb)) * r;
@@ -154,52 +154,52 @@ XMVECTOR ClosestPointOnCylinder(XMVECTOR P, XMVECTOR cylP, XMVECTOR cylAxis, flo
 	}
 
 	float radLen = std::sqrt(radLenSq);
-	// •\–Êi‘¤–Êj‚Ö‚Ì•ûŒü
+	// è¡¨é¢ï¼ˆå´é¢ï¼‰ã¸ã®æ–¹å‘
 	XMVECTOR radialDir = radial / radLen;
 
-	// --- —Ìˆæ”»’è ---
+	// --- é ˜åŸŸåˆ¤å®š ---
 	float halfH = h * 0.5f;
 
-	// A. Š®‘S‚É“à•”‚É‚¢‚éê‡
+	// A. å®Œå…¨ã«å†…éƒ¨ã«ã„ã‚‹å ´åˆ
 	if (distY >= -halfH && distY <= halfH && radLen <= r) {
-		// u‘¤–Êv‚ÆuŠWiã‰ºjv‚Ì‚Ç‚¿‚ç‚É‹ß‚¢‚©H
+		// ã€Œå´é¢ã€ã¨ã€Œè“‹ï¼ˆä¸Šä¸‹ï¼‰ã€ã®ã©ã¡ã‚‰ã«è¿‘ã„ã‹ï¼Ÿ
 		float distToSide = r - radLen;
 		float distToTop = halfH - distY;
 		float distToBottom = distY - (-halfH);
 
-		// Å‚à‹ß‚¢–Ê‚ÖË‰e
+		// æœ€ã‚‚è¿‘ã„é¢ã¸å°„å½±
 		if (distToSide < distToTop && distToSide < distToBottom) {
-			// ‘¤–Ê‚Ö
+			// å´é¢ã¸
 			return onAxis + radialDir * r;
 		}
 		else if (distToTop < distToBottom) {
-			// ã–Ê‚Ö
+			// ä¸Šé¢ã¸
 			return cylP + cylAxis * halfH + radial;
 		}
 		else {
-			// ‰º–Ê‚Ö
+			// ä¸‹é¢ã¸
 			return cylP + cylAxis * (-halfH) + radial;
 		}
 	}
 
-	// B. ŠO•”‚É‚¢‚éê‡iƒNƒ‰ƒ“ƒvˆ—j
+	// B. å¤–éƒ¨ã«ã„ã‚‹å ´åˆï¼ˆã‚¯ãƒ©ãƒ³ãƒ—å‡¦ç†ï¼‰
 
-	// ‚Ü‚¸‚‚³‚ğƒNƒ‰ƒ“ƒv
+	// ã¾ãšé«˜ã•ã‚’ã‚¯ãƒ©ãƒ³ãƒ—
 	float clampedY = distY;
 	if (clampedY > halfH) clampedY = halfH;
 	if (clampedY < -halfH) clampedY = -halfH;
 
-	// ”¼Œa•ûŒü‚ğƒ`ƒFƒbƒN
-	// ‚‚³”ÍˆÍ“à‚È‚çA•K‚¸‘¤–Ê‚ÉƒNƒ‰ƒ“ƒvB
-	// ‚‚³”ÍˆÍŠO(ŠW‚Ìã)‚È‚çA‰~”Õ“à‚Éû‚ß‚éB
+	// åŠå¾„æ–¹å‘ã‚’ãƒã‚§ãƒƒã‚¯
+	// é«˜ã•ç¯„å›²å†…ãªã‚‰ã€å¿…ãšå´é¢ã«ã‚¯ãƒ©ãƒ³ãƒ—ã€‚
+	// é«˜ã•ç¯„å›²å¤–(è“‹ã®ä¸Š)ãªã‚‰ã€å††ç›¤å†…ã«åã‚ã‚‹ã€‚
 
 	if (std::abs(distY) <= halfH) {
-		// “·‘Ì‚Ì‰¡ -> ‘¤–Êã‚Ö
+		// èƒ´ä½“ã®æ¨ª -> å´é¢ä¸Šã¸
 		return (cylP + cylAxis * distY) + radialDir * r;
 	}
 	else {
-		// ŠW‚Ìã -> ‰~”Õ—Ìˆæ‚ÖƒNƒ‰ƒ“ƒv
-		// radialLen ‚ª r ‚ğ’´‚¦‚Ä‚¢‚ê‚Î r ‚É—}‚¦‚é
+		// è“‹ã®ä¸Š -> å††ç›¤é ˜åŸŸã¸ã‚¯ãƒ©ãƒ³ãƒ—
+		// radialLen ãŒ r ã‚’è¶…ãˆã¦ã„ã‚Œã° r ã«æŠ‘ãˆã‚‹
 		float capR = radLen;
 		if (capR > r) capR = r;
 		return (cylP + cylAxis * clampedY) + radialDir * capR;
@@ -210,31 +210,31 @@ XMVECTOR ClosestPointOnCylinder(XMVECTOR P, XMVECTOR cylP, XMVECTOR cylAxis, flo
 // Raycast
 // =================================================================
 
-// ƒŒƒC vs ‹…
+// ãƒ¬ã‚¤ vs çƒ
 bool IntersectRaySphere(XMVECTOR origin, XMVECTOR dir, XMVECTOR center, float radius, float& t)
 {
 	XMVECTOR m = origin - center;
 	float b = XMVectorGetX(XMVector3Dot(m, dir));
 	float c = XMVectorGetX(XMVector3Dot(m, m)) - radius * radius;
 
-	// ƒŒƒC‚Ìn“_‚ª‹…‚ÌŠO‚É‚ ‚èA‚©‚Â‹…‚©‚ç‰“‚´‚©‚Á‚Ä‚¢‚éê‡
+	// ãƒ¬ã‚¤ã®å§‹ç‚¹ãŒçƒã®å¤–ã«ã‚ã‚Šã€ã‹ã¤çƒã‹ã‚‰é ã–ã‹ã£ã¦ã„ã‚‹å ´åˆ
 	if (c > 0.0f && b > 0.0f) return false;
 
 	float discr = b * b - c;
 	if (discr < 0.0f) return false;
 
 	t = -b - sqrt(discr);
-	if (t < 0.0f) t = 0.0f; // n“_‚ª’†‚É‚ ‚éê‡‚Í0
+	if (t < 0.0f) t = 0.0f; // å§‹ç‚¹ãŒä¸­ã«ã‚ã‚‹å ´åˆã¯0
 	return true;
 }
 
-// ƒŒƒC vs OBB (‰ñ“]‚µ‚½” )
+// ãƒ¬ã‚¤ vs OBB (å›è»¢ã—ãŸç®±)
 bool IntersectRayOBB(XMVECTOR origin, XMVECTOR dir, const OBB& obb, float& t)
 {
 	XMVECTOR boxCenter = XMLoadFloat3(&obb.center);
-	XMVECTOR delta = boxCenter - origin; // ƒŒƒC‚Ìn“_‚©‚ç” ‚Ì’†S‚Ö‚ÌƒxƒNƒgƒ‹
+	XMVECTOR delta = boxCenter - origin; // ãƒ¬ã‚¤ã®å§‹ç‚¹ã‹ã‚‰ç®±ã®ä¸­å¿ƒã¸ã®ãƒ™ã‚¯ãƒˆãƒ«
 
-	// OBB‚ÌŠe²
+	// OBBã®å„è»¸
 	XMVECTOR axes[3] = {
 		XMLoadFloat3(&obb.axes[0]),
 		XMLoadFloat3(&obb.axes[1]),
@@ -247,13 +247,13 @@ bool IntersectRayOBB(XMVECTOR origin, XMVECTOR dir, const OBB& obb, float& t)
 
 	for (int i = 0; i < 3; ++i)
 	{
-		// ƒŒƒC‚Ì•ûŒü‚ÆA” ‚Ì’†S‚Ö‚Ì•ûŒü‚ğAOBB‚ÌŠe²‚É“Š‰e
+		// ãƒ¬ã‚¤ã®æ–¹å‘ã¨ã€ç®±ã®ä¸­å¿ƒã¸ã®æ–¹å‘ã‚’ã€OBBã®å„è»¸ã«æŠ•å½±
 		// e = (BoxCenter - RayOrigin) . Axis
 		// f = RayDir . Axis
 		float e = XMVectorGetX(XMVector3Dot(axes[i], delta));
 		float f = XMVectorGetX(XMVector3Dot(axes[i], dir));
 
-		// ƒŒƒC‚ª²‚Æ•½s‚Å‚È‚¢ê‡
+		// ãƒ¬ã‚¤ãŒè»¸ã¨å¹³è¡Œã§ãªã„å ´åˆ
 		if (std::abs(f) > 1e-6f)
 		{
 			float t1 = (e + extents[i]) / f;
@@ -269,7 +269,7 @@ bool IntersectRayOBB(XMVECTOR origin, XMVECTOR dir, const OBB& obb, float& t)
 		}
 		else
 		{
-			// •½s‚Èê‡AƒŒƒC‚ªƒXƒ‰ƒu‚ÌŠO‚É‚ ‚ê‚ÎŒğ·‚µ‚È‚¢
+			// å¹³è¡Œãªå ´åˆã€ãƒ¬ã‚¤ãŒã‚¹ãƒ©ãƒ–ã®å¤–ã«ã‚ã‚Œã°äº¤å·®ã—ãªã„
 			if (-e - extents[i] > 0.0f || -e + extents[i] < 0.0f) return false;
 		}
 	}
@@ -278,7 +278,7 @@ bool IntersectRayOBB(XMVECTOR origin, XMVECTOR dir, const OBB& obb, float& t)
 	return true;
 }
 
-// ƒŒƒC vs ƒJƒvƒZƒ‹
+// ãƒ¬ã‚¤ vs ã‚«ãƒ—ã‚»ãƒ«
 bool IntersectRayCapsule(XMVECTOR origin, XMVECTOR dir, const Physics::Capsule& cap, float& t)
 {
 	XMVECTOR pa = XMLoadFloat3(&cap.start);
@@ -304,14 +304,14 @@ bool IntersectRayCapsule(XMVECTOR origin, XMVECTOR dir, const Physics::Capsule& 
 		float t_hit = (-b - sqrt(h)) / a;
 		float y = baoa + t_hit * bard;
 
-		// “·‘Ì•”•ª (‰~’Œ) ‚Æ‚ÌŒğ·
+		// èƒ´ä½“éƒ¨åˆ† (å††æŸ±) ã¨ã®äº¤å·®
 		if (y > 0.0f && y < baba)
 		{
 			t = t_hit;
 			return true;
 		}
 
-		// ƒLƒƒƒbƒv (”¼‹…) ‚Æ‚ÌŒğ·
+		// ã‚­ãƒ£ãƒƒãƒ— (åŠçƒ) ã¨ã®äº¤å·®
 		XMVECTOR oc = (y <= 0.0f) ? oa : origin - pb;
 		b = XMVectorGetX(XMVector3Dot(dir, oc));
 		c = XMVectorGetX(XMVector3Dot(oc, oc)) - r * r;
@@ -325,7 +325,7 @@ bool IntersectRayCapsule(XMVECTOR origin, XMVECTOR dir, const Physics::Capsule& 
 	return false;
 }
 
-// ƒŒƒC vs ‰~’Œ
+// ãƒ¬ã‚¤ vs å††æŸ±
 bool IntersectRayCylinder(XMVECTOR origin, XMVECTOR dir, const Physics::Cylinder& cyl, float& t)
 {
 	XMVECTOR center = XMLoadFloat3(&cyl.center);
@@ -333,18 +333,18 @@ bool IntersectRayCylinder(XMVECTOR origin, XMVECTOR dir, const Physics::Cylinder
 	float height = cyl.height;
 	float radius = cyl.radius;
 
-	// ƒŒƒC‚Ìn“_‚Æ•ûŒü‚ğA‰~’ŒŠî€‚ÌƒxƒNƒgƒ‹‚É•ÏŠ·‚µ‚ÄŒvZ‚ğŠÈ—ª‰»‚·‚éè‚à‚ ‚é‚ªA
-	// ‚±‚±‚Å‚Íƒ[ƒ‹ƒh‹óŠÔ‚Ì‚Ü‚ÜŠô‰½Šw“I‚É‰ğ‚­B
+	// ãƒ¬ã‚¤ã®å§‹ç‚¹ã¨æ–¹å‘ã‚’ã€å††æŸ±åŸºæº–ã®ãƒ™ã‚¯ãƒˆãƒ«ã«å¤‰æ›ã—ã¦è¨ˆç®—ã‚’ç°¡ç•¥åŒ–ã™ã‚‹æ‰‹ã‚‚ã‚ã‚‹ãŒã€
+	// ã“ã“ã§ã¯ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã®ã¾ã¾å¹¾ä½•å­¦çš„ã«è§£ãã€‚
 
-	// 1. –³ŒÀ‰~’Œ‚Æ‚ÌŒğ·”»’è
-	// ‰~’Œ•\–Ê‚Ì•û’ö®: |(P - C) - dot(P - C, A) * A|^2 = r^2
-	// P(t) = O + tD ‚ğ‘ã“ü‚µ‚Ä t ‚Ì2Ÿ•û’ö® At^2 + Bt + C = 0 ‚ğ‰ğ‚­
+	// 1. ç„¡é™å††æŸ±ã¨ã®äº¤å·®åˆ¤å®š
+	// å††æŸ±è¡¨é¢ã®æ–¹ç¨‹å¼: |(P - C) - dot(P - C, A) * A|^2 = r^2
+	// P(t) = O + tD ã‚’ä»£å…¥ã—ã¦ t ã®2æ¬¡æ–¹ç¨‹å¼ At^2 + Bt + C = 0 ã‚’è§£ã
 
 	XMVECTOR oc = origin - center;
 
-	// ƒŒƒC•ûŒü D ‚Ì‚¤‚¿A² A ‚É‚’¼‚È¬•ª
+	// ãƒ¬ã‚¤æ–¹å‘ D ã®ã†ã¡ã€è»¸ A ã«å‚ç›´ãªæˆåˆ†
 	XMVECTOR dProj = dir - XMVector3Dot(dir, axis) * axis;
-	// n“_ƒxƒNƒgƒ‹ OC ‚Ì‚¤‚¿A² A ‚É‚’¼‚È¬•ª
+	// å§‹ç‚¹ãƒ™ã‚¯ãƒˆãƒ« OC ã®ã†ã¡ã€è»¸ A ã«å‚ç›´ãªæˆåˆ†
 	XMVECTOR ocProj = oc - XMVector3Dot(oc, axis) * axis;
 
 	float a = XMVectorGetX(XMVector3LengthSq(dProj));
@@ -368,7 +368,7 @@ bool IntersectRayCylinder(XMVECTOR origin, XMVECTOR dir, const Physics::Cylinder
 	float tClose = FLT_MAX;
 	bool hit = false;
 
-	// ‘¤–Êƒqƒbƒg‚ÌŠm”F (‚‚³”ÍˆÍ“à‚©H)
+	// å´é¢ãƒ’ãƒƒãƒˆã®ç¢ºèª (é«˜ã•ç¯„å›²å†…ã‹ï¼Ÿ)
 	auto CheckHeight = [&](float tVal) {
 		if (tVal < 0.0f) return;
 		XMVECTOR p = origin + dir * tVal;
@@ -386,20 +386,20 @@ bool IntersectRayCylinder(XMVECTOR origin, XMVECTOR dir, const Physics::Cylinder
 		CheckHeight(t2);
 	}
 
-	// 2. ŠWi‰~”Õj‚Æ‚ÌŒğ·”»’è
-	// •½–Ê (P - (C +/- H/2 * A)) . A = 0
+	// 2. è“‹ï¼ˆå††ç›¤ï¼‰ã¨ã®äº¤å·®åˆ¤å®š
+	// å¹³é¢ (P - (C +/- H/2 * A)) . A = 0
 	// t = dot((C +/- H/2 * A) - O, A) / dot(D, A)
 
 	float dDotA = XMVectorGetX(XMVector3Dot(dir, axis));
 	if (std::abs(dDotA) > 1e-6f) {
 		float ocDotA = XMVectorGetX(XMVector3Dot(oc, axis));
 
-		// ã–Ê (C + H/2 * A)
+		// ä¸Šé¢ (C + H/2 * A)
 		float tTop = (halfH - ocDotA) / dDotA;
 		if (tTop > 0.0f) {
 			XMVECTOR p = origin + dir * tTop;
-			// ”¼Œaƒ`ƒFƒbƒN: |P - (C + H/2 * A)|^2 <= r^2
-			// ²ã‚Ì“_‚Í center + halfH * axis
+			// åŠå¾„ãƒã‚§ãƒƒã‚¯: |P - (C + H/2 * A)|^2 <= r^2
+			// è»¸ä¸Šã®ç‚¹ã¯ center + halfH * axis
 			XMVECTOR pOnAxis = center + axis * halfH;
 			if (LengthSq(p - pOnAxis) <= radius * radius) {
 				if (tTop < tClose) {
@@ -409,7 +409,7 @@ bool IntersectRayCylinder(XMVECTOR origin, XMVECTOR dir, const Physics::Cylinder
 			}
 		}
 
-		// ‰º–Ê (C - H/2 * A)
+		// ä¸‹é¢ (C - H/2 * A)
 		float tBottom = (-halfH - ocDotA) / dDotA;
 		if (tBottom > 0.0f) {
 			XMVECTOR p = origin + dir * tBottom;
@@ -440,13 +440,13 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 
 	registry.view<Transform, Collider>().each([&](Entity e, Transform& t, Collider& c)
 		{
-			// ƒ[ƒ‹ƒhs—ñ‚Ì•ª‰ğ
+			// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã®åˆ†è§£
 			XMVECTOR scale, rotQuat, pos;
 			XMMatrixDecompose(&scale, &rotQuat, &pos, t.GetWorldMatrix());
 			XMFLOAT3 gScale; XMStoreFloat3(&gScale, scale);
 			XMMATRIX rotMat = XMMatrixRotationQuaternion(rotQuat);
 
-			// ’†SÀ•W‚ÌŒvZ
+			// ä¸­å¿ƒåº§æ¨™ã®è¨ˆç®—
 			XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
 			XMVECTOR centerVec = XMVector3Transform(offsetVec, t.GetWorldMatrix());
 			XMFLOAT3 center; XMStoreFloat3(&center, centerVec);
@@ -454,7 +454,7 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 			bool hit = false;
 			float dist = 0.0f;
 
-			// ƒ^ƒCƒv‚²‚Æ‚Ì•ªŠò
+			// ã‚¿ã‚¤ãƒ—ã”ã¨ã®åˆ†å²
 			if (c.type == ColliderType::Box)
 			{
 				OBB obb;
@@ -503,7 +503,7 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 				hit = IntersectRayCylinder(originV, dirV, cyl, dist);
 			}
 
-			// Å‹ßÚ‚ÌXV
+			// æœ€è¿‘æ¥ã®æ›´æ–°
 			if (hit)
 			{
 				if (dist < closestDist && dist >= 0.0f)
@@ -519,7 +519,7 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 }
 
 // =================================================================
-// ”»’èŠÖ”ŒQ
+// åˆ¤å®šé–¢æ•°ç¾¤
 // =================================================================
 
 // Sphere vs Sphere [cite: 2]
@@ -527,19 +527,19 @@ bool CollisionSystem::CheckSphereSphere(const Physics::Sphere& a, const Physics:
 	XMVECTOR centerA = XMLoadFloat3(&a.center);
 	XMVECTOR centerB = XMLoadFloat3(&b.center);
 
-	// ‹——£ƒ`ƒFƒbƒN
+	// è·é›¢ãƒã‚§ãƒƒã‚¯
 	XMVECTOR distVec = centerB - centerA; // A -> B
 	float distSq = LengthSq(distVec);
 	float rSum = a.radius + b.radius;
 
 	if (distSq >= rSum * rSum) return false;
 
-	// Õ“Ëî•ñ‚Ìì¬
+	// è¡çªæƒ…å ±ã®ä½œæˆ
 	float dist = std::sqrt(distSq);
 	XMVECTOR normal;
 
 	if (dist < 1e-4f) {
-		normal = XMVectorSet(0, 1, 0, 0); // Š®‘S‚Éd‚È‚Á‚½‚çã‚Ö
+		normal = XMVectorSet(0, 1, 0, 0); // å®Œå…¨ã«é‡ãªã£ãŸã‚‰ä¸Šã¸
 		dist = 0.0f;
 	}
 	else {
@@ -557,7 +557,7 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 	XMVECTOR obbCenter = XMLoadFloat3(&b.center);
 	XMVECTOR delta = sphereCenter - obbCenter;
 
-	// OBB‚Ì‰ñ“]s—ñi²j‚ğæ“¾
+	// OBBã®å›è»¢è¡Œåˆ—ï¼ˆè»¸ï¼‰ã‚’å–å¾—
 	XMVECTOR axes[3] = {
 		XMLoadFloat3(&b.axes[0]),
 		XMLoadFloat3(&b.axes[1]),
@@ -565,8 +565,8 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 	};
 	float extents[3] = { b.extents.x, b.extents.y, b.extents.z };
 
-	// ‹…‚Ì’†S‚ğOBB‚Ìƒ[ƒJƒ‹À•WŒn‚É•ÏŠ·
-	// localPos: OBB’†S‚ğŒ´“_‚Æ‚µ‚½A‹…’†S‚ÌÀ•W
+	// çƒã®ä¸­å¿ƒã‚’OBBã®ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ç³»ã«å¤‰æ›
+	// localPos: OBBä¸­å¿ƒã‚’åŸç‚¹ã¨ã—ãŸã€çƒä¸­å¿ƒã®åº§æ¨™
 	XMVECTOR localPos = XMVectorSet(
 		XMVectorGetX(XMVector3Dot(delta, axes[0])),
 		XMVectorGetX(XMVector3Dot(delta, axes[1])),
@@ -574,11 +574,11 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 		0.0f
 	);
 
-	// ƒ[ƒJƒ‹‹óŠÔ‚Å‚ÌÅ‹ßÚ“_‚ğŒ©‚Â‚¯‚é
+	// ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã§ã®æœ€è¿‘æ¥ç‚¹ã‚’è¦‹ã¤ã‘ã‚‹
 	XMVECTOR localClosest = localPos;
 	bool isInside = true;
 
-	// Še²‚²‚Æ‚ÉƒNƒ‰ƒ“ƒvˆ—
+	// å„è»¸ã”ã¨ã«ã‚¯ãƒ©ãƒ³ãƒ—å‡¦ç†
 	float localP[3] = { XMVectorGetX(localPos), XMVectorGetY(localPos), XMVectorGetZ(localPos) };
 	float closest[3];
 
@@ -598,10 +598,10 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 
 	localClosest = XMVectorSet(closest[0], closest[1], closest[2], 0.0f);
 
-	// ”»’è•ªŠò
+	// åˆ¤å®šåˆ†å²
 	if (!isInside) {
-		// --- ‹…‚Ì’†S‚ªOBB‚ÌyŠO•”z‚É‚ ‚éê‡ ---
-		// ƒ[ƒJƒ‹‹óŠÔ‚Å‚Ì‹——£ŒvZ
+		// --- çƒã®ä¸­å¿ƒãŒOBBã®ã€å¤–éƒ¨ã€‘ã«ã‚ã‚‹å ´åˆ ---
+		// ãƒ­ãƒ¼ã‚«ãƒ«ç©ºé–“ã§ã®è·é›¢è¨ˆç®—
 		XMVECTOR distVecLocal = localPos - localClosest; // Sphere -> Closest
 		float distSq = LengthSq(distVecLocal);
 
@@ -609,21 +609,21 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 
 		float dist = std::sqrt(distSq);
 
-		// –@ü‚ğƒ[ƒ‹ƒh‹óŠÔ‚É–ß‚·
-		// distVecLocal ‚Íƒ[ƒJƒ‹‚Å‚ÌuClosest -> Spherev‚Å‚Í‚È‚­uSphere(“à•”) -> Closestv‚ÉŒü‚©‚¤‚×‚«‚©H
-		// distVecLocal = localPos(ŠO) - localClosest(•\–Ê)B‚±‚ê‚Íu•\–Ê -> ŠOv‚Ö‚ÌƒxƒNƒgƒ‹B
-		// A(Sphere) -> B(OBB) ‚Ì–@ü‚ª—~‚µ‚¢‚Ì‚ÅA‚±‚ê‚ÍuSphere -> OBBv‚Â‚Ü‚è“àŒü‚«‚Å‚ ‚é‚×‚«B
-		// ‚È‚Ì‚Å normalized(-distVecLocal) ‚ª A->B –@üB
+		// æ³•ç·šã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã«æˆ»ã™
+		// distVecLocal ã¯ãƒ­ãƒ¼ã‚«ãƒ«ã§ã®ã€ŒClosest -> Sphereã€ã§ã¯ãªãã€ŒSphere(å†…éƒ¨) -> Closestã€ã«å‘ã‹ã†ã¹ãã‹ï¼Ÿ
+		// distVecLocal = localPos(å¤–) - localClosest(è¡¨é¢)ã€‚ã“ã‚Œã¯ã€Œè¡¨é¢ -> å¤–ã€ã¸ã®ãƒ™ã‚¯ãƒˆãƒ«ã€‚
+		// A(Sphere) -> B(OBB) ã®æ³•ç·šãŒæ¬²ã—ã„ã®ã§ã€ã“ã‚Œã¯ã€ŒSphere -> OBBã€ã¤ã¾ã‚Šå†…å‘ãã§ã‚ã‚‹ã¹ãã€‚
+		// ãªã®ã§ normalized(-distVecLocal) ãŒ A->B æ³•ç·šã€‚
 
 		XMVECTOR normalLocal;
 		if (dist < 1e-6f) {
-			normalLocal = XMVectorSet(0, 1, 0, 0); // —áŠO‰ñ”ğ
+			normalLocal = XMVectorSet(0, 1, 0, 0); // ä¾‹å¤–å›é¿
 		}
 		else {
 			normalLocal = -distVecLocal / dist;
 		}
 
-		// ƒ[ƒJƒ‹–@ü‚ğƒ[ƒ‹ƒh‚Ö
+		// ãƒ­ãƒ¼ã‚«ãƒ«æ³•ç·šã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰ã¸
 		XMVECTOR normal = normalLocal.m128_f32[0] * axes[0] +
 			normalLocal.m128_f32[1] * axes[1] +
 			normalLocal.m128_f32[2] * axes[2];
@@ -632,14 +632,14 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 		outContact.depth = s.radius - dist;
 	}
 	else {
-		// --- ‹…‚Ì’†S‚ªOBB‚Ìy“à•”z‚É‚ ‚éê‡ ---
-		// Å‚à‹ß‚¢–Ê‚ğ’T‚µ‚ÄA‚»‚±‚Ö‰Ÿ‚µo‚·
+		// --- çƒã®ä¸­å¿ƒãŒOBBã®ã€å†…éƒ¨ã€‘ã«ã‚ã‚‹å ´åˆ ---
+		// æœ€ã‚‚è¿‘ã„é¢ã‚’æ¢ã—ã¦ã€ãã“ã¸æŠ¼ã—å‡ºã™
 		float minDrag = FLT_MAX;
 		int minAxis = -1;
 		float sign = 1.0f;
 
 		for (int i = 0; i < 3; ++i) {
-			// –Ê‚Ü‚Å‚Ì‹——£: extents - |localP|
+			// é¢ã¾ã§ã®è·é›¢: extents - |localP|
 			float distToFace = extents[i] - std::abs(localP[i]);
 			if (distToFace < minDrag) {
 				minDrag = distToFace;
@@ -648,30 +648,30 @@ bool CollisionSystem::CheckSphereOBB(const Physics::Sphere& s, const Physics::OB
 			}
 		}
 
-		// –@üiA->BjF‹…‚ğOBB‚ÌŠO‚Éo‚·•ûŒü‚Ìu‹tvB
-		// ‹…‚ğo‚·‚É‚ÍuÅ‚à‹ß‚¢–Ê‚Ì•û‚Öv“®‚©‚·B
-		// ‚Â‚Ü‚èˆÚ“®•ûŒü‚Íu’†S -> –ÊvB
-		// A->B–@ü‚Í‚»‚Ì‹t‚È‚Ì‚Åu–Ê -> ’†Si“àŒü‚«jvB
-		// ƒ[ƒJƒ‹² minAxis ‚Ì sign •ûŒü‚ªuŠOŒü‚«v‚È‚Ì‚ÅA–@ü‚Í -sign * axisB
+		// æ³•ç·šï¼ˆA->Bï¼‰ï¼šçƒã‚’OBBã®å¤–ã«å‡ºã™æ–¹å‘ã®ã€Œé€†ã€ã€‚
+		// çƒã‚’å‡ºã™ã«ã¯ã€Œæœ€ã‚‚è¿‘ã„é¢ã®æ–¹ã¸ã€å‹•ã‹ã™ã€‚
+		// ã¤ã¾ã‚Šç§»å‹•æ–¹å‘ã¯ã€Œä¸­å¿ƒ -> é¢ã€ã€‚
+		// A->Bæ³•ç·šã¯ãã®é€†ãªã®ã§ã€Œé¢ -> ä¸­å¿ƒï¼ˆå†…å‘ãï¼‰ã€ã€‚
+		// ãƒ­ãƒ¼ã‚«ãƒ«è»¸ minAxis ã® sign æ–¹å‘ãŒã€Œå¤–å‘ãã€ãªã®ã§ã€æ³•ç·šã¯ -sign * axisã€‚
 
 		XMVECTOR normal = axes[minAxis] * (-sign);
 
 		XMStoreFloat3(&outContact.normal, normal);
-		// “à•”‚É‚¢‚éê‡A[‚³‚Íu”¼Œa + •\–Ê‚Ü‚Å‚Ì‹——£(minDrag)v
+		// å†…éƒ¨ã«ã„ã‚‹å ´åˆã€æ·±ã•ã¯ã€ŒåŠå¾„ + è¡¨é¢ã¾ã§ã®è·é›¢(minDrag)ã€
 		outContact.depth = s.radius + minDrag;
 	}
 
 	return true;
 }
 
-// Sphere vs Capsule (Œµ–§)
+// Sphere vs Capsule (å³å¯†)
 bool CollisionSystem::CheckSphereCapsule(const Physics::Sphere& s, const Physics::Capsule& c, Physics::Contact& outContact) {
 	XMVECTOR sphP = XMLoadFloat3(&s.center);
 	XMVECTOR capA = XMLoadFloat3(&c.start);
 	XMVECTOR capB = XMLoadFloat3(&c.end);
 
 	XMVECTOR closest = ClosestPointOnSegment(sphP, capA, capB);
-	XMVECTOR distVec = closest - sphP; // ‹… -> ƒJƒvƒZƒ‹²
+	XMVECTOR distVec = closest - sphP; // çƒ -> ã‚«ãƒ—ã‚»ãƒ«è»¸
 	float distSq = LengthSq(distVec);
 	float rSum = s.radius + c.radius;
 
@@ -692,7 +692,7 @@ bool CollisionSystem::CheckSphereCapsule(const Physics::Sphere& s, const Physics
 	return true;
 }
 
-// OBB vs OBB (SAT: •ª—£²’è—) [cite: 2]
+// OBB vs OBB (SAT: åˆ†é›¢è»¸å®šç†) [cite: 2]
 bool CollisionSystem::CheckOBBOBB(const Physics::OBB& a, const Physics::OBB& b, Physics::Contact& outContact) {
 	XMVECTOR centerA = XMLoadFloat3(&a.center);
 	XMVECTOR centerB = XMLoadFloat3(&b.center);
@@ -704,11 +704,11 @@ bool CollisionSystem::CheckOBBOBB(const Physics::OBB& a, const Physics::OBB& b, 
 	float extB[3] = { b.extents.x, b.extents.y, b.extents.z };
 
 	float minOverlap = FLT_MAX;
-	XMVECTOR mtvAxis = XMVectorSet(0, 1, 0, 0); // Å¬ˆÚ“®ƒxƒNƒgƒ‹
+	XMVECTOR mtvAxis = XMVectorSet(0, 1, 0, 0); // æœ€å°ç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«
 
-	// 15²‚·‚×‚Ä‚Å•ª—£”»’è
+	// 15è»¸ã™ã¹ã¦ã§åˆ†é›¢åˆ¤å®š
 	auto TestAxis = [&](XMVECTOR axis) -> bool {
-		if (LengthSq(axis) < 1e-6f) return true; // •½s‚È‚Ç‚Å²‚ª’×‚ê‚½ê‡
+		if (LengthSq(axis) < 1e-6f) return true; // å¹³è¡Œãªã©ã§è»¸ãŒæ½°ã‚ŒãŸå ´åˆ
 		axis = XMVector3Normalize(axis);
 
 		float rA = extA[0] * std::abs(XMVectorGetX(XMVector3Dot(axesA[0], axis))) +
@@ -722,13 +722,13 @@ bool CollisionSystem::CheckOBBOBB(const Physics::OBB& a, const Physics::OBB& b, 
 		float dist = std::abs(XMVectorGetX(XMVector3Dot(translation, axis)));
 		float overlap = (rA + rB) - dist;
 
-		if (overlap < 0) return false; // •ª—£‚µ‚Ä‚¢‚é
+		if (overlap < 0) return false; // åˆ†é›¢ã—ã¦ã„ã‚‹
 
-		// Å¬‚Ì‰Ÿ‚µo‚µ—Ê‚ğ‹L˜^
+		// æœ€å°ã®æŠ¼ã—å‡ºã—é‡ã‚’è¨˜éŒ²
 		if (overlap < minOverlap) {
 			minOverlap = overlap;
 			mtvAxis = axis;
-			// ²‚ÌŒü‚«‚ğ A -> B ‚É‘µ‚¦‚é
+			// è»¸ã®å‘ãã‚’ A -> B ã«æƒãˆã‚‹
 			if (XMVectorGetX(XMVector3Dot(translation, axis)) < 0) {
 				mtvAxis = -axis;
 			}
@@ -736,28 +736,28 @@ bool CollisionSystem::CheckOBBOBB(const Physics::OBB& a, const Physics::OBB& b, 
 		return true;
 		};
 
-	// 1. A‚Ì–Ê–@ü (3)
+	// 1. Aã®é¢æ³•ç·š (3)
 	for (int i = 0; i < 3; ++i) if (!TestAxis(axesA[i])) return false;
-	// 2. B‚Ì–Ê–@ü (3)
+	// 2. Bã®é¢æ³•ç·š (3)
 	for (int i = 0; i < 3; ++i) if (!TestAxis(axesB[i])) return false;
-	// 3. ƒGƒbƒW‚ÌŠOÏ (9)
+	// 3. ã‚¨ãƒƒã‚¸ã®å¤–ç© (9)
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			if (!TestAxis(XMVector3Cross(axesA[i], axesB[j]))) return false;
 		}
 	}
 
-	// Õ“ËŠm’è
+	// è¡çªç¢ºå®š
 	XMStoreFloat3(&outContact.normal, mtvAxis);
 	outContact.depth = minOverlap;
 	return true;
 }
 
-// OBB vs Capsule (SATƒx[ƒX)
+// OBB vs Capsule (SATãƒ™ãƒ¼ã‚¹)
 bool CollisionSystem::CheckOBBCapsule(const Physics::OBB& box, const Physics::Capsule& cap, Physics::Contact& outContact) {
-	// ƒJƒvƒZƒ‹‚ğu”¼Œa•t‚«ü•ªv‚Æ‚µ‚ÄSAT‚Å”»’è
+	// ã‚«ãƒ—ã‚»ãƒ«ã‚’ã€ŒåŠå¾„ä»˜ãç·šåˆ†ã€ã¨ã—ã¦SATã§åˆ¤å®š
 	XMVECTOR centerA = XMLoadFloat3(&box.center);
-	// ƒJƒvƒZƒ‹’†S
+	// ã‚«ãƒ—ã‚»ãƒ«ä¸­å¿ƒ
 	XMVECTOR capStart = XMLoadFloat3(&cap.start);
 	XMVECTOR capEnd = XMLoadFloat3(&cap.end);
 	XMVECTOR capAxis = capEnd - capStart;
@@ -774,12 +774,12 @@ bool CollisionSystem::CheckOBBCapsule(const Physics::OBB& box, const Physics::Ca
 		if (LengthSq(axis) < 1e-6f) return true;
 		axis = XMVector3Normalize(axis);
 
-		// Box‚Ì“Š‰e
+		// Boxã®æŠ•å½±
 		float rA = extA[0] * std::abs(XMVectorGetX(XMVector3Dot(axesA[0], axis))) +
 			extA[1] * std::abs(XMVectorGetX(XMVector3Dot(axesA[1], axis))) +
 			extA[2] * std::abs(XMVectorGetX(XMVector3Dot(axesA[2], axis)));
 
-		// Capsule‚Ì“Š‰e: (ü•ª’·/2 * cosƒÆ) + ”¼Œa
+		// Capsuleã®æŠ•å½±: (ç·šåˆ†é•·/2 * cosÎ¸) + åŠå¾„
 		float rB = (XMVectorGetX(XMVector3Length(capAxis)) * 0.5f) * std::abs(XMVectorGetX(XMVector3Dot(XMVector3Normalize(capAxis), axis))) +
 			cap.radius;
 
@@ -795,15 +795,15 @@ bool CollisionSystem::CheckOBBCapsule(const Physics::OBB& box, const Physics::Ca
 		return true;
 		};
 
-	// Box‚Ì–Ê–@ü (3)
+	// Boxã®é¢æ³•ç·š (3)
 	for (int i = 0; i < 3; ++i) if (!TestAxis(axesA[i])) return false;
 
-	// Capsule‚Ì²‚Æ‚ÌŠOÏ (3)
+	// Capsuleã®è»¸ã¨ã®å¤–ç© (3)
 	for (int i = 0; i < 3; ++i) if (!TestAxis(XMVector3Cross(axesA[i], capAxis))) return false;
 
-	// ü•ª’[“_‚ÆBox‚ÌÅ‹ßÚ“_•ûŒü (CrossÏ‚¾‚¯‚Å‚ÍƒGƒbƒWvsƒGƒbƒW‚µ‚©Œ©‚ê‚È‚¢‚½‚ß)
-	// ŠÈˆÕ“I‚Éu‹… vs OBBv‚ÌƒƒWƒbƒN‚ğ¬‚º‚Ä•âŠ®‚·‚é
-	// i¡‰ñ‚ÍSAT²‚Ì‚İ‚Å”»’è‚µAÅ‹ßÚ“_ƒx[ƒX‚Ì²‚ÍÈ—ªj
+	// ç·šåˆ†ç«¯ç‚¹ã¨Boxã®æœ€è¿‘æ¥ç‚¹æ–¹å‘ (Crossç©ã ã‘ã§ã¯ã‚¨ãƒƒã‚¸vsã‚¨ãƒƒã‚¸ã—ã‹è¦‹ã‚Œãªã„ãŸã‚)
+	// ç°¡æ˜“çš„ã«ã€Œçƒ vs OBBã€ã®ãƒ­ã‚¸ãƒƒã‚¯ã‚’æ··ãœã¦è£œå®Œã™ã‚‹
+	// ï¼ˆä»Šå›ã¯SATè»¸ã®ã¿ã§åˆ¤å®šã—ã€æœ€è¿‘æ¥ç‚¹ãƒ™ãƒ¼ã‚¹ã®è»¸ã¯çœç•¥ï¼‰
 
 	// Box(A) -> Capsule(B)
 	XMStoreFloat3(&outContact.normal, mtvAxis);
@@ -834,9 +834,9 @@ bool CollisionSystem::CheckOBBCylinder(const Physics::OBB& box, const Physics::C
 			boxExtents[2] * std::abs(XMVectorGetX(XMVector3Dot(boxAxes[2], axis)));
 
 		// Cylinder Projection
-		// ‰~’Œ‚ÌË‰e”¼Œa = (‚‚³/2 * |cosƒÆ|) + (”¼Œa * |sinƒÆ|)
-		// |cosƒÆ| = |dot(axis, cylAxis)|
-		// |sinƒÆ| = |cross(axis, cylAxis)| ‚Ì’·‚³
+		// å††æŸ±ã®å°„å½±åŠå¾„ = (é«˜ã•/2 * |cosÎ¸|) + (åŠå¾„ * |sinÎ¸|)
+		// |cosÎ¸| = |dot(axis, cylAxis)|
+		// |sinÎ¸| = |cross(axis, cylAxis)| ã®é•·ã•
 		float rCylH = (cyl.height * 0.5f) * std::abs(XMVectorGetX(XMVector3Dot(cylAxis, axis)));
 		float rCylR = cyl.radius * std::sqrt(XMVectorGetX(XMVector3LengthSq(XMVector3Cross(axis, cylAxis))));
 		float rCyl = rCylH + rCylR;
@@ -874,7 +874,7 @@ bool CollisionSystem::CheckCapsuleCapsule(const Physics::Capsule& a, const Physi
 	XMVECTOR b1 = XMLoadFloat3(&b.start);
 	XMVECTOR b2 = XMLoadFloat3(&b.end);
 
-	XMVECTOR c1, c2; // ü•ªã‚ÌÅ‹ßÚ“_
+	XMVECTOR c1, c2; // ç·šåˆ†ä¸Šã®æœ€è¿‘æ¥ç‚¹
 	float distSq = SegmentSegmentDistanceSq(a1, a2, b1, b2, c1, c2);
 	float rSum = a.radius + b.radius;
 
@@ -896,7 +896,7 @@ bool CollisionSystem::CheckCapsuleCapsule(const Physics::Capsule& a, const Physi
 	return true;
 }
 
-// Sphere vs Cylinder (C³FŠO•”–@ü‚Ì”½“])
+// Sphere vs Cylinder (ä¿®æ­£ï¼šå¤–éƒ¨æ³•ç·šã®åè»¢)
 bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physics::Cylinder& c, Physics::Contact& outContact) {
 	XMVECTOR sCenter = XMLoadFloat3(&s.center);
 	XMVECTOR cCenter = XMLoadFloat3(&c.center);
@@ -913,32 +913,32 @@ bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physic
 	float halfH = c.height * 0.5f;
 	float r = c.radius;
 
-	// 1. —Ìˆæ”»’è
+	// 1. é ˜åŸŸåˆ¤å®š
 	if (std::abs(distY) > halfH + s.radius) return false;
 	if (distRad > r + s.radius) return false;
 
-	// 2. “à•””»’è
+	// 2. å†…éƒ¨åˆ¤å®š
 	bool insideY = (std::abs(distY) < halfH);
 	bool insideR = (distRad < r);
 	bool isCenterInside = insideY && insideR;
 
 	if (isCenterInside) {
-		// --- “à•” (‘O‰ñC³Ï‚İEOK) ---
+		// --- å†…éƒ¨ (å‰å›ä¿®æ­£æ¸ˆã¿ãƒ»OK) ---
 		float depthSide = r - distRad;
 		float depthTop = halfH - distY;
 		float depthBottom = distY - (-halfH);
 
 		float minDepth = depthSide;
-		// A->B–@ü‚È‚Ì‚Åu“àŒü‚«vBradialVec(ŠOŒü‚«)‚Ì‹t
+		// A->Bæ³•ç·šãªã®ã§ã€Œå†…å‘ãã€ã€‚radialVec(å¤–å‘ã)ã®é€†
 		XMVECTOR normal = (distRad > 1e-5f) ? (-radialVec / distRad) : XMVectorSet(-1, 0, 0, 0);
 
 		if (depthTop < minDepth) {
 			minDepth = depthTop;
-			normal = -cAxis; // ‰º‚Ö
+			normal = -cAxis; // ä¸‹ã¸
 		}
 		if (depthBottom < minDepth) {
 			minDepth = depthBottom;
-			normal = cAxis; // ã‚Ö
+			normal = cAxis; // ä¸Šã¸
 		}
 
 		XMStoreFloat3(&outContact.normal, normal);
@@ -946,7 +946,7 @@ bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physic
 		return true;
 	}
 	else {
-		// --- ŠO•” (yC³‰ÓŠz‚±‚±‚ª‹t‚Å‚µ‚½) ---
+		// --- å¤–éƒ¨ (ã€ä¿®æ­£ç®‡æ‰€ã€‘ã“ã“ãŒé€†ã§ã—ãŸ) ---
 		XMVECTOR closest;
 
 		if (insideY) {
@@ -962,8 +962,8 @@ bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physic
 			closest = capCenter + (radialVec / distRad) * r;
 		}
 
-		// ‹——£ƒ`ƒFƒbƒN
-		XMVECTOR distVec = closest - sCenter; // yC³z A->B (Sphere -> Surface) ‚É•ÏX
+		// è·é›¢ãƒã‚§ãƒƒã‚¯
+		XMVECTOR distVec = closest - sCenter; // ã€ä¿®æ­£ã€‘ A->B (Sphere -> Surface) ã«å¤‰æ›´
 		float distSq = LengthSq(distVec);
 
 		if (distSq > s.radius * s.radius) return false;
@@ -972,11 +972,11 @@ bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physic
 
 		XMVECTOR normal;
 		if (dist < 1e-5f) {
-			// –§’…: A->B ‚È‚Ì‚Å “àŒü‚«
+			// å¯†ç€æ™‚: A->B ãªã®ã§ å†…å‘ã
 			normal = (distRad > 1e-5f) ? (-radialVec / distRad) : -cAxis;
 		}
 		else {
-			normal = distVec / dist; // ‚±‚ê‚Å A->B (“àŒü‚«) ‚É‚È‚é
+			normal = distVec / dist; // ã“ã‚Œã§ A->B (å†…å‘ã) ã«ãªã‚‹
 		}
 
 		XMStoreFloat3(&outContact.normal, normal);
@@ -985,19 +985,19 @@ bool CollisionSystem::CheckSphereCylinder(const Physics::Sphere& s, const Physic
 	}
 }
 
-// Capsule vs Cylinder (‚·‚è”²‚¯–h~‹­‰»)
+// Capsule vs Cylinder (ã™ã‚ŠæŠœã‘é˜²æ­¢å¼·åŒ–)
 bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Physics::Cylinder& cyl, Physics::Contact& outContact) {
-	// Å‚à[‚¢Õ“Ëî•ñ‚ğ‹L˜^‚·‚é‚½‚ß‚Ì•Ï”
+	// æœ€ã‚‚æ·±ã„è¡çªæƒ…å ±ã‚’è¨˜éŒ²ã™ã‚‹ãŸã‚ã®å¤‰æ•°
 	float maxDepth = -FLT_MAX;
 	XMVECTOR bestNormal = XMVectorZero();
 	bool hit = false;
 
-	// ”»’è—p‚Ìˆê‹…‘Ì
+	// åˆ¤å®šç”¨ã®ä¸€æ™‚çƒä½“
 	Physics::Sphere s;
 	s.radius = cap.radius;
-	Physics::Contact temp; // –@üE[“xæ“¾—p
+	Physics::Contact temp; // æ³•ç·šãƒ»æ·±åº¦å–å¾—ç”¨
 
-	// 1. n“_ (Start) ‚Ì”»’è
+	// 1. å§‹ç‚¹ (Start) ã®åˆ¤å®š
 	s.center = cap.start;
 	if (CheckSphereCylinder(s, cyl, temp)) {
 		if (temp.depth > maxDepth) {
@@ -1007,7 +1007,7 @@ bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Ph
 		}
 	}
 
-	// 2. I“_ (End) ‚Ì”»’è
+	// 2. çµ‚ç‚¹ (End) ã®åˆ¤å®š
 	s.center = cap.end;
 	if (CheckSphereCylinder(s, cyl, temp)) {
 		if (!hit || temp.depth > maxDepth) {
@@ -1017,7 +1017,7 @@ bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Ph
 		}
 	}
 
-	// 3. ²ã‚ÌÅ‹ßÚ“_ (Closest Point on Axis) ‚Ì”»’è
+	// 3. è»¸ä¸Šã®æœ€è¿‘æ¥ç‚¹ (Closest Point on Axis) ã®åˆ¤å®š
 	XMVECTOR capA = XMLoadFloat3(&cap.start);
 	XMVECTOR capB = XMLoadFloat3(&cap.end);
 	XMVECTOR cylPos = XMLoadFloat3(&cyl.center);
@@ -1028,7 +1028,7 @@ bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Ph
 	XMVECTOR cylP2 = cylPos + cylAxis * (cylH * 0.5f);
 
 	XMVECTOR cCap, cCyl;
-	// ƒJƒvƒZƒ‹²‚Æ‰~’Œ²‚ÌÅ’Z‹——£‚É‚ ‚é“_(cCap)‚ğ‹‚ß‚é
+	// ã‚«ãƒ—ã‚»ãƒ«è»¸ã¨å††æŸ±è»¸ã®æœ€çŸ­è·é›¢ã«ã‚ã‚‹ç‚¹(cCap)ã‚’æ±‚ã‚ã‚‹
 	SegmentSegmentDistanceSq(capA, capB, cylP1, cylP2, cCap, cCyl);
 
 	XMStoreFloat3(&s.center, cCap);
@@ -1041,8 +1041,8 @@ bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Ph
 	}
 
 	if (hit) {
-		// yd—vzoutContact‚Ìa, biƒGƒ“ƒeƒBƒeƒBî•ñj‚ğÁ‚³‚È‚¢‚æ‚¤‚ÉA
-		// –@ü‚Æ[“x‚¾‚¯‚ğXV‚·‚é
+		// ã€é‡è¦ã€‘outContactã®a, bï¼ˆã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£æƒ…å ±ï¼‰ã‚’æ¶ˆã•ãªã„ã‚ˆã†ã«ã€
+		// æ³•ç·šã¨æ·±åº¦ã ã‘ã‚’æ›´æ–°ã™ã‚‹
 		XMStoreFloat3(&outContact.normal, bestNormal);
 		outContact.depth = maxDepth;
 		return true;
@@ -1050,14 +1050,14 @@ bool CollisionSystem::CheckCapsuleCylinder(const Physics::Capsule& cap, const Ph
 	return false;
 }
 
-// Cylinder vs Cylinder (Gap‰ğÁEU“®–h~)
+// Cylinder vs Cylinder (Gapè§£æ¶ˆãƒ»æŒ¯å‹•é˜²æ­¢)
 bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Physics::Cylinder& b, Physics::Contact& outContact) {
 	XMVECTOR posA = XMLoadFloat3(&a.center);
 	XMVECTOR axisA = XMLoadFloat3(&a.axis);
 	XMVECTOR posB = XMLoadFloat3(&b.center);
 	XMVECTOR axisB = XMLoadFloat3(&b.axis);
 
-	// 1. ‘¤–Êƒ`ƒFƒbƒN (ƒJƒvƒZƒ‹‹ß—)
+	// 1. å´é¢ãƒã‚§ãƒƒã‚¯ (ã‚«ãƒ—ã‚»ãƒ«è¿‘ä¼¼)
 	XMVECTOR pa = posA - axisA * (a.height * 0.5f);
 	XMVECTOR qa = posA + axisA * (a.height * 0.5f);
 	XMVECTOR pb = posB - axisB * (b.height * 0.5f);
@@ -1084,7 +1084,7 @@ bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Ph
 		}
 	}
 
-	// 2. SATƒ`ƒFƒbƒN (c•ûŒü)
+	// 2. SATãƒã‚§ãƒƒã‚¯ (ç¸¦æ–¹å‘)
 	float minSatOverlap = FLT_MAX;
 	XMVECTOR satNormal = XMVectorZero();
 	bool satHit = true;
@@ -1110,7 +1110,7 @@ bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Ph
 		if (o < minSatOverlap) {
 			minSatOverlap = o;
 			satNormal = axis;
-			// A->B ‚É‘µ‚¦‚é
+			// A->B ã«æƒãˆã‚‹
 			if (XMVectorGetX(XMVector3Dot(posB - posA, axis)) < 0) satNormal = -satNormal;
 		}
 		return true;
@@ -1119,12 +1119,12 @@ bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Ph
 	if (!TestAxis(axisA)) satHit = false;
 	if (satHit && !TestAxis(axisB)) satHit = false;
 
-	// yd—vzGap‘Îô: ‘¤–Ê(Radial) ‚Æ c(SAT) ‚Ì—¼•û‚ªd‚È‚Á‚Ä‚¢‚È‚¢‚ÆÕ“Ë‚Å‚Í‚È‚¢
-	// ˆÈ‘O‚Í (!sideHit && !satHit) ‚¾‚Á‚½‚Ì‚ÅA•Ğ•û‚Å‚àTrue‚È‚çƒqƒbƒg‚É‚È‚Á‚Ä‚¢‚½
-	// ‚±‚ê‚É‚æ‚èu•‚‚¢‚Ä‚¢‚é‚Ì‚ÉƒJƒvƒZƒ‹‹ß—‚ªƒqƒbƒg‚·‚évŒ»Û‚ğ–h‚®
+	// ã€é‡è¦ã€‘Gapå¯¾ç­–: å´é¢(Radial) ã¨ ç¸¦(SAT) ã®ä¸¡æ–¹ãŒé‡ãªã£ã¦ã„ãªã„ã¨è¡çªã§ã¯ãªã„
+	// ä»¥å‰ã¯ (!sideHit && !satHit) ã ã£ãŸã®ã§ã€ç‰‡æ–¹ã§ã‚‚Trueãªã‚‰ãƒ’ãƒƒãƒˆã«ãªã£ã¦ã„ãŸ
+	// ã“ã‚Œã«ã‚ˆã‚Šã€Œæµ®ã„ã¦ã„ã‚‹ã®ã«ã‚«ãƒ—ã‚»ãƒ«è¿‘ä¼¼ãŒãƒ’ãƒƒãƒˆã™ã‚‹ã€ç¾è±¡ã‚’é˜²ã
 	if (!sideHit || !satHit) return false;
 
-	// Œˆ’èƒƒWƒbƒN
+	// æ±ºå®šãƒ­ã‚¸ãƒƒã‚¯
 	if (minSatOverlap < sideDepth * 0.6f) {
 		XMStoreFloat3(&outContact.normal, satNormal);
 		outContact.depth = minSatOverlap;
@@ -1138,21 +1138,21 @@ bool CollisionSystem::CheckCylinderCylinder(const Physics::Cylinder& a, const Ph
 }
 
 // =================================================================
-// ƒƒCƒ“XVƒ‹[ƒv
+// ãƒ¡ã‚¤ãƒ³æ›´æ–°ãƒ«ãƒ¼ãƒ—
 // =================================================================
 
 void CollisionSystem::Initialize(Registry& registry)
 {
 	if (m_isInitialized) return;
 
-	// 1. Observer‚Ìİ’è
+	// 1. Observerã®è¨­å®š
 	m_observer.connect(registry)
 		.update<Transform>()
 		.update<Collider>()
 		.group<Collider>()
 		.where<Transform, Collider>();
 
-	// 2. ‰Šú‰»
+	// 2. åˆæœŸåŒ–
 	registry.view<Transform, Collider>().each([&](Entity e, Transform& t, Collider& c) {
 		if (!registry.has<WorldCollider>(e)) {
 			registry.emplace<WorldCollider>(e);
@@ -1165,24 +1165,24 @@ void CollisionSystem::Initialize(Registry& registry)
 	m_isInitialized = true;
 }
 
-// ƒLƒƒƒbƒVƒ…iWorldColliderj‚ÌXVˆ—
+// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ï¼ˆWorldColliderï¼‰ã®æ›´æ–°å‡¦ç†
 void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Transform& t, const Collider& c, WorldCollider& wc) 
 {
-	// ƒ[ƒ‹ƒhs—ñ‚Ì•ª‰ğ (Scale, Rotation, Position)
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã®åˆ†è§£ (Scale, Rotation, Position)
 	XMVECTOR scale, rotQuat, pos;
 	XMMatrixDecompose(&scale, &rotQuat, &pos, t.GetWorldMatrix());
 	XMFLOAT3 gScale; XMStoreFloat3(&gScale, scale);
 	XMMATRIX rotMat = XMMatrixRotationQuaternion(rotQuat);
 
-	// ƒIƒtƒZƒbƒg‚İ‚Ì’†SÀ•W
+	// ã‚ªãƒ•ã‚»ãƒƒãƒˆè¾¼ã¿ã®ä¸­å¿ƒåº§æ¨™
 	XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
 	offsetVec = XMVectorSetW(offsetVec, 1.0f);
 	XMVECTOR centerVec = XMVector3TransformCoord(offsetVec, t.GetWorldMatrix());
 
-	// AABBŒvZ—p‚ÌÅ¬/Å‘å
+	// AABBè¨ˆç®—ç”¨ã®æœ€å°/æœ€å¤§
 	XMVECTOR vMin, vMax;
 
-	// Œ`ó–ˆ‚ÌŒvZ
+	// å½¢çŠ¶æ¯ã®è¨ˆç®—
 	if(c.type == ColliderType::Box)
 	{
 		XMStoreFloat3(&wc.obb.center, centerVec);
@@ -1196,7 +1196,7 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 		wc.obb.axes[1] = { rotM._21, rotM._22, rotM._23 };
 		wc.obb.axes[2] = { rotM._31, rotM._32, rotM._33 };
 
-		// AABBŒvZ
+		// AABBè¨ˆç®—
 		XMVECTOR center = centerVec;
 		XMVECTOR ext = XMLoadFloat3(&wc.obb.extents);
 		XMVECTOR axisX = XMLoadFloat3(&wc.obb.axes[0]);
@@ -1234,7 +1234,7 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 		XMStoreFloat3(&wc.capsule.end, p2);
 		wc.capsule.radius = r;
 
-		// AABBŒvZ
+		// AABBè¨ˆç®—
 		XMVECTOR capMin = XMVectorMin(p1, p2) - XMVectorReplicate(r);
 		XMVECTOR capMax = XMVectorMax(p1, p2) + XMVectorReplicate(r);
 		vMin = capMin;
@@ -1248,14 +1248,14 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 		wc.cylinder.height = c.cylinder.height * gScale.y;
 		wc.cylinder.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
 
-		// AABBŒvZ
-		// ‰~’Œ‚Ì’¸“_ŒQ‚©‚çŒvZ‚·‚é‚Ì‚ª³Šm‚¾‚ªA‚±‚±‚Å‚Íu‹…v‚Æ‚µ‚Ä‹ß—‚µ‚½AABB‚Å‘ã—p
-		// ‚ ‚é‚¢‚Í’†S²ü•ª + ”¼Œa‚ÅŒvZ
+		// AABBè¨ˆç®—
+		// å††æŸ±ã®é ‚ç‚¹ç¾¤ã‹ã‚‰è¨ˆç®—ã™ã‚‹ã®ãŒæ­£ç¢ºã ãŒã€ã“ã“ã§ã¯ã€Œçƒã€ã¨ã—ã¦è¿‘ä¼¼ã—ãŸAABBã§ä»£ç”¨
+		// ã‚ã‚‹ã„ã¯ä¸­å¿ƒè»¸ç·šåˆ† + åŠå¾„ã§è¨ˆç®—
 		float halfH = wc.cylinder.height * 0.5f;
 		float rad = wc.cylinder.radius;
-		// ²‚É‚’¼‚È•½–Ê‚Å‚ÌL‚ª‚è‚ğl—¶
+		// è»¸ã«å‚ç›´ãªå¹³é¢ã§ã®åºƒãŒã‚Šã‚’è€ƒæ…®
 		XMVECTOR ex = XMVectorAbs(axisY) * halfH;
-		// ”¼Œa•ª‚ğ‘S•ûŒü‚É’Ç‰Á
+		// åŠå¾„åˆ†ã‚’å…¨æ–¹å‘ã«è¿½åŠ 
 		XMVECTOR radiusExt = XMVectorSet(rad, rad, rad, 0) * XMVectorSplatOne();
 		
 		vMin = centerVec - ex - radiusExt;
@@ -1264,7 +1264,7 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 
 	// ----------------------------------------------------------------------
 	// Swept AABB
-	// ‚‘¬ˆÚ“®‚Å‚·‚è”²‚¯‚È‚¢‚æ‚¤A1ƒtƒŒ[ƒ€‘O‚ÌˆÊ’u‚àŠÜ‚ß‚½AABB‚É‚·‚é
+	// é«˜é€Ÿç§»å‹•ã§ã™ã‚ŠæŠœã‘ãªã„ã‚ˆã†ã€1ãƒ•ãƒ¬ãƒ¼ãƒ å‰ã®ä½ç½®ã‚‚å«ã‚ãŸAABBã«ã™ã‚‹
 	// ----------------------------------------------------------------------
 	if (registry.has<Rigidbody>(e))
 	{
@@ -1274,7 +1274,7 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 			XMVECTOR vel = XMLoadFloat3(&rb.velocity);
 			float dt = Time::DeltaTime();
 
-			// 1ƒtƒŒ[ƒ€‘O‚ÌˆÊ’uiŒ»İ‚ÌˆÊ’u - velocity * dtj
+			// 1ãƒ•ãƒ¬ãƒ¼ãƒ å‰ã®ä½ç½®ï¼ˆç¾åœ¨ã®ä½ç½® - velocity * dtï¼‰
 			XMVECTOR prevPosOffset = -(vel * dt);
 
 			XMVECTOR prevMin = vMin + prevPosOffset;
@@ -1294,17 +1294,17 @@ void CollisionSystem::Update(Registry& registry)
 {
 	if (!m_isInitialized) Initialize(registry);
 
-	// 1. ƒCƒxƒ“ƒgƒLƒ…[‚Ì‰Šú‰»
+	// 1. ã‚¤ãƒ™ãƒ³ãƒˆã‚­ãƒ¥ãƒ¼ã®åˆæœŸåŒ–
 	auto& eventQueue = Physics::EventQueue::Instance();
 	eventQueue.Clear();
 
-	// 2. ‹óŠÔƒnƒbƒVƒ…‚ÌƒŠƒZƒbƒg
+	// 2. ç©ºé–“ãƒãƒƒã‚·ãƒ¥ã®ãƒªã‚»ãƒƒãƒˆ
 	g_spatialHash.Clear();
 
-	// 3. Observer‚É‚æ‚é·•ªXVi“®‚¢‚½‚à‚Ì‚¾‚¯ŒvZ‚µ’¼‚·j
+	// 3. Observerã«ã‚ˆã‚‹å·®åˆ†æ›´æ–°ï¼ˆå‹•ã„ãŸã‚‚ã®ã ã‘è¨ˆç®—ã—ç›´ã™ï¼‰
 	m_observer.each([&](Entity e) {
 		if(registry.has<Transform>(e) && registry.has<Collider>(e)) {
-			// ©“®’Ç‰Á
+			// è‡ªå‹•è¿½åŠ 
 			if(!registry.has<WorldCollider>(e)) {
 				registry.emplace<WorldCollider>(e);
 			}
@@ -1317,35 +1317,35 @@ void CollisionSystem::Update(Registry& registry)
 		}
 	});
 
-	// ƒNƒŠƒA
+	// ã‚¯ãƒªã‚¢
 	m_observer.clear();
 
-	// 4. ‘SƒGƒ“ƒeƒBƒeƒB‚ğ‹óŠÔƒnƒbƒVƒ…‚É“o˜^
+	// 4. å…¨ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ç©ºé–“ãƒãƒƒã‚·ãƒ¥ã«ç™»éŒ²
 	registry.view<WorldCollider>().each([&](Entity e, WorldCollider& wc)
 	{
 		g_spatialHash.Register(e, wc.aabb.min, wc.aabb.max);
 	});
 
-	// 5. Õ“Ë”»’èiSpatial Hash + Narrow Phasej
+	// 5. è¡çªåˆ¤å®šï¼ˆSpatial Hash + Narrow Phaseï¼‰
 	std::vector<Physics::Contact> contactsForSolver;
 	std::map<EntityPair, Physics::Contact> currentContactsMap;
 
 	registry.view<Transform, Collider, WorldCollider>().each([&](Entity eA, Transform& tA, Collider& cA, WorldCollider& wcA)
 	{
-		// ü•ÓƒGƒ“ƒeƒBƒeƒB‚Ì‚İæ“¾i‚‘¬‰»j
+		// å‘¨è¾ºã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã®ã¿å–å¾—ï¼ˆé«˜é€ŸåŒ–ï¼‰
 		auto candidates = g_spatialHash.Query(wcA.aabb.min, wcA.aabb.max);
 
 		for (Entity eB : candidates)
 		{
-			if (eA >= eB) continue;	// d•¡ƒ`ƒFƒbƒNiA-B ‚Æ B-A ‚Í“¯‚¶j
+			if (eA >= eB) continue;	// é‡è¤‡ãƒã‚§ãƒƒã‚¯ï¼ˆA-B ã¨ B-A ã¯åŒã˜ï¼‰
 			if (!registry.valid(eB)) continue;
 
 			auto& cB = registry.get<Collider>(eB);
 
-			// ƒŒƒCƒ„[ƒ}ƒXƒN”»’è
+			// ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒã‚¹ã‚¯åˆ¤å®š
 			if (!(cA.mask & cB.layer) || !(cB.mask & cA.layer)) continue;
 
-			// Static“¯m‚Í”»’è‚µ‚È‚¢
+			// StaticåŒå£«ã¯åˆ¤å®šã—ãªã„
 			bool isStaticA = (!registry.has<Rigidbody>(eA) || registry.get<Rigidbody>(eA).type == BodyType::Static);
 			bool isStaticB = (!registry.has<Rigidbody>(eB) || registry.get<Rigidbody>(eB).type == BodyType::Static);
 			if (isStaticA && isStaticB) continue;
@@ -1357,7 +1357,7 @@ void CollisionSystem::Update(Registry& registry)
 				wcA.aabb.max.y < wcB.aabb.min.y || wcA.aabb.min.y > wcB.aabb.max.y ||
 				wcA.aabb.max.z < wcB.aabb.min.z || wcA.aabb.min.z > wcB.aabb.max.z)
 			{
-				continue; // d‚È‚Á‚Ä‚¢‚È‚¢
+				continue; // é‡ãªã£ã¦ã„ãªã„
 			}
 
 			// Narrow Phase
@@ -1407,7 +1407,7 @@ void CollisionSystem::Update(Registry& registry)
 				{
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereOBB(sB, oA, contact);
-					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // ”½“]
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // åè»¢
 				}
 				else if (cB.type == ColliderType::Capsule)
 				{
@@ -1434,13 +1434,13 @@ void CollisionSystem::Update(Registry& registry)
 				{
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereCapsule(sB, cpA, contact);
-					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // ”½“]
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // åè»¢
 				}
 				else if (cB.type == ColliderType::Box)
 				{
 					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
 					hit = CheckOBBCapsule(oB, cpA, contact);
-					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // ”½“]
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // åè»¢
 				}
 				else if (cB.type == ColliderType::Cylinder)
 				{
@@ -1462,47 +1462,47 @@ void CollisionSystem::Update(Registry& registry)
 				{
 					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
 					hit = CheckSphereCylinder(sB, cyA, contact);
-					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // ”½“]
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // åè»¢
 				}
 				else if (cB.type == ColliderType::Capsule)
 				{
 					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
 					hit = CheckCapsuleCylinder(cpB, cyA, contact);
-					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // ”½“]
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // åè»¢
 				}
 				else if (cB.type == ColliderType::Box)
 				{
 					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
 					hit = CheckOBBCylinder(oB, cyA, contact);
-					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // ”½“]
+					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // åè»¢
 				}
 			}
 
 			if (hit)
 			{
-				// Trigger‚È‚çSolver‚É‚Í‘—‚ç‚È‚¢‚ªAƒCƒxƒ“ƒg‚É‚Íc‚·
+				// Triggerãªã‚‰Solverã«ã¯é€ã‚‰ãªã„ãŒã€ã‚¤ãƒ™ãƒ³ãƒˆã«ã¯æ®‹ã™
 				if (!cA.isTrigger && !cB.isTrigger)
 				{
 					contactsForSolver.push_back(contact);
 				}
 
-				// ƒCƒxƒ“ƒgŒŸ’m—p‚É•Û‘¶
+				// ã‚¤ãƒ™ãƒ³ãƒˆæ¤œçŸ¥ç”¨ã«ä¿å­˜
 				EntityPair pair = (eA < eB) ? EntityPair(eA, eB) : EntityPair(eB, eA);
 				currentContactsMap[pair] = contact;
 
-				// NormalŒü‚«•â³i•Û‘¶A->B‚É‚·‚éj
+				// Normalå‘ãè£œæ­£ï¼ˆä¿å­˜æ™‚A->Bã«ã™ã‚‹ï¼‰
 				if (eA != pair.first)
 				{
-					// eB(pair.first) -> eA(pair.second) ‚ÌŒü‚«‚Æ‚µ‚Ä•Û‘¶‚³‚ê‚Ä‚¢‚éê‡A”½“]
-					// contact.normal ‚Í A->B ‚È‚Ì‚Å‚»‚Ì‚Ü‚Ü‚ÅOK?
-					// ‚±‚±‚ÍƒCƒxƒ“ƒg‚Åg‚¤‚É’ˆÓ‚ª•K—v
+					// eB(pair.first) -> eA(pair.second) ã®å‘ãã¨ã—ã¦ä¿å­˜ã•ã‚Œã¦ã„ã‚‹å ´åˆã€åè»¢
+					// contact.normal ã¯ A->B ãªã®ã§ãã®ã¾ã¾ã§OK?
+					// ã“ã“ã¯ã‚¤ãƒ™ãƒ³ãƒˆã§ä½¿ã†æ™‚ã«æ³¨æ„ãŒå¿…è¦
 				}
 			}
 		}
 	});
 
-	// 6. ƒCƒxƒ“ƒg”­siEnter / Stay / Exitj
-	// Exit: ‘O‰ñ‚ ‚Á‚Ä¡‰ñ‚È‚¢
+	// 6. ã‚¤ãƒ™ãƒ³ãƒˆç™ºè¡Œï¼ˆEnter / Stay / Exitï¼‰
+	// Exit: å‰å›ã‚ã£ã¦ä»Šå›ãªã„
 	for (auto& prev : g_prevContacts)
 	{
 		if (currentContactsMap.find(prev.first) == currentContactsMap.end())
@@ -1523,14 +1523,14 @@ void CollisionSystem::Update(Registry& registry)
 		}
 	}
 
-	// —š—ğXV
+	// å±¥æ­´æ›´æ–°
 	g_prevContacts.clear();
 	for (auto& curr : currentContactsMap)
 	{
 		g_prevContacts[curr.first] = true;
 	}
 
-	// 7. •¨—‰“š
+	// 7. ç‰©ç†å¿œç­”
 	PhysicsSystem::Solve(registry, contactsForSolver);
 }
 
@@ -1539,7 +1539,7 @@ void CollisionSystem::Reset()
 	g_prevContacts.clear();
 	g_spatialHash.Clear();
 
-	// ObserverƒŠƒZƒbƒg
+	// Observerãƒªã‚»ãƒƒãƒˆ
 	m_observer.clear();
 	m_isInitialized = false;
 }

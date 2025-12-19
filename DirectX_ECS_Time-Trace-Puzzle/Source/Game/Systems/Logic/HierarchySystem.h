@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	HierarchySystem.h
- * @brief	e‚©‚ç‡‚ÉÀ•W‚ğŒvZ‚µ‚Ä‚¢‚­ƒVƒXƒeƒ€iƒqƒGƒ‰ƒ‹ƒL[j
+ * @brief	è¦ªã‹ã‚‰é †ã«åº§æ¨™ã‚’è¨ˆç®—ã—ã¦ã„ãã‚·ã‚¹ãƒ†ãƒ ï¼ˆãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼ï¼‰
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___HIERARCHY_SYSTEM_H___
 #define ___HIERARCHY_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include <functional>
@@ -33,55 +33,55 @@ public:
 
 	void Update(Registry& registry) override
 	{
-		// Ä‹A“I‚És—ñ‚ğXV‚·‚éŠÖ”
+		// å†å¸°çš„ã«è¡Œåˆ—ã‚’æ›´æ–°ã™ã‚‹é–¢æ•°
 		std::function<void(Entity, const DirectX::XMMATRIX&)> updateMatrix =
 			[&](Entity entity, const DirectX::XMMATRIX& parentMatrix)
 			{
 				if (registry.has<Transform>(entity)) {
 					auto& t = registry.get<Transform>(entity);
 
-					// 1. ƒ[ƒJƒ‹s—ñ‚ğì‚é (S * R * T)
+					// 1. ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã‚’ä½œã‚‹ (S * R * T)
 					DirectX::XMMATRIX localMat =
 						DirectX::XMMatrixScaling(t.scale.x, t.scale.y, t.scale.z) *
 						DirectX::XMMatrixRotationRollPitchYaw(
-							DirectX::XMConvertToRadians(t.rotation.x), // “x”–@‚È‚ç•ÏŠ·‚ª•K—v
+							DirectX::XMConvertToRadians(t.rotation.x), // åº¦æ•°æ³•ãªã‚‰å¤‰æ›ãŒå¿…è¦
 							DirectX::XMConvertToRadians(t.rotation.y),
 							DirectX::XMConvertToRadians(t.rotation.z)) *
 						DirectX::XMMatrixTranslation(t.position.x, t.position.y, t.position.z);
 
-					// 2. e‚Ìs—ñ‚ğŠ|‚¯‚Äƒ[ƒ‹ƒhs—ñ‚É‚·‚é
+					// 2. è¦ªã®è¡Œåˆ—ã‚’æ›ã‘ã¦ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã«ã™ã‚‹
 					DirectX::XMMATRIX worldMat = localMat * parentMatrix;
 
-					// šC³: ŒvZŒ‹‰Ê‚ğƒƒ“ƒo•Ï”‚ÉƒXƒgƒA‚·‚é
+					// â˜…ä¿®æ­£: è¨ˆç®—çµæœã‚’ãƒ¡ãƒ³ãƒå¤‰æ•°ã«ã‚¹ãƒˆã‚¢ã™ã‚‹
 					DirectX::XMStoreFloat4x4(&t.worldMatrix, worldMat);
 
-					// 3. q‹Ÿ‚½‚¿‚É‚àu¡ŒvZ‚µ‚½ƒ[ƒ‹ƒhs—ñv‚ğ“n‚µ‚ÄXV‚³‚¹‚é
+					// 3. å­ä¾›ãŸã¡ã«ã‚‚ã€Œä»Šè¨ˆç®—ã—ãŸãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã€ã‚’æ¸¡ã—ã¦æ›´æ–°ã•ã›ã‚‹
 					if (registry.has<Relationship>(entity)) {
 						for (Entity child : registry.get<Relationship>(entity).children) {
-							// šC³: ŒvZÏ‚İ‚Ì worldMat ‚ğ“n‚·
+							// â˜…ä¿®æ­£: è¨ˆç®—æ¸ˆã¿ã® worldMat ã‚’æ¸¡ã™
 							updateMatrix(child, worldMat);
 						}
 					}
 				}
 			};
 
-		// --- ƒ‹[ƒgie‚ğ‚½‚È‚¢ƒGƒ“ƒeƒBƒeƒBj‚©‚çXVŠJn ---
+		// --- ãƒ«ãƒ¼ãƒˆï¼ˆè¦ªã‚’æŒãŸãªã„ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ï¼‰ã‹ã‚‰æ›´æ–°é–‹å§‹ ---
 
-		// 1. ‘SƒGƒ“ƒeƒBƒeƒB‚©‚çuRelationship‚ğ‚Â‚ªAParent‚ª–³Œøv‚È‚à‚Ì‚ğ’T‚·
-		//	  ‚à‚µ‚­‚ÍuRelationship‚ğ‚Á‚Ä‚¢‚È‚¢vƒGƒ“ƒeƒBƒeƒB‚àƒ‹[ƒgˆµ‚¢
+		// 1. å…¨ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‹ã‚‰ã€ŒRelationshipã‚’æŒã¤ãŒã€ParentãŒç„¡åŠ¹ã€ãªã‚‚ã®ã‚’æ¢ã™
+		//	  ã‚‚ã—ãã¯ã€ŒRelationshipã‚’æŒã£ã¦ã„ãªã„ã€ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚‚ãƒ«ãƒ¼ãƒˆæ‰±ã„
 
-		// ‚±‚±‚Å‚Í‘SƒGƒ“ƒeƒBƒeƒB‚ğ‘–¸‚µ‚Äƒ‹[ƒg‚ğ’T‚·ŠÈˆÕÀ‘•
+		// ã“ã“ã§ã¯å…¨ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’èµ°æŸ»ã—ã¦ãƒ«ãƒ¼ãƒˆã‚’æ¢ã™ç°¡æ˜“å®Ÿè£…
 		registry.view<Transform>().each([&](Entity e, Transform& t) {
 			bool isRoot = true;
 			if (registry.has<Relationship>(e)) {
-				// e‚ª‚¢‚é‚È‚çƒ‹[ƒg‚Å‚Í‚È‚¢
+				// è¦ªãŒã„ã‚‹ãªã‚‰ãƒ«ãƒ¼ãƒˆã§ã¯ãªã„
 				if (registry.get<Relationship>(e).parent != NullEntity) {
 					isRoot = false;
 				}
 			}
 
 			if (isRoot) {
-				// ƒ‹[ƒg‚Ìes—ñ‚Íu’PˆÊs—ñv
+				// ãƒ«ãƒ¼ãƒˆã®è¦ªè¡Œåˆ—ã¯ã€Œå˜ä½è¡Œåˆ—ã€
 				updateMatrix(e, DirectX::XMMatrixIdentity());
 			}
 			});

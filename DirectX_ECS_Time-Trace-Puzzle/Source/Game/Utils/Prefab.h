@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Prefab.h
- * @brief	ƒGƒ“ƒeƒBƒeƒB‚ğì¬‚·‚éŠÖ”ŒQ
+ * @brief	ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ä½œæˆã™ã‚‹é–¢æ•°ç¾¤
  * 
  * @details	
  * 
@@ -8,36 +8,36 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___PREFAB_H___
 #define ___PREFAB_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 
 namespace Prefab
 {
 	/**
-	 * @brief	w’è‚µ‚½ˆÊ’u‚ÉAƒƒ“ƒVƒ‡ƒbƒg‰¹Œ¹‚ğÄ¶‚·‚é
+	 * @brief	æŒ‡å®šã—ãŸä½ç½®ã«ã€ãƒ¯ãƒ³ã‚·ãƒ§ãƒƒãƒˆéŸ³æºã‚’å†ç”Ÿã™ã‚‹
 	 */
 	inline void CreateSoundEffect(World& world, const std::string& soundKey, const XMFLOAT3& position, float volume = 1.0f, float range = 20.0f)
 	{
-		// ‰¹ºƒf[ƒ^‚ğæ“¾‚µ‚Ä’·‚³‚ğ’²‚×‚é
-		float duration = 1.0f;	// ƒfƒtƒHƒ‹ƒg
+		// éŸ³å£°ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã—ã¦é•·ã•ã‚’èª¿ã¹ã‚‹
+		float duration = 1.0f;	// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
 		auto sound = ResourceManager::Instance().GetSound(soundKey);
 		if (sound)
 		{
 			duration = sound->duration;
-			// ­‚µ—]—T‚ğ‚½‚¹‚éi0.1•bj
+			// å°‘ã—ä½™è£•ã‚’æŒãŸã›ã‚‹ï¼ˆ0.1ç§’ï¼‰
 			duration += 0.1f;
 		}
 

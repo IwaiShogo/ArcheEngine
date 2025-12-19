@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SceneManager.cpp
- * @brief	ƒV[ƒ“ƒ}ƒl[ƒWƒƒ[
+ * @brief	ã‚·ãƒ¼ãƒ³ãƒžãƒãƒ¼ã‚¸ãƒ£ãƒ¼
  * 
  * @details	
  * 
@@ -8,26 +8,26 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/17	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/17	åˆå›žä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/ECS/ECS.h"
 
-// Ã“Iƒƒ“ƒo•Ï”‚ÌŽÀ‘Ì
+// é™çš„ãƒ¡ãƒ³ãƒå¤‰æ•°ã®å®Ÿä½“
 SceneManager* SceneManager::s_instance = nullptr;
 
 SceneManager::SceneManager()
 {
-	assert(s_instance == nullptr && "SceneManager‚ÍŠù‚É‘¶Ý‚µ‚Ü‚·Id•¡¶¬‹ÖŽ~‚Å‚·B");
+	assert(s_instance == nullptr && "SceneManagerã¯æ—¢ã«å­˜åœ¨ã—ã¾ã™ï¼é‡è¤‡ç”Ÿæˆç¦æ­¢ã§ã™ã€‚");
 	s_instance = this;
 }
 
@@ -46,7 +46,7 @@ SceneManager::~SceneManager()
 
 SceneManager& SceneManager::Instance()
 {
-	assert(s_instance != nullptr && "SceneManager‚ª‚Ü‚¾¶¬‚³‚ê‚Ä‚¢‚Ü‚¹‚ñIApplication‰Šú‰»‘O‚É“Ç‚ñ‚Å‚¢‚Ü‚¹‚ñ‚©H");
+	assert(s_instance != nullptr && "SceneManagerãŒã¾ã ç”Ÿæˆã•ã‚Œã¦ã„ã¾ã›ã‚“ï¼ApplicationåˆæœŸåŒ–å‰ã«èª­ã‚“ã§ã„ã¾ã›ã‚“ã‹ï¼Ÿ");
 	return *s_instance;
 }
 
@@ -57,7 +57,7 @@ void SceneManager::Initialize()
 
 void SceneManager::Update()
 {
-	// ƒV[ƒ“Ø‚è‘Ö‚¦ƒŠƒNƒGƒXƒg‚ª‚ ‚ê‚Îˆ—
+	// ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆãƒªã‚¯ã‚¨ã‚¹ãƒˆãŒã‚ã‚Œã°å‡¦ç†
 	if (!m_nextSceneRequest.empty())
 	{
 		ProcessSceneChange();
@@ -86,7 +86,7 @@ World& SceneManager::GetWorld()
 {
 	if (!m_currentScene)
 	{
-		// ƒV[ƒ“‚ª–³‚¢ê‡‚Ìƒ_ƒ~[WorldiƒNƒ‰ƒbƒVƒ…–hŽ~j
+		// ã‚·ãƒ¼ãƒ³ãŒç„¡ã„å ´åˆã®ãƒ€ãƒŸãƒ¼Worldï¼ˆã‚¯ãƒ©ãƒƒã‚·ãƒ¥é˜²æ­¢ï¼‰
 		static World emptyWorld;
 		return emptyWorld;
 	}
@@ -96,9 +96,9 @@ World& SceneManager::GetWorld()
 void SceneManager::ProcessSceneChange()
 {
 	std::string nextName = m_nextSceneRequest;
-	m_nextSceneRequest = "";	// ƒŠƒNƒGƒXƒgÁ‰»
+	m_nextSceneRequest = "";	// ãƒªã‚¯ã‚¨ã‚¹ãƒˆæ¶ˆåŒ–
 
-	// “o˜^‚³‚ê‚Ä‚¢‚È‚¢ƒV[ƒ“‚È‚çƒGƒ‰[ƒƒO‚ðo‚µ‚Ä–³Ž‹
+	// ç™»éŒ²ã•ã‚Œã¦ã„ãªã„ã‚·ãƒ¼ãƒ³ãªã‚‰ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ã‚’å‡ºã—ã¦ç„¡è¦–
 	auto it = m_factories.find(nextName);
 	if (it == m_factories.end())
 	{
@@ -106,17 +106,17 @@ void SceneManager::ProcessSceneChange()
 		return;
 	}
 
-	// Œ»Ý‚ÌƒV[ƒ“I—¹
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³çµ‚äº†
 	if (m_currentScene)
 	{
 		m_currentScene->Finalize();
 	}
 
-	// V‚µ‚¢ƒV[ƒ“‚ð¶¬iƒtƒ@ƒNƒgƒŠŠÖ”‚ðŽÀsj
+	// æ–°ã—ã„ã‚·ãƒ¼ãƒ³ã‚’ç”Ÿæˆï¼ˆãƒ•ã‚¡ã‚¯ãƒˆãƒªé–¢æ•°ã‚’å®Ÿè¡Œï¼‰
 	m_currentScene = it->second();
 	m_currentSceneName = nextName;
 
-	// V‚µ‚¢ƒV[ƒ“‚Ì‰Šú‰»
+	// æ–°ã—ã„ã‚·ãƒ¼ãƒ³ã®åˆæœŸåŒ–
 	if (m_currentScene)
 	{
 		m_currentScene->Setup(&m_context);

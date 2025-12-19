@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	HierarchyWindow.h
  * @brief	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___HIERARCHY_WINDOW_H___
 #define ___HIERARCHY_WINDOW_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Components/Components.h"
@@ -36,8 +36,8 @@ public:
 		// ------------------------------------------------------------
 		ImGui::Begin("Hierarchy");
 
-		// ue‚ğ‚½‚È‚¢iƒ‹[ƒgjEntityv‚¾‚¯‚ğ‹N“_‚É•`‰æ‚·‚é
-		// ‚±‚ê‚ğ‚µ‚È‚¢‚ÆAq‚ª“ñd‚É•\¦‚³‚ê‚Ä‚µ‚Ü‚¢‚Ü‚·
+		// ã€Œè¦ªã‚’æŒãŸãªã„ï¼ˆãƒ«ãƒ¼ãƒˆï¼‰Entityã€ã ã‘ã‚’èµ·ç‚¹ã«æç”»ã™ã‚‹
+		// ã“ã‚Œã‚’ã—ãªã„ã¨ã€å­ãŒäºŒé‡ã«è¡¨ç¤ºã•ã‚Œã¦ã—ã¾ã„ã¾ã™
 		world.getRegistry().view<Tag>().each([&](Entity e, Tag& tag) {
 			bool isRoot = true;
 			if (world.getRegistry().has<Relationship>(e)) {
@@ -49,11 +49,11 @@ public:
 			}
 			});
 
-		// ƒEƒBƒ“ƒhƒE‚Ì—]”’•”•ª‚Ö‚Ìƒhƒƒbƒvieq‰ğœAƒ‹[ƒg‰»j
+		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ä½™ç™½éƒ¨åˆ†ã¸ã®ãƒ‰ãƒ­ãƒƒãƒ—ï¼ˆï¼è¦ªå­è§£é™¤ã€ãƒ«ãƒ¼ãƒˆåŒ–ï¼‰
 		if (ImGui::BeginDragDropTargetCustom(ImGui::GetCurrentWindow()->Rect(), ImGui::GetID("Hierarchy"))) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID")) {
 				Entity payloadEntity = *(const Entity*)payload->Data;
-				// e‚ğNull‚É‚·‚éiƒ‹[ƒg‚É–ß‚·j
+				// è¦ªã‚’Nullã«ã™ã‚‹ï¼ˆãƒ«ãƒ¼ãƒˆã«æˆ»ã™ï¼‰
 				SetParent(world, payloadEntity, NullEntity);
 			}
 			ImGui::EndDragDropTarget();
@@ -65,27 +65,27 @@ public:
 private:
 	void SetParent(World& world, Entity child, Entity parent)
 	{
-		// ©•ª©g‚ğe‚É‚Í‚Å‚«‚È‚¢
+		// è‡ªåˆ†è‡ªèº«ã‚’è¦ªã«ã¯ã§ããªã„
 		if (child == parent) return;
 
-		// 1. Œ»İ‚Ìe‚©‚ç—£’E
+		// 1. ç¾åœ¨ã®è¦ªã‹ã‚‰é›¢è„±
 		if (world.getRegistry().has<Relationship>(child))
 		{
 			Entity oldParent = world.getRegistry().get<Relationship>(child).parent;
 			if (oldParent != NullEntity && world.getRegistry().has<Relationship>(oldParent))
 			{
 				auto& children = world.getRegistry().get<Relationship>(oldParent).children;
-				// qƒŠƒXƒg‚©‚ç©•ª‚ğíœ
+				// å­ãƒªã‚¹ãƒˆã‹ã‚‰è‡ªåˆ†ã‚’å‰Šé™¤
 				children.erase(std::remove(children.begin(), children.end(), child), children.end());
 			}
 		}
 
-		// 2. V‚µ‚¢e‚ÉŠ‘®
-		// q‘¤‚Ìİ’è
+		// 2. æ–°ã—ã„è¦ªã«æ‰€å±
+		// å­å´ã®è¨­å®š
 		if (!world.getRegistry().has<Relationship>(child)) world.getRegistry().emplace<Relationship>(child);
 		world.getRegistry().get<Relationship>(child).parent = parent;
 
-		// e‘¤‚Ìİ’è
+		// è¦ªå´ã®è¨­å®š
 		if (parent != NullEntity)
 		{
 			if (!world.getRegistry().has<Relationship>(parent)) world.getRegistry().emplace<Relationship>(parent);
@@ -97,45 +97,45 @@ private:
 	{
 		Tag& tag = world.getRegistry().get<Tag>(e);
 
-		// ƒm[ƒh‚Ìƒtƒ‰ƒOİ’è
+		// ãƒãƒ¼ãƒ‰ã®ãƒ•ãƒ©ã‚°è¨­å®š
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 		if (e == selected) flags |= ImGuiTreeNodeFlags_Selected;
 
-		// q‚ª‚¢‚é‚©ƒ`ƒFƒbƒN
+		// å­ãŒã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯
 		bool hasChildren = false;
 		if (world.getRegistry().has<Relationship>(e)) {
 			if (!world.getRegistry().get<Relationship>(e).children.empty()) hasChildren = true;
 		}
-		if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf; // q‚ª‚È‚¯‚ê‚ÎƒŠ[ƒti—tj
+		if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf; // å­ãŒãªã‘ã‚Œã°ãƒªãƒ¼ãƒ•ï¼ˆè‘‰ï¼‰
 
-		// --- ƒm[ƒh•`‰æ ---
+		// --- ãƒãƒ¼ãƒ‰æç”» ---
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)e, flags, "%s (ID:%d)", tag.name.c_str(), e);
 
-		// ƒNƒŠƒbƒN‘I‘ğ
+		// ã‚¯ãƒªãƒƒã‚¯é¸æŠ
 		if (ImGui::IsItemClicked()) {
 			selected = e;
 		}
 
-		// --- ƒhƒ‰ƒbƒO•ƒhƒƒbƒvˆ— ---
+		// --- ãƒ‰ãƒ©ãƒƒã‚°ï¼†ãƒ‰ãƒ­ãƒƒãƒ—å‡¦ç† ---
 
-		// 1. ƒhƒ‰ƒbƒOŒ³ (Source)
+		// 1. ãƒ‰ãƒ©ãƒƒã‚°å…ƒ (Source)
 		if (ImGui::BeginDragDropSource()) {
 			ImGui::SetDragDropPayload("ENTITY_ID", &e, sizeof(Entity));
 			ImGui::Text("Move %s", tag.name);
 			ImGui::EndDragDropSource();
 		}
 
-		// 2. ƒhƒƒbƒvæ (Target)
+		// 2. ãƒ‰ãƒ­ãƒƒãƒ—å…ˆ (Target)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID")) {
 				Entity payloadEntity = *(const Entity*)payload->Data;
-				// ƒhƒƒbƒv‚³‚ê‚½Entity‚ğA‚±‚¢‚Â(e)‚Ìq‚É‚·‚é
+				// ãƒ‰ãƒ­ãƒƒãƒ—ã•ã‚ŒãŸEntityã‚’ã€ã“ã„ã¤(e)ã®å­ã«ã™ã‚‹
 				SetParent(world, payloadEntity, e);
 			}
 			ImGui::EndDragDropTarget();
 		}
 
-		// --- q—v‘f‚ÌÄ‹A•`‰æ ---
+		// --- å­è¦ç´ ã®å†å¸°æç”» ---
 		if (opened) {
 			if (hasChildren) {
 				for (Entity child : world.getRegistry().get<Relationship>(e).children) {

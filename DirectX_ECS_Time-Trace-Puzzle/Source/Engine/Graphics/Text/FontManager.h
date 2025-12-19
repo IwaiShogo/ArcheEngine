@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	FontManager.h
  * @brief	
  * 
@@ -8,22 +8,24 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___FONT_MANAGER_H___
 #define ___FONT_MANAGER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/StringId.h"
-#include "Engine/Graphics/Text/PrivateFontLoader.h"
+
+// ===== å‰æ–¹å®£è¨€ =====
+class PrivateFontCollectionLoader;
 
 class FontManager
 {
@@ -32,31 +34,37 @@ public:
 
 	void Initialize();
 
-	ComPtr<IDWriteTextFormat> GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE fontStyle = DWRITE_FONT_STYLE_NORMAL);
-
 	ID2D1Factory* GetD2DFactory() const { return m_d2dFactory.Get(); }
 
-	// ƒ[ƒh‚³‚ê‚½ƒtƒHƒ“ƒg–¼‚ÌƒŠƒXƒg‚ğæ“¾
+	// ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆå–å¾—
+	ComPtr<IDWriteTextFormat> GetTextFormat(
+		StringId key, const std::wstring& fontFamily, float fontSize,
+		DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE fontStyle = DWRITE_FONT_STYLE_NORMAL);
+
+	// ãƒ­ãƒ¼ãƒ‰ã•ã‚ŒãŸãƒ•ã‚©ãƒ³ãƒˆåã®ãƒªã‚¹ãƒˆã‚’å–å¾—
 	const std::vector<std::string>& GetLoadedFontNames() const { return m_loadedFontNames; }
 
 private:
-	// ƒtƒHƒ“ƒgƒfƒBƒŒƒNƒgƒŠ“à‚Ì‘SƒtƒHƒ“ƒg‚ğƒƒ‚ƒŠ‚Éƒ[ƒh
-	void LoadFonts(const std::string& directory);
-
 	FontManager() = default;
 	~FontManager();
+
+	// ãƒ•ã‚©ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã®å…¨ãƒ•ã‚©ãƒ³ãƒˆã‚’ãƒ¡ãƒ¢ãƒªã«ãƒ­ãƒ¼ãƒ‰
+	void LoadFonts(const std::string& directory);
+
+	bool m_isInitialized = false;
 
 	ComPtr<ID2D1Factory> m_d2dFactory;
 	ComPtr<IDWriteFactory> m_dwriteFactory;
 
-	// ƒLƒƒƒbƒVƒ…: ƒL[(StringId) -> TextFormat
-	// “¯‚¶İ’è‚ÌƒtƒHƒ“ƒg‚ğ‰½“x‚àì‚ç‚È‚¢‚æ‚¤‚É‚·‚é
+	// ã‚«ã‚¹ã‚¿ãƒ ãƒ•ã‚©ãƒ³ãƒˆç”¨
+	PrivateFontCollectionLoader* m_collectionLoader = nullptr;
+	ComPtr<IDWriteFontCollection> m_customCollection;
+
+	// ã‚­ãƒ£ãƒƒã‚·ãƒ¥: ã‚­ãƒ¼(StringId) -> TextFormat
+	// åŒã˜è¨­å®šã®ãƒ•ã‚©ãƒ³ãƒˆã‚’ä½•åº¦ã‚‚ä½œã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹
 	std::unordered_map<StringId, ComPtr<IDWriteTextFormat>> m_textFormats;
-
-	// ƒJƒXƒ^ƒ€ƒtƒHƒ“ƒgŠÇ——p
-	std::vector<std::string> m_registeredFontFiles;
-
-	// GUI•\¦—p
+	// GUIè¡¨ç¤ºç”¨
 	std::vector<std::string> m_loadedFontNames;
 };
 

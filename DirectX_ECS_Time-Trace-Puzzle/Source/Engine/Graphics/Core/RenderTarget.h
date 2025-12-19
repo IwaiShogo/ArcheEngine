@@ -1,27 +1,27 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	RenderTarget.h
- * @brief	ƒV[ƒ“ƒrƒ…[AƒQ[ƒ€ƒrƒ…[‚ÌÀ‘Ì
+ * @brief	ã‚·ãƒ¼ãƒ³ãƒ“ãƒ¥ãƒ¼ã€ã‚²ãƒ¼ãƒ ãƒ“ãƒ¥ãƒ¼ã®å®Ÿä½“
  * 
  * @details	
- * u‰æ–Ê‚É•\¦‚¹‚¸‚ÉAƒƒ‚ƒŠã‚Ì‰æ‘œ‚É•`‰æ‚·‚év‚½‚ß‚ÌƒNƒ‰ƒXì¬B 
+ * ã€Œç”»é¢ã«è¡¨ç¤ºã›ãšã«ã€ãƒ¡ãƒ¢ãƒªä¸Šã®ç”»åƒã«æç”»ã™ã‚‹ã€ãŸã‚ã®ã‚¯ãƒ©ã‚¹ä½œæˆã€‚ 
  * 
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/29	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/29	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___RENDER_TARGET_H___
 #define ___RENDER_TARGET_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include"Engine/pch.h"
 
 using Microsoft::WRL::ComPtr;
@@ -32,13 +32,13 @@ public:
 	RenderTarget(ID3D11Device* device, int width, int height);
 	~RenderTarget() = default;
 
-	// •`‰ææ‚Æ‚µ‚ÄƒZƒbƒg‚·‚é
+	// æç”»å…ˆã¨ã—ã¦ã‚»ãƒƒãƒˆã™ã‚‹
 	void Activate(ID3D11DeviceContext* context, ID3D11DepthStencilView* depthStencil);
 
-	// •`‰æŒ‹‰Ê‚ğƒNƒŠƒA‚·‚é
+	// æç”»çµæœã‚’ã‚¯ãƒªã‚¢ã™ã‚‹
 	void Clear(ID3D11DeviceContext* context, float r, float g, float b, float a);
 
-	// ImGui‚Å•\¦‚·‚é‚½‚ß‚ÌƒeƒNƒXƒ`ƒƒID‚ğæ“¾
+	// ImGuiã§è¡¨ç¤ºã™ã‚‹ãŸã‚ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£IDã‚’å–å¾—
 	void* GetID() const { return m_srv.Get(); }
 
 	int GetWidth() const { return m_width; }
@@ -46,7 +46,7 @@ public:
 	
 	ID3D11RenderTargetView* GetRTV() const { return m_rtv.Get(); }
 
-	// ƒŠƒTƒCƒY‘Î‰iƒEƒBƒ“ƒhƒEƒTƒCƒY‚ª•Ï‚í‚Á‚½—pj
+	// ãƒªã‚µã‚¤ã‚ºå¯¾å¿œï¼ˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºãŒå¤‰ã‚ã£ãŸæ™‚ç”¨ï¼‰
 	void Resize(ID3D11Device* device, int width, int height);
 
 	ID3D11ShaderResourceView* GetSRV() const { return m_srv.Get(); }
@@ -55,7 +55,7 @@ private:
 	int m_width, m_height;
 	ComPtr<ID3D11Texture2D> m_texture;
 	ComPtr<ID3D11RenderTargetView> m_rtv;
-	ComPtr<ID3D11ShaderResourceView> m_srv;	// ImGui•\¦—p
+	ComPtr<ID3D11ShaderResourceView> m_srv;	// ImGuiè¡¨ç¤ºç”¨
 };
 
 #endif // !___RENDER_TARGET_H___

@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Time.h
- * @brief	FPS§Œä
+ * @brief	FPSåˆ¶å¾¡
  * 
  * @details	
  * 
@@ -8,77 +8,77 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/24	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/24	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___TIME_H___
 #define ___TIME_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 
 class Time
 {
 public:
-	// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‰Šú‰»‚ÉŒÄ‚Ô
+	// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³åˆæœŸåŒ–æ™‚ã«å‘¼ã¶
 	static void Initialize()
 	{
-		// CPU‚Ì‚¸“xƒ^ƒCƒ}[ü”g”‚ğæ“¾
+		// CPUã®é«˜ç²¾åº¦ã‚¿ã‚¤ãƒãƒ¼å‘¨æ³¢æ•°ã‚’å–å¾—
 		QueryPerformanceFrequency(&s_cpuFreq);
 		QueryPerformanceCounter(&s_startTime);
 		s_lastTime = s_startTime;
 
-		// Sleep‚Ì¸“x‚ğ1ms‚É‚·‚é
+		// Sleepã®ç²¾åº¦ã‚’1msã«ã™ã‚‹
 		timeBeginPeriod(1);
 	}
 
-	// –ˆƒtƒŒ[ƒ€ŒÄ‚Ô
+	// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶
 	static void Update()
 	{
 		LARGE_INTEGER currentTime;
 		QueryPerformanceCounter(&currentTime);
 
-		// Œo‰ßŠÔ‚ğŒvZiŒ»İ‚ÌƒJƒEƒ“ƒg - ‘O‰ñ‚ÌƒJƒEƒ“ƒgj / ü”g”
+		// çµŒéæ™‚é–“ã‚’è¨ˆç®—ï¼ˆç¾åœ¨ã®ã‚«ã‚¦ãƒ³ãƒˆ - å‰å›ã®ã‚«ã‚¦ãƒ³ãƒˆï¼‰ / å‘¨æ³¢æ•°
 		long long diff = currentTime.QuadPart - s_lastTime.QuadPart;
 
-		// •b’PˆÊ‚É•ÏŠ·
+		// ç§’å˜ä½ã«å¤‰æ›
 		s_deltaTime = static_cast<double>(diff) / static_cast<double>(s_cpuFreq.QuadPart);
 
-		// Œ»İ‚ğ•Û‘¶
+		// ç¾åœ¨æ™‚åˆ»ã‚’ä¿å­˜
 		s_lastTime = currentTime;
 	}
 
 	inline static void StepFrame()
 	{
-		s_isStepNext = true;	// Ÿ‚ÌƒtƒŒ[ƒ€‚¾‚¯“®‚©‚·ƒtƒ‰ƒO‚ğ—§‚Ä‚é
+		s_isStepNext = true;	// æ¬¡ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã ã‘å‹•ã‹ã™ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã‚‹
 	}
 
-	// ‘O‚ÌƒtƒŒ[ƒ€‚©‚ç‚ÌŒo‰ßŠÔi•bj‚ğæ“¾
+	// å‰ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰ã®çµŒéæ™‚é–“ï¼ˆç§’ï¼‰ã‚’å–å¾—
 	static float DeltaTime()
 	{
-		// ƒRƒ}‘—‚è—v‹‚ª‚ ‚éê‡
+		// ã‚³ãƒé€ã‚Šè¦æ±‚ãŒã‚ã‚‹å ´åˆ
 		if (s_isStepNext)
 		{
-			s_isStepNext = false;	// ƒtƒ‰ƒO‚ğ‰º‚·
-			return 1.0f / 60.0f;	// ‹­§“I‚É1/60•bi‚ñ‚¾‚±‚Æ‚É‚·‚é
+			s_isStepNext = false;	// ãƒ•ãƒ©ã‚°ã‚’ä¸‹ã™
+			return 1.0f / 60.0f;	// å¼·åˆ¶çš„ã«1/60ç§’é€²ã‚“ã ã“ã¨ã«ã™ã‚‹
 		}
 
-		// ˆê’â~’†‚Ìê‡
+		// ä¸€æ™‚åœæ­¢ä¸­ã®å ´åˆ
 		if (isPaused)
 		{
-			return 0.0f;	// ŠÔ‚ğŒo‰ß‚³‚¹‚È‚¢
+			return 0.0f;	// æ™‚é–“ã‚’çµŒéã•ã›ãªã„
 		}
 
 		return static_cast<float>(s_deltaTime) * timeScale;
 	}
 
-	// ƒQ[ƒ€ŠJn‚©‚ç‚Ì‘Œo‰ßŠÔi•bj
+	// ã‚²ãƒ¼ãƒ é–‹å§‹ã‹ã‚‰ã®ç·çµŒéæ™‚é–“ï¼ˆç§’ï¼‰
 	static float TotalTime()
 	{
 		LARGE_INTEGER currentTime;
@@ -87,7 +87,7 @@ public:
 		return static_cast<float>(static_cast<double>(diff) / static_cast<double>(s_cpuFreq.QuadPart));
 	}
 
-	// –Ú•WƒtƒŒ[ƒ€ƒŒ[ƒg‚ğİ’è
+	// ç›®æ¨™ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆã‚’è¨­å®š
 	static void SetFrameRate(int fps)
 	{
 		if (fps > 0)
@@ -96,41 +96,41 @@ public:
 		}
 	}
 
-	// İ’è‚µ‚½ƒtƒŒ[ƒ€ƒŒ[ƒg‚É‚È‚é‚æ‚¤‚É‘Ò‹@‚·‚é
+	// è¨­å®šã—ãŸãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆã«ãªã‚‹ã‚ˆã†ã«å¾…æ©Ÿã™ã‚‹
 	static void WaitFrame()
 	{
 		LARGE_INTEGER currentTime;
 		QueryPerformanceCounter(&currentTime);
 
-		// Update()‚ªŒÄ‚Î‚ê‚½is_lastTimej‚©‚ç‚ÌŒo‰ßŠÔ‚ğŒvZ
+		// Update()ãŒå‘¼ã°ã‚ŒãŸæ™‚åˆ»ï¼ˆs_lastTimeï¼‰ã‹ã‚‰ã®çµŒéæ™‚é–“ã‚’è¨ˆç®—
 		double elapsed = static_cast<double>(currentTime.QuadPart - s_lastTime.QuadPart) / static_cast<double>(s_cpuFreq.QuadPart);
 
-		// –Ú•WŠÔ‚É’B‚·‚é‚Ü‚Å‘Ò‹@
+		// ç›®æ¨™æ™‚é–“ã«é”ã™ã‚‹ã¾ã§å¾…æ©Ÿ
 		while (elapsed < s_targetFrameTime)
 		{
 			double remaining = s_targetFrameTime - elapsed;
 
-			// c‚è1msˆÈã‚ ‚ê‚ÎOS‚ÌSleep‚Å‹x‚ŞiCPU•‰‰×‘Îôj
+			// æ®‹ã‚Š1msä»¥ä¸Šã‚ã‚Œã°OSã®Sleepã§ä¼‘ã‚€ï¼ˆCPUè² è·å¯¾ç­–ï¼‰
 			if (remaining > 0.001)
 			{
 				Sleep(static_cast<DWORD>(remaining * 1000.0));
 			}
 
-			// ÄŒv‘ª
+			// å†è¨ˆæ¸¬
 			QueryPerformanceCounter(&currentTime);
 			elapsed = static_cast<double>(currentTime.QuadPart - s_lastTime.QuadPart) / static_cast<double>(s_cpuFreq.QuadPart);
 		}
 	}
 
-	inline static float timeScale = 1.0f;			// ƒ^ƒCƒ€ƒXƒP[ƒ‹
+	inline static float timeScale = 1.0f;			// ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«
 
 	inline static bool isPaused = false;
 
 private:
-	inline static LARGE_INTEGER s_cpuFreq = {};		// CPU‚Ìü”g”
-	inline static LARGE_INTEGER s_lastTime = {};	// ‘O‰ñ‚ÌŠÔ
-	inline static LARGE_INTEGER s_startTime = {};	// ŠJnŠÔ
-	inline static double s_deltaTime = 0.0;			// Œo‰ßŠÔ
+	inline static LARGE_INTEGER s_cpuFreq = {};		// CPUã®å‘¨æ³¢æ•°
+	inline static LARGE_INTEGER s_lastTime = {};	// å‰å›ã®æ™‚é–“
+	inline static LARGE_INTEGER s_startTime = {};	// é–‹å§‹æ™‚é–“
+	inline static double s_deltaTime = 0.0;			// çµŒéæ™‚é–“
 	inline static bool s_isStepNext = false;
 	inline static double s_targetFrameTime = 1.0 / 60.0;
 };

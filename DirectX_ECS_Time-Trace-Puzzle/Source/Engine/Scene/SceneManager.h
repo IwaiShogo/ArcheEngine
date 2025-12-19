@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SceneManager.h
- * @brief	Œ»İ‚ÌƒV[ƒ“‚ğ•Û‚µAØ‚è‘Ö‚¦‚ğs‚¤ƒNƒ‰ƒX
+ * @brief	ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã‚’ä¿æŒã—ã€åˆ‡ã‚Šæ›¿ãˆã‚’è¡Œã†ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,84 +8,84 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___SCENE_MANAGER_H___
 #define ___SCENE_MANAGER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Scene/IScene.h"
 
 /**
  * @class	SceneManager
- * @brief	ƒV[ƒ“‚Ì“o˜^EØ‚è‘Ö‚¦EŠÇ—‚ğs‚¤i”Ä—p‰»Ï‚İj
+ * @brief	ã‚·ãƒ¼ãƒ³ã®ç™»éŒ²ãƒ»åˆ‡ã‚Šæ›¿ãˆãƒ»ç®¡ç†ã‚’è¡Œã†ï¼ˆæ±ç”¨åŒ–æ¸ˆã¿ï¼‰
  */
 class SceneManager
 {
 public:
-	SceneManager();		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å©g‚ğ“o˜^
-	~SceneManager();	// ƒfƒXƒgƒ‰ƒNƒ^‚Å‰ğœ
+	SceneManager();		// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§è‡ªèº«ã‚’ç™»éŒ²
+	~SceneManager();	// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§è§£é™¤
 
-	// @brief	‚Ç‚±‚©‚ç‚Å‚àƒAƒNƒZƒX‰Â”\
+	// @brief	ã©ã“ã‹ã‚‰ã§ã‚‚ã‚¢ã‚¯ã‚»ã‚¹å¯èƒ½
 	static SceneManager& Instance();
 	
-	// @brief	‰Šú‰»
+	// @brief	åˆæœŸåŒ–
 	void Initialize();
 
-	// @brief	XV
+	// @brief	æ›´æ–°
 	void Update();
 
-	// @brief	•`‰æ
+	// @brief	æç”»
 	void Render();
 
-	// @brief	ContextƒZƒbƒg
+	// @brief	Contextã‚»ãƒƒãƒˆ
 	void SetContext(const Context& context) { m_context = context; }
 	Context& GetContext() { return m_context; }
 
-	// --- ƒV[ƒ“‘€ì ---
+	// --- ã‚·ãƒ¼ãƒ³æ“ä½œ ---
 	/**
-	 * @brief	ƒV[ƒ“‚ğ“o˜^‚·‚éiƒeƒ“ƒvƒŒ[ƒgj
-	 * @tparam	T		IScene‚ğŒp³‚µ‚½ƒV[ƒ“ƒNƒ‰ƒX
-	 * @param	name	ƒV[ƒ“–¼
+	 * @brief	ã‚·ãƒ¼ãƒ³ã‚’ç™»éŒ²ã™ã‚‹ï¼ˆãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆï¼‰
+	 * @tparam	T		ISceneã‚’ç¶™æ‰¿ã—ãŸã‚·ãƒ¼ãƒ³ã‚¯ãƒ©ã‚¹
+	 * @param	name	ã‚·ãƒ¼ãƒ³å
 	 */
 	template<typename T>
 	void RegisterScene(const std::string& name)
 	{
-		// ƒtƒ@ƒNƒgƒŠŠÖ”i‚»‚Ìê‚Ånew‚·‚éŠÖ”j‚ğ•Û‘¶‚µ‚Ä‚¨‚­
+		// ãƒ•ã‚¡ã‚¯ãƒˆãƒªé–¢æ•°ï¼ˆãã®å ´ã§newã™ã‚‹é–¢æ•°ï¼‰ã‚’ä¿å­˜ã—ã¦ãŠã
 		m_factories[name] = []() {return std::make_shared<T>(); };
 	}
 
-	// @brief	ƒV[ƒ“Ø‚è‘Ö‚¦—\–ñ
+	// @brief	ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆäºˆç´„
 	void ChangeScene(const std::string& name);
 
-	// Œ»İ‚ÌƒV[ƒ“î•ñ‚ğæ“¾
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³æƒ…å ±ã‚’å–å¾—
 	World& GetWorld();
 	const std::string& GetCurrentSceneName() const { return m_currentSceneName; }
 
 private:
-	// ÀÛ‚ÌØ‚è‘Ö‚¦ˆ—
+	// å®Ÿéš›ã®åˆ‡ã‚Šæ›¿ãˆå‡¦ç†
 	void ProcessSceneChange();
 
 private:
-	// ©g‚ÌÃ“Iƒ|ƒCƒ“ƒ^
+	// è‡ªèº«ã®é™çš„ãƒã‚¤ãƒ³ã‚¿
 	static SceneManager* s_instance;
 
-	// ƒV[ƒ“¶¬ŠÖ”‚Ìƒ}ƒbƒvi–¼‘O -> ¶¬ŠÖ”j
+	// ã‚·ãƒ¼ãƒ³ç”Ÿæˆé–¢æ•°ã®ãƒãƒƒãƒ—ï¼ˆåå‰ -> ç”Ÿæˆé–¢æ•°ï¼‰
 	std::unordered_map<std::string, std::function<std::shared_ptr<IScene>()>> m_factories;
 
-	// Œ»İ‚ÌƒV[ƒ“
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³
 	std::shared_ptr<IScene> m_currentScene;
 	std::string m_currentSceneName = "";
 
-	// Ÿ‚ÌƒV[ƒ“‚Ö‚Ì—\–ñ
+	// æ¬¡ã®ã‚·ãƒ¼ãƒ³ã¸ã®äºˆç´„
 	std::string m_nextSceneRequest = "";
 
 	// Context

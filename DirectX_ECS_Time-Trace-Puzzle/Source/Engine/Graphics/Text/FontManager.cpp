@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	FontManager.cpp
  * @brief	
  * 
@@ -8,132 +8,156 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Text/FontManager.h"
+#include "Engine/Graphics/Text/PrivateFontLoader.h"
 #include "Engine/Core/Logger.h"
 
 FontManager::~FontManager()
 {
-	// I—¹‚É“o˜^‚µ‚½ƒtƒHƒ“ƒg‚ğíœ
-	for (const auto& file : m_registeredFontFiles)
+	if (m_dwriteFactory && m_collectionLoader)
 	{
-		RemoveFontResourceExA(file.c_str(), FR_PRIVATE, 0);
+		m_dwriteFactory->UnregisterFontCollectionLoader(m_collectionLoader);
+	}
+	if (m_collectionLoader)
+	{
+		m_collectionLoader->Release();
+		m_collectionLoader = nullptr;
 	}
 }
 
 void FontManager::Initialize()
 {
+	if (m_isInitialized) return;
+
 	// ---------------------------------------------------------
-	// 1. ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ğexe‚ÌêŠ‚É‹­§ˆÚ“® (Release‘Îô)
+	// 1. ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’exeã®å ´æ‰€ã«å¼·åˆ¶ç§»å‹• (Releaseå¯¾ç­–)
 	// ---------------------------------------------------------
 	char buffer[MAX_PATH];
 	GetModuleFileNameA(NULL, buffer, MAX_PATH);
-	std::string exePath(buffer);
-	std::string exeDir = std::filesystem::path(exePath).parent_path().string();
-
-	// ‚±‚ê‚É‚æ‚è "Resources/Fonts" ‚È‚Ç‚Ì‘Š‘ÎƒpƒX‚ªŠmÀ‚É’Ê‚é‚æ‚¤‚É‚È‚è‚Ü‚·
+	std::filesystem::path exePath = buffer;
+	std::filesystem::path exeDir = exePath.parent_path();
 	std::filesystem::current_path(exeDir);
-	Logger::Log("Current Directory set to: " + exeDir);
+	Logger::Log("CWD set to: " + exeDir.string());
 
 	// ---------------------------------------------------------
-	// 2. Factoryì¬
+	// 2. Factoryä½œæˆ
 	// ---------------------------------------------------------
-	HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
-	if (FAILED(hr)) Logger::LogError("Failed to create D2D Factory!");
-
-	hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
-	if (FAILED(hr)) Logger::LogError("Failed to create DWrite Factory!");
+	D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
+	DWriteCreateFactory(DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
 
 	// ---------------------------------------------------------
-	// 3. ƒtƒHƒ“ƒgƒ[ƒh
+	// 3. ãƒ­ãƒ¼ãƒ€ãƒ¼ã®ç™»éŒ²
 	// ---------------------------------------------------------
-	// ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠŠî€‚Å’T‚·
-	if (std::filesystem::exists("Resources/Fonts")) {
+	if (!m_collectionLoader)
+	{
+		m_collectionLoader = new PrivateFontCollectionLoader();
+		m_collectionLoader->AddRef();
+		m_dwriteFactory->RegisterFontCollectionLoader(m_collectionLoader);
+	}
+
+	// ---------------------------------------------------------
+	// 4. ãƒ•ã‚©ãƒ³ãƒˆãƒ­ãƒ¼ãƒ‰
+	// ---------------------------------------------------------
+	if (std::filesystem::exists("Resources/Fonts"))
+	{
 		LoadFonts("Resources/Fonts");
 	}
-	else {
-		Logger::LogError("Resources/Fonts directory NOT FOUND at: " + std::filesystem::absolute("Resources/Fonts").string());
-	}
-
-	// ÅŒã‚ÉƒVƒXƒeƒ€ƒtƒHƒ“ƒgˆê——‚ğæ“¾‚µ‚ÄAg‚¦‚é–¼‘O‚ğƒŠƒXƒg‰»‚·‚é
-	m_loadedFontNames.clear();
-	ComPtr<IDWriteFontCollection> sysCollection;
-	m_dwriteFactory->GetSystemFontCollection(&sysCollection);
-
-	if (sysCollection) {
-		UINT32 count = sysCollection->GetFontFamilyCount();
-		for (UINT32 i = 0; i < count; ++i) {
-			ComPtr<IDWriteFontFamily> family;
-			sysCollection->GetFontFamily(i, &family);
-
-			// –¼‘Oæ“¾
-			ComPtr<IDWriteLocalizedStrings> names;
-			family->GetFamilyNames(&names);
-			UINT32 index = 0; BOOL exists = false;
-			names->FindLocaleName(L"en-us", &index, &exists);
-			if (!exists) index = 0; // fallback
-
-			UINT32 length = 0;
-			names->GetStringLength(index, &length);
-			std::wstring wname; wname.resize(length + 1);
-			names->GetString(index, &wname[0], length + 1);
-			wname.pop_back(); // nullœ‹
-
-			// string•ÏŠ·
-			int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), NULL, 0, NULL, NULL);
-			std::string name(size_needed, 0);
-			WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), &name[0], size_needed, NULL, NULL);
-
-			// “Æ©‚É’Ç‰Á‚µ‚½ƒtƒHƒ“ƒg‚©‚Ç‚¤‚©‚Í”»•Ê‚µ‚É‚­‚¢‚ªA
-			// ‚Æ‚è‚ ‚¦‚¸‘SƒŠƒXƒg‚ª‚ ‚ê‚Îƒ†[ƒU[‚Í‚»‚±‚©‚ç‘I‚×‚éB
-			// “Á‚ÉResources‚É‚ ‚éƒtƒ@ƒCƒ‹–¼‚É‹ß‚¢‚à‚Ì‚ÍƒƒO‚Éo‚·‚È‚Ç‚µ‚Ä‚à‚æ‚¢B
-			m_loadedFontNames.push_back(name);
-		}
+	else
+	{
+		Logger::LogError("Resources/Fonts not found at: " + std::filesystem::absolute("Resources/Fonts").string());
 	}
 }
 
 void FontManager::LoadFonts(const std::string& directory)
 {
 	namespace fs = std::filesystem;
+	std::vector<std::wstring> fontPaths;
 
-	Logger::Log("Loading fonts from: " + directory);
+	if (!fs::exists(directory))
+	{
+		Logger::LogError("CRITICAL: Fonts directory not found at: " + fs::absolute(directory).string());
+		return;
+	}
 
+	// ãƒ‘ã‚¹åé›†
 	for (const auto& entry : fs::recursive_directory_iterator(directory))
 	{
 		if (entry.is_regular_file())
 		{
 			std::string ext = entry.path().extension().string();
-			// ¬•¶š•ÏŠ·
-			std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-			if (ext == ".ttf" || ext == ".otf")
+			if (ext == ".ttf" || ext == ".otf" || ext == ".TTF" || ext == ".OTF")
 			{
-				// â‘ÎƒpƒX‚ğæ“¾
-				std::string absPath = fs::absolute(entry.path()).string();
-
-				// Windows API‚ÅƒtƒHƒ“ƒg‚ğˆêƒCƒ“ƒXƒg[ƒ‹
-				int result = AddFontResourceExA(absPath.c_str(), FR_PRIVATE, 0);
-
-				if (result > 0) {
-					m_registeredFontFiles.push_back(absPath);
-					Logger::Log("Registered Font File: " + entry.path().filename().string());
+				std::error_code ec;
+				fs::path absPath = fs::canonical(entry.path(), ec);
+				if (!ec)
+				{
+					fontPaths.push_back(absPath.wstring());
 				}
-				else {
-					Logger::LogError("Failed to register font: " + absPath);
+				else
+				{
+					fontPaths.push_back(fs::absolute(entry.path()).wstring());
 				}
 			}
 		}
 	}
+
+	if (fontPaths.empty()) return;
+
+	// ã‚³ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ä½œæˆ
+	m_collectionLoader->SetFontPaths(fontPaths);
+	const char* key = "MyCustomFonts";
+	HRESULT hr = m_dwriteFactory->CreateCustomFontCollection(
+		m_collectionLoader, key, (UINT32)strlen(key), &m_customCollection
+	);
+
+	m_loadedFontNames.clear();
+	if (SUCCEEDED(hr) && m_customCollection)
+	{
+		// ãƒ­ãƒ¼ãƒ‰æˆåŠŸã—ãŸãƒ•ã‚©ãƒ³ãƒˆåã‚’ãƒªã‚¹ãƒˆåŒ–
+		UINT32 count = m_customCollection->GetFontFamilyCount();
+		for (UINT32 i = 0; i < count; ++i)
+		{
+			ComPtr<IDWriteFontFamily> family;
+			m_customCollection->GetFontFamily(i, &family);
+			ComPtr<IDWriteLocalizedStrings> names;
+			family->GetFamilyNames(&names);
+
+			UINT32 idx = 0;
+			BOOL exists = false;
+			names->FindLocaleName(L"en-us", &idx, &exists);
+			if (!exists) idx = 0;
+
+			UINT32 len = 0; names->GetStringLength(idx, &len);
+			std::wstring wname(len + 1, 0);
+			names->GetString(idx, &wname[0], len + 1);
+			wname.resize(len);
+
+			int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), NULL, 0, NULL, NULL);
+			std::string name(size_needed, 0);
+			WideCharToMultiByte(CP_UTF8, 0, &wname[0], (int)wname.size(), &name[0], size_needed, NULL, NULL);
+			
+			m_loadedFontNames.push_back(name);
+			Logger::Log(">>> Loaded Custom Font: " + name);
+		}
+	}
+	else
+	{
+		Logger::LogError("Failed to create custom font collection!");
+	}
+
+	m_isInitialized = true;
 }
 
 ComPtr<IDWriteTextFormat> FontManager::GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight, DWRITE_FONT_STYLE fontStyle)
@@ -143,26 +167,52 @@ ComPtr<IDWriteTextFormat> FontManager::GetTextFormat(StringId key, const std::ws
 	}
 
 	ComPtr<IDWriteTextFormat> format;
+	HRESULT hr = E_FAIL;
 
-	// ‘æ“ñˆø”‚Í nullptr (ƒVƒXƒeƒ€ƒRƒŒƒNƒVƒ‡ƒ“) ‚ÅOK‚É‚È‚éI
-	// AddFontResourceEx‚Å“o˜^‚µ‚½ƒtƒHƒ“ƒg‚ÍƒVƒXƒeƒ€ƒRƒŒƒNƒVƒ‡ƒ“‚ÉŠÜ‚Ü‚ê‚é‚½‚ßB
-	HRESULT hr = m_dwriteFactory->CreateTextFormat(
-		fontFamily.c_str(),
-		nullptr,
-		fontWeight,
-		fontStyle,
-		DWRITE_FONT_STRETCH_NORMAL,
-		fontSize,
-		L"ja-jp",
-		&format
-	);
+	// A. ã‚«ã‚¹ã‚¿ãƒ ã‚³ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ã‹ã‚‰æ¢ã™
+	if (m_customCollection)
+	{
+		UINT32 index;
+		BOOL exists;
+		m_customCollection->FindFamilyName(fontFamily.c_str(), &index, &exists);
+		if (exists)
+		{
+			hr = m_dwriteFactory->CreateTextFormat(
+				fontFamily.c_str(), m_customCollection.Get(),
+				fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja_jp", &format
+			);
+		}
+	}
 
-	if (SUCCEEDED(hr)) {
+	// B. ç„¡ã‘ã‚Œã°ã‚·ã‚¹ãƒ†ãƒ ãƒ•ã‚©ãƒ³ãƒˆã‹ã‚‰æ¢ã™ï¼ˆnullptr = System Collectionï¼‰
+	if (FAILED(hr))
+	{
+		// PCã«ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã•ã‚Œã¦ã„ã‚‹ãƒ•ã‚©ãƒ³ãƒˆã‚’è©¦ã™
+		hr = m_dwriteFactory->CreateTextFormat(
+			fontFamily.c_str(), nullptr,
+			fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", &format
+		);
+		if (SUCCEEDED(hr))
+		{
+			Logger::Log("Fallback to System Font: " + std::string(fontFamily.begin(), fontFamily.end()));
+		}
+	}
+
+	// C. ãã‚Œã§ã‚‚ãƒ€ãƒ¡ãªã‚‰ã€Œãƒ¡ã‚¤ãƒªã‚ªã€ã«å¼·åˆ¶ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯
+	if (FAILED(hr))
+	{
+		Logger::LogWarning("Font Not Found. Fallback to Meiryo.");
+		hr = m_dwriteFactory->CreateTextFormat(
+			L"Meiryo", nullptr,
+			DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", &format
+		);
+	}
+
+	if (SUCCEEDED(hr))
+	{
 		m_textFormats[key] = format;
 		return format;
 	}
-	else {
-		Logger::LogError("Failed to create TextFormat for: " + std::string(fontFamily.begin(), fontFamily.end()));
-	}
+
 	return nullptr;
 }

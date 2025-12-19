@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SystemWindow.h
- * @brief	ƒVƒXƒeƒ€ƒEƒBƒ“ƒhƒE
+ * @brief	ã‚·ã‚¹ãƒ†ãƒ ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___SYSTEM_WINDOW_H___
 #define ___SYSTEM_WINDOW_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Core/Time.h"
@@ -37,11 +37,11 @@ public:
 	{
 		Registry& reg = world.getRegistry();
 		
-		ImGui::Begin("System");	// ƒEƒBƒ“ƒhƒEì¬
+		ImGui::Begin("System");	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆ
 
 		ImGui::Checkbox("Show FPS", &ctx.debug.showFps);
 
-		// 1. FPS‚ÆŠÔ
+		// 1. FPSã¨æ™‚é–“
 		if (ctx.debug.showFps)
 		{
 			// ------------------------------------------------------------
@@ -51,7 +51,7 @@ public:
 			static int values_offset = 0;
 			static float refresh_time = 0.0f;
 
-			// ‚‘¬XV‚µ‚·‚¬‚é‚ÆŒ©‚É‚­‚¢‚Ì‚Å­‚µŠÔˆø‚­
+			// é«˜é€Ÿæ›´æ–°ã—ã™ãã‚‹ã¨è¦‹ã«ãã„ã®ã§å°‘ã—é–“å¼•ã
 			if (refresh_time == 0.0f) refresh_time = static_cast<float>(ImGui::GetTime());
 			while (refresh_time < ImGui::GetTime())
 			{
@@ -60,8 +60,8 @@ public:
 				refresh_time += 1.0f / 60.0f;
 			}
 
-			// ƒOƒ‰ƒt•`‰æ
-			// (ƒ‰ƒxƒ‹, ”z—ñ, ”, ƒIƒtƒZƒbƒg, ƒI[ƒo[ƒŒƒC•¶š, Å¬Y, Å‘åY, ƒTƒCƒYj
+			// ã‚°ãƒ©ãƒ•æç”»
+			// (ãƒ©ãƒ™ãƒ«, é…åˆ—, æ•°, ã‚ªãƒ•ã‚»ãƒƒãƒˆ, ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤æ–‡å­—, æœ€å°Y, æœ€å¤§Y, ã‚µã‚¤ã‚ºï¼‰
 			ImGui::PlotLines("FPS", values, IM_ARRAYSIZE(values), values_offset, nullptr, 0.0f, 200.0f, ImVec2(0, 80));
 			ImGui::Text("Avg: %.1f", ImGui::GetIO().Framerate);
 
@@ -72,7 +72,7 @@ public:
 		ImGui::Text("Total Time: %.2f s", Time::TotalTime());
 		ImGui::Separator();
 
-		// ƒV[ƒ“‘€ì
+		// ã‚·ãƒ¼ãƒ³æ“ä½œ
 		ImGui::Separator();
 		ImGui::Text("Scene Management");
 
@@ -82,7 +82,7 @@ public:
 		if (ImGui::Button("Save Scene"))
 		{
 			std::string path = "Resources/Scenes/" + std::string(sceneNameBuf) + ".json";
-			// ƒfƒBƒŒƒNƒgƒŠì¬
+			// ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä½œæˆ
 			std::filesystem::create_directories("Resources/Scenes");
 			SceneSerializer::SaveScene(world, path);
 		}
@@ -95,7 +95,7 @@ public:
 			SceneSerializer::LoadScene(world, path);
 		}
 
-		// 2. •\¦Ø‘Ö
+		// 2. è¡¨ç¤ºåˆ‡æ›¿
 		if (ImGui::CollapsingHeader("Display Settings", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Separator();
@@ -107,7 +107,7 @@ public:
 			ImGui::Separator();
 			ImGui::Checkbox("Debug Camera Mode", &ctx.debug.useDebugCamera);
 			ImGui::Checkbox("Show Colliders", &ctx.debug.showColliders);
-			// ƒRƒ‰ƒCƒ_[•\¦’†‚Ì‚İ—LŒø‚ÈƒTƒuİ’è
+			// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼è¡¨ç¤ºä¸­ã®ã¿æœ‰åŠ¹ãªã‚µãƒ–è¨­å®š
 			if (ctx.debug.showColliders)
 			{
 				ImGui::Indent();
@@ -118,51 +118,51 @@ public:
 			}
 		}
 
-		// “ü—ÍƒfƒoƒbƒOî•ñ‚Ì•\¦
+		// å…¥åŠ›ãƒ‡ãƒãƒƒã‚°æƒ…å ±ã®è¡¨ç¤º
 		if (ImGui::CollapsingHeader("Input Visualizer", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			// 1. Ú‘±ó‘Ô
+			// 1. æ¥ç¶šçŠ¶æ…‹
 			bool connected = Input::IsControllerConnected();
 			ImGui::Text("Controller: %s", connected ? "Connected" : "Disconnected");
 
 			if (connected)
 			{
 				// ------------------------------------------------------------
-				// ƒXƒeƒBƒbƒN•`‰æ—pƒwƒ‹ƒp[ŠÖ”
+				// ã‚¹ãƒ†ã‚£ãƒƒã‚¯æç”»ç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°
 				// ------------------------------------------------------------
 				auto DrawStick = [](const char* label, float x, float y)
 					{
-						ImGui::BeginGroup();	// ƒOƒ‹[ƒv‰»‚µ‚Ä‰¡•À‚Ñ‚É‚µ‚â‚·‚­‚·‚é
+						ImGui::BeginGroup();	// ã‚°ãƒ«ãƒ¼ãƒ—åŒ–ã—ã¦æ¨ªä¸¦ã³ã«ã—ã‚„ã™ãã™ã‚‹
 						ImGui::Text("%s", label);
 
-						// ˜g
+						// æ 
 						ImDrawList* drawList = ImGui::GetWindowDrawList();
 						ImVec2 p = ImGui::GetCursorScreenPos();
 						float size = 80.0f;
 
 						drawList->AddRect(p, ImVec2(p.x + size, p.y + size), IM_COL32(255, 255, 255, 255));
 
-						// \šü
+						// åå­—ç·š
 						ImVec2 center(p.x + size * 0.5f, p.y + size * 0.5f);
 						drawList->AddLine(ImVec2(center.x, p.y), ImVec2(center.x, p.y + size), IM_COL32(100, 100, 100, 100));
 						drawList->AddLine(ImVec2(p.x, center.y), ImVec2(p.x + size, center.y), IM_COL32(100, 100, 100, 100));
 
-						// Œ»İ‚ÌˆÊ’u‚Ì“_iÔFj
+						// ç¾åœ¨ã®ä½ç½®ã®ç‚¹ï¼ˆèµ¤è‰²ï¼‰
 						float dotX = center.x + (x * (size * 0.5f));
 						float dotY = center.y - (y * (size * 0.5f));
 						drawList->AddCircleFilled(ImVec2(dotX, dotY), 4.0f, IM_COL32(255, 0, 0, 255));
 
-						// ƒXƒy[ƒXŠm•Û
+						// ã‚¹ãƒšãƒ¼ã‚¹ç¢ºä¿
 						ImGui::Dummy(ImVec2(size, size));
 
-						// ”’l•\¦
+						// æ•°å€¤è¡¨ç¤º
 						ImGui::Text("X: % .2f", x);
 						ImGui::Text("Y: % .2f", y);
 						ImGui::EndGroup();
 					};
 
 				// ------------------------------------------------------------
-				// •`‰æÀs
+				// æç”»å®Ÿè¡Œ
 				// ------------------------------------------------------------
 				float lx = Input::GetAxis(Axis::Horizontal);
 				float ly = Input::GetAxis(Axis::Vertical);
@@ -170,14 +170,14 @@ public:
 				float ry = Input::GetAxis(Axis::RightVertical);
 
 				DrawStick("L Stick", lx, ly);
-				ImGui::SameLine(0, 20);	// ‰¡‚É•À‚×‚é
+				ImGui::SameLine(0, 20);	// æ¨ªã«ä¸¦ã¹ã‚‹
 				DrawStick("R Stick", rx, ry);
 
 				ImGui::Separator();
 
-				// 3. ƒ{ƒ^ƒ““ü—Í‚Ì‰Â‹‰»
+				// 3. ãƒœã‚¿ãƒ³å…¥åŠ›ã®å¯è¦–åŒ–
 				ImGui::Text("Buttons:");
-				// ƒwƒ‹ƒp[ƒ‰ƒ€ƒ_®
+				// ãƒ˜ãƒ«ãƒ‘ãƒ¼ãƒ©ãƒ ãƒ€å¼
 				auto DrawBtn = [&](const char* label, Button btn)
 					{
 						if (Input::GetButton(btn)) ImGui::TextColored(ImVec4(0, 1, 0, 1), "[%s]", label);
@@ -197,24 +197,24 @@ public:
 			}
 		}
 
-		// 3. ƒQ[ƒ€is§Œä
+		// 3. ã‚²ãƒ¼ãƒ é€²è¡Œåˆ¶å¾¡
 		if (ImGui::CollapsingHeader("Game Control", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			// ƒ^ƒCƒ€ƒXƒP[ƒ‹‘€ì
+			// ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«æ“ä½œ
 			ImGui::Text("Time Scale");
 			ImGui::SliderFloat("##TimeScale", &Time::timeScale, 0.0f, 15.0f, "%.1fx");
 
-			// --- ˆê’â~ / ÄŠJ ---
+			// --- ä¸€æ™‚åœæ­¢ / å†é–‹ ---
 			if (Time::isPaused)
 			{
-				// ’â~’†‚È‚Ì‚ÅuÄŠJvƒ{ƒ^ƒ“
+				// åœæ­¢ä¸­ãªã®ã§ã€Œå†é–‹ã€ãƒœã‚¿ãƒ³
 				if (ImGui::Button("Resume"))
 				{
 					Time::isPaused = false;
 				}
 				ImGui::SameLine();
 
-				// --- ƒRƒ}‘—‚èi’â~’†‚Ì‚İ•\¦j---
+				// --- ã‚³ãƒé€ã‚Šï¼ˆåœæ­¢ä¸­ã®ã¿è¡¨ç¤ºï¼‰---
 				if (ImGui::Button("Step Frame (+1F)"))
 				{
 					Time::StepFrame();
@@ -222,7 +222,7 @@ public:
 			}
 			else
 			{
-				// “®ì’†‚È‚Ì‚Åuˆê’â~vƒ{ƒ^ƒ“
+				// å‹•ä½œä¸­ãªã®ã§ã€Œä¸€æ™‚åœæ­¢ã€ãƒœã‚¿ãƒ³
 				if (ImGui::Button("Pause"))
 				{
 					Time::isPaused = true;
@@ -235,7 +235,7 @@ public:
 				Time::timeScale = 1.0f;
 			}
 
-			// ƒŠƒXƒ^[ƒg
+			// ãƒªã‚¹ã‚¿ãƒ¼ãƒˆ
 			if (ImGui::Button("Restart Scene", ImVec2(-1, 0)))
 			{
 				auto sceneManager = SceneManager::Instance();
@@ -243,7 +243,7 @@ public:
 			}
 		}
 
-		// 4. ƒV[ƒ“‘JˆÚ
+		// 4. ã‚·ãƒ¼ãƒ³é·ç§»
 		if (ImGui::CollapsingHeader("Scene Transition"))
 		{
 			if (ImGui::Button("Title", ImVec2(100, 0)))
@@ -260,7 +260,7 @@ public:
 		ImGui::Separator();
 
 		// --------------------------------------------------------
-		// ƒVƒXƒeƒ€‰Ò“­ó‹µ (System Monitor)
+		// ã‚·ã‚¹ãƒ†ãƒ ç¨¼åƒçŠ¶æ³ (System Monitor)
 		// --------------------------------------------------------
 		if (ImGui::CollapsingHeader("System Monitor", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -269,7 +269,7 @@ public:
 			ImGui::Text("Load (16ms)"); ImGui::NextColumn();
 			ImGui::Separator();
 
-			// world.getSystems() ‚ÅƒVƒXƒeƒ€ˆê——‚ğæ“¾
+			// world.getSystems() ã§ã‚·ã‚¹ãƒ†ãƒ ä¸€è¦§ã‚’å–å¾—
 			for (const auto& sys : world.getSystems())
 			{
 				ImGui::Text("%s", sys->m_systemName.c_str());
@@ -294,15 +294,15 @@ public:
 		}
 
 		// --------------------------------------------------------
-		// ƒGƒ“ƒeƒBƒeƒBƒŠƒXƒg (Entity List - Flat View)
-		// ¦ŠK‘w\‘¢(Hierarchy)‚ª‚ ‚é‚Ì‚Å•K{‚Å‚Í‚È‚¢‚Å‚·‚ªAƒfƒoƒbƒO—p‚Éc‚µ‚Ü‚·
+		// ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ãƒªã‚¹ãƒˆ (Entity List - Flat View)
+		// â€»éšå±¤æ§‹é€ (Hierarchy)ãŒã‚ã‚‹ã®ã§å¿…é ˆã§ã¯ãªã„ã§ã™ãŒã€ãƒ‡ãƒãƒƒã‚°ç”¨ã«æ®‹ã—ã¾ã™
 		// --------------------------------------------------------
 		if (ImGui::CollapsingHeader("Entity List (Flat)", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			int count = 0;
 			reg.view<Tag>().each([&](Entity e, Tag& tag) {
 				count++;
-				// ƒNƒŠƒbƒN‚Å‘I‘ğ‰Â”\‚É‚·‚é
+				// ã‚¯ãƒªãƒƒã‚¯ã§é¸æŠå¯èƒ½ã«ã™ã‚‹
 				if (ImGui::Selectable((std::to_string(e) + ": " + tag.name.c_str()).c_str(), selected == e)) {
 					selected = e;
 				}
@@ -312,7 +312,7 @@ public:
 		}
 
 		// --------------------------------------------------------
-		// ƒvƒŒƒCƒ„[Ú×î•ñ (Player Watcher)
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è©³ç´°æƒ…å ± (Player Watcher)
 		// --------------------------------------------------------
 		if (ImGui::CollapsingHeader("Player Watcher", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -338,27 +338,27 @@ public:
 		}
 
 		// --------------------------------------------------------
-		// ƒfƒoƒbƒOƒJƒƒ‰§Œä (‚±‚±‚É’Ç‰Á)
+		// ãƒ‡ãƒãƒƒã‚°ã‚«ãƒ¡ãƒ©åˆ¶å¾¡ (ã“ã“ã«è¿½åŠ )
 		// --------------------------------------------------------
 		if (ctx.debug.useDebugCamera)
 		{
-			// MainCamera‚ğ’T‚·
+			// MainCameraã‚’æ¢ã™
 			reg.view<Tag, Transform, Camera>().each([&](Entity e, Tag& tag, Transform& t, Camera& c) {
 				if (tag.name == "MainCamera")
 				{
 					bool isRightClicking = Input::GetMouseRightButton();
 
-					// ImGui‘€ì’†‚Í“®‚©‚³‚È‚¢
+					// ImGuiæ“ä½œä¸­ã¯å‹•ã‹ã•ãªã„
 					if (isRightClicking ||!ImGui::GetIO().WantCaptureMouse)
 					{
-						// 1. ƒ}ƒEƒX‰ñ“] (‰EƒNƒŠƒbƒN)
+						// 1. ãƒã‚¦ã‚¹å›è»¢ (å³ã‚¯ãƒªãƒƒã‚¯)
 						if (Input::GetMouseRightButton()) {
 							float rotSpeed = 0.005f;
 							t.rotation.y += Input::GetMouseDeltaX() * rotSpeed;
 							t.rotation.x += Input::GetMouseDeltaY() * rotSpeed;
 						}
 
-						// 2. ˆÚ“® (WASD)
+						// 2. ç§»å‹• (WASD)
 						float moveSpeed = 10.0f * Time::DeltaTime();
 						if (Input::GetKey(VK_SHIFT)) moveSpeed *= 3.0f;
 
@@ -366,7 +366,7 @@ public:
 						XMMATRIX rotM = XMMatrixRotationRollPitchYaw(t.rotation.x, t.rotation.y, 0.0f);
 						XMVECTOR forward = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rotM);
 						XMVECTOR right = XMVector3TransformCoord(XMVectorSet(1, 0, 0, 0), rotM);
-						//XMVECTOR up = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rotM); // ƒJƒƒ‰Šî€‚Ìã
+						//XMVECTOR up = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rotM); // ã‚«ãƒ¡ãƒ©åŸºæº–ã®ä¸Š
 						XMVECTOR up = XMVectorSet(0, 1, 0, 0);
 
 						XMVECTOR pos = XMLoadFloat3(&t.position);
@@ -375,8 +375,8 @@ public:
 						if (Input::GetKey('S')) pos -= forward * moveSpeed;
 						if (Input::GetKey('D')) pos += right * moveSpeed;
 						if (Input::GetKey('A')) pos -= right * moveSpeed;
-						if (Input::GetKey('E')) pos += up * moveSpeed;	   // ã¸
-						if (Input::GetKey('Q')) pos -= up * moveSpeed;	   // ‰º~
+						if (Input::GetKey('E')) pos += up * moveSpeed;	   // ä¸Šæ˜‡
+						if (Input::GetKey('Q')) pos -= up * moveSpeed;	   // ä¸‹é™
 
 						XMStoreFloat3(&t.position, pos);
 					}

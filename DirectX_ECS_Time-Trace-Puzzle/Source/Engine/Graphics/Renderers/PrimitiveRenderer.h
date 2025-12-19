@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	PrimitiveRenderer.h
- * @brief	” ‚ğ•`‰æ‚·‚é‚½‚ß‚ÌŠÈˆÕƒNƒ‰ƒX
+ * @brief	ç®±ã‚’æç”»ã™ã‚‹ãŸã‚ã®ç°¡æ˜“ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___PRIMITIVE_RENDERER_H___
 #define ___PRIMITIVE_RENDERER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 
 class PrimitiveRenderer
@@ -29,38 +29,38 @@ public:
 	PrimitiveRenderer(ID3D11Device* device, ID3D11DeviceContext* context);
 	~PrimitiveRenderer() = default;
 
-	// ‰Šú‰»iƒVƒF[ƒ_[“Ç‚İ‚İ“™j
+	// åˆæœŸåŒ–ï¼ˆã‚·ã‚§ãƒ¼ãƒ€ãƒ¼èª­ã¿è¾¼ã¿ç­‰ï¼‰
 	void Initialize();
 
-	// •`‰æŠJniƒJƒƒ‰s—ñ‚ğƒŠƒZƒbƒgj
+	// æç”»é–‹å§‹ï¼ˆã‚«ãƒ¡ãƒ©è¡Œåˆ—ã‚’ãƒªã‚»ãƒƒãƒˆï¼‰
 	void Begin(const XMMATRIX& view, const XMMATRIX& projection);
 
-	// ƒ{ƒbƒNƒX•`‰æ
+	// ãƒœãƒƒã‚¯ã‚¹æç”»
 	void DrawBox(const XMFLOAT3& position, const XMFLOAT3& size, const XMFLOAT4& rotation, const XMFLOAT4& color);
-	// ‹…‘Ì•`‰æ
+	// çƒä½“æç”»
 	void DrawSphere(const XMFLOAT3& position, float radius, const XMFLOAT4& color);
-	// ƒJƒvƒZƒ‹•`‰æ
+	// ã‚«ãƒ—ã‚»ãƒ«æç”»
 	void DrawCapsule(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color);
-	// ‰~’Œ•`‰æ
+	// å††æŸ±æç”»
 	void DrawCylinder(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color);
-	// ƒ‰ƒCƒ“•`‰æ
+	// ãƒ©ã‚¤ãƒ³æç”»
 	void DrawLine(const XMFLOAT3& p1, const XMFLOAT3& p2, const XMFLOAT4& color);
 
-	// ƒMƒYƒ‚—p‚Ì–îˆó•`‰æ
+	// ã‚®ã‚ºãƒ¢ç”¨ã®çŸ¢å°æç”»
 	void DrawArrow(const XMFLOAT3& start, const XMFLOAT3& end, const XMFLOAT4& color);
 
-	// •`‰æƒ‚[ƒh•ÏX
+	// æç”»ãƒ¢ãƒ¼ãƒ‰å¤‰æ›´
 	void SetFillMode(bool wireframe);
-	// ƒOƒŠƒbƒh‚Æ²‚ğ•`‰æ
+	// ã‚°ãƒªãƒƒãƒ‰ã¨è»¸ã‚’æç”»
 	void DrawGrid(float spacing = 1.0f, int lines = 10);
 	void DrawAxis(float length = 5.0f);
 
 	ID3D11DeviceContext* GetDeviceContext() { return m_context; }
 
 private:
-	// ‰~‚ğ•`‚­ƒwƒ‹ƒp[
+	// å††ã‚’æããƒ˜ãƒ«ãƒ‘ãƒ¼
 	void DrawCircle(const XMFLOAT3& center, float radius, const XMFLOAT4& color);
-	// ƒƒbƒVƒ…—pƒwƒ‹ƒp[
+	// ãƒ¡ãƒƒã‚·ãƒ¥ç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼
 	void CreateCylinderMesh();
 	void CreateCapsuleMesh();
 
@@ -84,14 +84,14 @@ private:
 	ComPtr<ID3D11Buffer>		m_constantBuffer;
 	ComPtr<ID3D11Buffer>		m_lineVertexBuffer;
 	ComPtr<ID3D11DepthStencilState> m_depthState;
-	// ‹…‘Ì—p‚Ìƒoƒbƒtƒ@
+	// çƒä½“ç”¨ã®ãƒãƒƒãƒ•ã‚¡
 	ComPtr<ID3D11Buffer>		m_sphereVB;
 	ComPtr<ID3D11Buffer>		m_sphereIB;
 	UINT						m_sphereIndexCount = 0;
-	// ‰~’Œ—pƒoƒbƒtƒ@
+	// å††æŸ±ç”¨ãƒãƒƒãƒ•ã‚¡
 	ComPtr<ID3D11Buffer> m_cylinderVB, m_cylinderIB;
 	UINT m_cylinderIndexCount = 0;
-	// ƒJƒvƒZƒ‹—pƒoƒbƒtƒ@
+	// ã‚«ãƒ—ã‚»ãƒ«ç”¨ãƒãƒƒãƒ•ã‚¡
 	ComPtr<ID3D11Buffer> m_capsuleVB, m_capsuleIB;
 	UINT m_capsuleIndexCount = 0;
 

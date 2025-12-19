@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	PrivateFontLoader.h
  * @brief	
  * 
@@ -8,23 +8,23 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___PRIVATE_FONT_LOADER_H___
 #define ___PRIVATE_FONT_LOADER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/Logger.h"
 
-// 1. ƒtƒHƒ“ƒgƒtƒ@ƒCƒ‹‚ğ—ñ‹“‚·‚éƒNƒ‰ƒX
+// 1. ãƒ•ã‚©ãƒ³ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‚’åˆ—æŒ™ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class PrivateFontFileEnumerator : public IDWriteFontFileEnumerator
 {
 	IDWriteFactory* m_factory;
@@ -41,7 +41,10 @@ public:
 		if (m_factory) m_factory->AddRef();
 	}
 
-	~PrivateFontFileEnumerator() { if (m_factory) m_factory->Release(); }
+	~PrivateFontFileEnumerator()
+	{
+		if (m_factory) m_factory->Release();
+	}
 
 	// IUnknown
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void** ppvObject) override {
@@ -61,19 +64,19 @@ public:
 	HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasCurrentFile) override {
 		*hasCurrentFile = FALSE;
 
-		// —LŒø‚Èƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚é‚©AƒŠƒXƒg‚ªI‚í‚é‚Ü‚Åƒ‹[ƒv‚·‚éiƒXƒLƒbƒv‹@”\j
+		// æœ‰åŠ¹ãªãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚‹ã‹ã€ãƒªã‚¹ãƒˆãŒçµ‚ã‚ã‚‹ã¾ã§ãƒ«ãƒ¼ãƒ—ã™ã‚‹ï¼ˆã‚¹ã‚­ãƒƒãƒ—æ©Ÿèƒ½ï¼‰
 		while (true)
 		{
 			m_currentIndex++;
 
-			// ƒŠƒXƒg‚Ì––”ö‚É’B‚µ‚½‚çI—¹
+			// ãƒªã‚¹ãƒˆã®æœ«å°¾ã«é”ã—ãŸã‚‰çµ‚äº†
 			if (m_currentIndex >= m_filePaths.size()) {
 				return S_OK;
 			}
 
 			m_currentFile.Reset();
 
-			// ƒtƒHƒ“ƒgƒtƒ@ƒCƒ‹QÆ‚ğì¬
+			// ãƒ•ã‚©ãƒ³ãƒˆãƒ•ã‚¡ã‚¤ãƒ«å‚ç…§ã‚’ä½œæˆ
 			HRESULT hr = m_factory->CreateFontFileReference(
 				m_filePaths[m_currentIndex].c_str(),
 				nullptr,
@@ -81,20 +84,26 @@ public:
 			);
 
 			if (SUCCEEDED(hr)) {
-				// ¬Œ÷‚µ‚½‚ç‚±‚Ìƒtƒ@ƒCƒ‹‚ğÌ—p‚µ‚Äƒ‹[ƒv‚ğ”²‚¯‚é
-				*hasCurrentFile = TRUE;
-				return S_OK;
-			}
-			else {
-				// ¸”s‚µ‚½ê‡AƒƒO‚ğo—Í‚µ‚ÄŸ‚Ìƒtƒ@ƒCƒ‹‚Öi‚Şiƒ‹[ƒvŒp‘±j
-				// std::wstring ‚ğ std::string ‚É•ÏŠ·‚µ‚ÄƒƒOo—Í
-				std::wstring wpath = m_filePaths[m_currentIndex];
-				int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wpath[0], (int)wpath.size(), NULL, 0, NULL, NULL);
-				std::string strTo(size_needed, 0);
-				WideCharToMultiByte(CP_UTF8, 0, &wpath[0], (int)wpath.size(), &strTo[0], size_needed, NULL, NULL);
+				// ã•ã‚‰ã«ãƒ•ã‚¡ã‚¤ãƒ«ãŒæœ¬å½“ã«ãƒ•ã‚©ãƒ³ãƒˆã¨ã—ã¦èª­ã‚ã‚‹ã‹ãƒã‚§ãƒƒã‚¯
+				BOOL isSupported;
+				DWRITE_FONT_FILE_TYPE fileType;
+				DWRITE_FONT_FACE_TYPE faceType;
+				UINT32 numberOfFaces;
+				hr = m_currentFile->Analyze(&isSupported, &fileType, &faceType, &numberOfFaces);
 
-				Logger::LogError("Skipping invalid font file: " + strTo);
+				if (SUCCEEDED(hr) && isSupported)
+				{
+					*hasCurrentFile = TRUE;
+					return S_OK;
+				}
 			}
+			// å¤±æ•—ã—ãŸå ´åˆã€ãƒ­ã‚°ã‚’å‡ºåŠ›ã—ã¦æ¬¡ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¸é€²ã‚€ï¼ˆãƒ«ãƒ¼ãƒ—ç¶™ç¶šï¼‰
+			std::wstring wpath = m_filePaths[m_currentIndex];
+			int len = WideCharToMultiByte(CP_UTF8, 0, wpath.c_str(), -1, NULL, 0, NULL, NULL);
+			std::string path(len, 0);
+			WideCharToMultiByte(CP_UTF8, 0, wpath.c_str(), -1, &path[0], len, NULL, NULL);
+
+			Logger::LogError("Skipping invalid font file: " + path);
 		}
 	}
 
@@ -105,14 +114,14 @@ public:
 	}
 };
 
-// 2. ƒRƒŒƒNƒVƒ‡ƒ“‚ğì¬‚·‚éƒ[ƒ_[ƒNƒ‰ƒX
+// 2. ã‚³ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ã‚’ä½œæˆã™ã‚‹ãƒ­ãƒ¼ãƒ€ãƒ¼ã‚¯ãƒ©ã‚¹
 class PrivateFontCollectionLoader : public IDWriteFontCollectionLoader
 {
 	std::vector<std::wstring> m_fontPaths;
 	ULONG m_refCount = 0;
 
 public:
-	// ƒtƒHƒ“ƒgƒpƒX‚ÌƒŠƒXƒg‚ğó‚¯æ‚é
+	// ãƒ•ã‚©ãƒ³ãƒˆãƒ‘ã‚¹ã®ãƒªã‚¹ãƒˆã‚’å—ã‘å–ã‚‹
 	void SetFontPaths(const std::vector<std::wstring>& paths) { m_fontPaths = paths; }
 
 	// IUnknown
@@ -136,9 +145,9 @@ public:
 		UINT32 collectionKeySize,
 		IDWriteFontFileEnumerator** fontFileEnumerator) override
 	{
-		// •Û‚µ‚Ä‚¢‚éƒpƒXƒŠƒXƒg‚ğg‚Á‚Ä—ñ‹“q‚ğì¬
+		// ä¿æŒã—ã¦ã„ã‚‹ãƒ‘ã‚¹ãƒªã‚¹ãƒˆã‚’ä½¿ã£ã¦åˆ—æŒ™å­ã‚’ä½œæˆ
 		*fontFileEnumerator = new PrivateFontFileEnumerator(factory, m_fontPaths);
-		(*fontFileEnumerator)->AddRef(); // Create‚Å+1‚³‚ê‚½ó‘Ô‚Å•Ô‚·
+		(*fontFileEnumerator)->AddRef(); // Createã§+1ã•ã‚ŒãŸçŠ¶æ…‹ã§è¿”ã™
 		return S_OK;
 	}
 };

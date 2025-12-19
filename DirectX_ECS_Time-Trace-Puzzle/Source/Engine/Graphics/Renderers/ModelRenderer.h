@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ModelRenderer.h
- * @brief	ƒ‚ƒfƒ‹ƒNƒ‰ƒX‚ª‚Â•¡”‚ÌƒƒbƒVƒ…‚ğƒ‹[ƒv‚µ‚Ä•`‰æ‚·‚éƒŒƒ“ƒ_ƒ‰[
+ * @brief	ãƒ¢ãƒ‡ãƒ«ã‚¯ãƒ©ã‚¹ãŒæŒã¤è¤‡æ•°ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ãƒ«ãƒ¼ãƒ—ã—ã¦æç”»ã™ã‚‹ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼
  * 
  * @details	
  * 
@@ -8,21 +8,21 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___MODEL_RENDERER_H___
 #define ___MODEL_RENDERER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
-#include "Engine/Graphics/Core/Model.h" // Model’è‹`
+#include "Engine/Graphics/Core/Model.h" // Modelå®šç¾©
 
 class ModelRenderer {
 public:
@@ -30,16 +30,16 @@ public:
 
 	void Initialize();
 
-	// •`‰æŠJn (ƒJƒƒ‰s—ñ‚Æƒ‰ƒCƒgî•ñ‚ğƒZƒbƒg)
+	// æç”»é–‹å§‹ (ã‚«ãƒ¡ãƒ©è¡Œåˆ—ã¨ãƒ©ã‚¤ãƒˆæƒ…å ±ã‚’ã‚»ãƒƒãƒˆ)
 	void Begin(const XMMATRIX& view, const XMMATRIX& projection,
 		const XMFLOAT3& lightDir = { 1, -1, 1 },
 		const XMFLOAT3& lightColor = { 1, 1, 1 });
 
-	// ƒ‚ƒfƒ‹•`‰æ
+	// ãƒ¢ãƒ‡ãƒ«æç”»
 	void Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos,
 		const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT3& rot = { 0,0,0 });
 
-	// ƒ[ƒ‹ƒhs—ñ
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—
 	void Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix);
 
 private:
@@ -52,7 +52,7 @@ private:
 	ComPtr<ID3D11Buffer> m_constantBuffer;
 	ComPtr<ID3D11SamplerState> m_samplerState;
 
-	// ƒ\ƒŠƒbƒh•`‰æ—pƒXƒe[ƒg
+	// ã‚½ãƒªãƒƒãƒ‰æç”»ç”¨ã‚¹ãƒ†ãƒ¼ãƒˆ
 	ComPtr<ID3D11RasterizerState> m_rsSolid;
 
 	struct CBData {
@@ -65,10 +65,10 @@ private:
 	};
 	CBData m_cbData;
 
-	// ƒfƒtƒHƒ‹ƒg‚Ì”’ƒeƒNƒXƒ`ƒƒ
+	// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ç™½ãƒ†ã‚¯ã‚¹ãƒãƒ£
 	ComPtr<ID3D11ShaderResourceView> m_whiteTexture;
 
-	// “à•”—pF”’ƒeƒNƒXƒ`ƒƒ‚ğì‚éŠÖ”
+	// å†…éƒ¨ç”¨ï¼šç™½ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ä½œã‚‹é–¢æ•°
 	void CreateWhiteTexture();
 };
 

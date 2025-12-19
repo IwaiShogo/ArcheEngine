@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SpriteRenderSystem.h
- * @brief	SpriteRendrer‚ðŽg‚Á‚Ä•`‰æ‚ðs‚¤ƒVƒXƒeƒ€
+ * @brief	SpriteRendrerã‚’ä½¿ã£ã¦æç”»ã‚’è¡Œã†ã‚·ã‚¹ãƒ†ãƒ 
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›žä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___SPRITE_RENDERER_SYSTEM_H___
 #define ___SPRITE_RENDERER_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Graphics/Renderers/SpriteRenderer.h"
@@ -40,22 +40,22 @@ public:
 	{
 		if (!m_renderer) return;
 
-		// 2D•`‰æŠJŽn
+		// 2Dæç”»é–‹å§‹
 		m_renderer->Begin();
 
 		registry.view<SpriteComponent, Transform2D>().each([&](Entity e, SpriteComponent& s, Transform2D& t2d)
 			{
-				// ƒeƒNƒXƒ`ƒƒŽæ“¾
+				// ãƒ†ã‚¯ã‚¹ãƒãƒ£å–å¾—
 				auto tex = ResourceManager::Instance().GetTexture(s.textureKey);
 				if (tex)
 				{
-					// À•WŒvŽZ
+					// åº§æ¨™è¨ˆç®—
 					float width = t2d.calculatedRect.z - t2d.calculatedRect.x;
 					float height = t2d.calculatedRect.w - t2d.calculatedRect.y;
 					float centerX = t2d.calculatedRect.x + width * 0.5f;
 					float centerY = t2d.calculatedRect.y + height * 0.5f;
 
-					// •`‰æ
+					// æç”»
 					m_renderer->Draw(tex.get(), centerX - (width * 0.5f), centerY - (height * 0.5f), width, height, s.color);
 				}
 			});

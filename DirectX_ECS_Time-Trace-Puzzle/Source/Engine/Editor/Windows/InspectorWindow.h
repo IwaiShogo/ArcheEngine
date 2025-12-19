@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	InspectorWindow.h
- * @brief	ƒCƒ“ƒXƒyƒNƒ^[ƒEƒBƒ“ƒhƒE
+ * @brief	ã‚¤ãƒ³ã‚¹ãƒšã‚¯ã‚¿ãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
  * 
  * @details	
  * 
@@ -8,22 +8,22 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
  * @note	
- * ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ’Ç‰Á‚µ‚½ÛF
- * 1. Draw()“àAƒRƒ“ƒ|[ƒlƒ“ƒgˆê——‚É’Ç‰Á
- * 2. AddComponentPopup‚É’Ç‰Á
+ * ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¿½åŠ ã—ãŸéš›ï¼š
+ * 1. Draw()å†…ã€ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆä¸€è¦§ã«è¿½åŠ 
+ * 2. AddComponentPopupã«è¿½åŠ 
  *********************************************************************/
 
 #ifndef ___INSPECTOR_WINDOW_H___
 #define ___INSPECTOR_WINDOW_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Components/Components.h"
@@ -42,7 +42,7 @@ public:
 		ImGui::Begin("Inspector");
 
 		// --------------------------------------------------------
-		// ƒwƒbƒ_[ (ID & Name)
+		// ãƒ˜ãƒƒãƒ€ãƒ¼ (ID & Name)
 		// --------------------------------------------------------
 		Tag& tag = reg.get<Tag>(selected);
 		ImGui::Text("ID: %d", selected);
@@ -58,7 +58,7 @@ public:
 		ImGui::Separator();
 
 		// --------------------------------------------------------
-		// ƒRƒ“ƒ|[ƒlƒ“ƒgˆê——
+		// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆä¸€è¦§
 		// --------------------------------------------------------
 
 		// 1. Transform
@@ -67,7 +67,7 @@ public:
 				Transform& t = reg.get<Transform>(selected);
 				ImGui::DragFloat3("Position", &t.position.x, 0.1f);
 
-				// ‰ñ“]‚ğ“x”–@‚Å•\¦E•ÒW
+				// å›è»¢ã‚’åº¦æ•°æ³•ã§è¡¨ç¤ºãƒ»ç·¨é›†
 				XMFLOAT3 rotDeg;
 				rotDeg.x = XMConvertToDegrees(t.rotation.x);
 				rotDeg.y = XMConvertToDegrees(t.rotation.y);
@@ -87,8 +87,8 @@ public:
 			if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
 				MeshComponent& m = reg.get<MeshComponent>(selected);
 
-				// ƒtƒ@ƒCƒ‹‘I‘ğ (ModelsƒtƒHƒ‹ƒ_)
-				FileSelector("Model", m.modelKey, "Resources/Models", ".fbx", ResourceManager::ResourceType::Model); // .obj‚È‚Ç‚à‰Â
+				// ãƒ•ã‚¡ã‚¤ãƒ«é¸æŠ (Modelsãƒ•ã‚©ãƒ«ãƒ€)
+				FileSelector("Model", m.modelKey, "Resources/Models", ".fbx", ResourceManager::ResourceType::Model); // .objãªã©ã‚‚å¯
 
 				ImGui::ColorEdit4("Color", &m.color.x);
 				ImGui::DragFloat3("Scale Offset", &m.scaleOffset.x, 0.01f);
@@ -131,15 +131,15 @@ public:
 				char buf[256]; strcpy_s(buf, t.text.c_str());
 				if (ImGui::InputTextMultiline("Content", buf, sizeof(buf))) t.text = buf;
 
-				// ƒtƒHƒ“ƒg–¼“ü—ÍiŠÈˆÕ”Åj
+				// ãƒ•ã‚©ãƒ³ãƒˆåå…¥åŠ›ï¼ˆç°¡æ˜“ç‰ˆï¼‰
 				char fontBuf[64]; strcpy_s(fontBuf, t.fontKey.c_str());
-				if (ImGui::InputText("Font", fontBuf, sizeof(fontBuf))) t.fontKey = StringId(fontBuf);
+				if (ImGui::InputText("Font", fontBuf, sizeof(fontBuf))) t.fontKey = fontBuf;
 
 				ImGui::DragFloat("Size", &t.fontSize, 0.5f, 1.0f, 300.0f);
 				ImGui::ColorEdit4("Color", &t.color.x);
 				ImGui::DragFloat2("Offset", &t.offset.x);
 
-				// ƒXƒ^ƒCƒ‹İ’è
+				// ã‚¹ã‚¿ã‚¤ãƒ«è¨­å®š
 				ImGui::Checkbox("Bold", &t.isBold);
 				ImGui::SameLine();
 				ImGui::Checkbox("Italic", &t.isItalic);
@@ -186,12 +186,12 @@ public:
 			}
 		}
 
-		// 7. Collider (‚“x‚È“–‚½‚è”»’è)
+		// 7. Collider (é«˜åº¦ãªå½“ãŸã‚Šåˆ¤å®š)
 		if (reg.has<Collider>(selected)) {
 			if (ImGui::CollapsingHeader("Collider", ImGuiTreeNodeFlags_DefaultOpen)) {
 				Collider& c = reg.get<Collider>(selected);
 
-				// ƒ^ƒCƒv‚ÌØ‚è‘Ö‚¦
+				// ã‚¿ã‚¤ãƒ—ã®åˆ‡ã‚Šæ›¿ãˆ
 				const char* types[] = { "Box", "Sphere", "Capsule", "Cylinder" };
 				int currentType = (int)c.type;
 				if (ImGui::Combo("Type", &currentType, types, IM_ARRAYSIZE(types))) {
@@ -201,7 +201,7 @@ public:
 
 				ImGui::DragFloat3("Offset", &c.offset.x, 0.01f);
 
-				// ƒ^ƒCƒv‚²‚Æ‚Ìƒpƒ‰ƒ[ƒ^
+				// ã‚¿ã‚¤ãƒ—ã”ã¨ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
 				if (c.type == ColliderType::Box)
 				{
 					ImGui::DragFloat3("Size", &c.boxSize.x, 0.01f);
@@ -230,7 +230,7 @@ public:
 			if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen)) {
 				Rigidbody& rb = reg.get<Rigidbody>(selected);
 
-				// BodyType ƒRƒ“ƒ{ƒ{ƒbƒNƒX
+				// BodyType ã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹
 				const char* types[] = { "Static", "Dynamic", "Kinematic" };
 				int current = (int)rb.type;
 				if (ImGui::Combo("Body Type", &current, types, IM_ARRAYSIZE(types))) {
@@ -270,7 +270,7 @@ public:
 		}
 
 		if (ImGui::BeginPopup("AddComponentPopup")) {
-			// ‚±‚±‚É‘S‚Ä‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ’Ç‰Á
+			// ã“ã“ã«å…¨ã¦ã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’è¿½åŠ 
 			if (!reg.has<MeshComponent>(selected) && ImGui::Selectable("Mesh")) reg.emplace<MeshComponent>(selected, "hero");
 			if (!reg.has<SpriteComponent>(selected) && ImGui::Selectable("Sprite")) reg.emplace<SpriteComponent>(selected, "player");
 			if (!reg.has<BillboardComponent>(selected) && ImGui::Selectable("Billboard")) reg.emplace<BillboardComponent>(selected, "star");
@@ -307,21 +307,21 @@ public:
 
 private:
 	// --------------------------------------------------------
-	// ƒŠƒ\[ƒX‘I‘ğ—pƒwƒ‹ƒp[ (StringId & ResourceType‘Î‰)
+	// ãƒªã‚½ãƒ¼ã‚¹é¸æŠç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼ (StringId & ResourceTypeå¯¾å¿œ)
 	// --------------------------------------------------------
 	void FileSelector(const char* label, StringId& currentId, const std::string& dir, const std::string& filterExt, ResourceManager::ResourceType type)
 	{
-		// 1. •\¦–¼‚Ìæ“¾
-		// StringId‚©‚çƒpƒX‚ğæ“¾‚ğ‚İ‚é
+		// 1. è¡¨ç¤ºåã®å–å¾—
+		// StringIdã‹ã‚‰ãƒ‘ã‚¹ã‚’å–å¾—ã‚’è©¦ã¿ã‚‹
 		std::string preview = ResourceManager::Instance().GetPathByKey(currentId, type);
 
-		// Œ©‚Â‚©‚ç‚È‚¢ê‡i–¢“o˜^ or ID=0j
+		// è¦‹ã¤ã‹ã‚‰ãªã„å ´åˆï¼ˆæœªç™»éŒ² or ID=0ï¼‰
 		if (preview.empty()) {
 			if (currentId.GetHash() == 0) preview = "None";
-			else preview = currentId.c_str(); // Debug‚Ì‚İƒnƒbƒVƒ…’l‚Ü‚½‚ÍŒ³•¶š—ñ
+			else preview = currentId.c_str(); // Debugæ™‚ã®ã¿ãƒãƒƒã‚·ãƒ¥å€¤ã¾ãŸã¯å…ƒæ–‡å­—åˆ—
 		}
 
-		// 2. ƒRƒ“ƒ{ƒ{ƒbƒNƒX•`‰æ
+		// 2. ã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹æç”»
 		if (ImGui::BeginCombo(label, preview.c_str()))
 		{
 			namespace fs = std::filesystem;
@@ -329,9 +329,9 @@ private:
 				for (const auto& entry : fs::recursive_directory_iterator(dir)) {
 					if (!entry.is_regular_file()) continue;
 
-					// Šg’£qƒtƒBƒ‹ƒ^
+					// æ‹¡å¼µå­ãƒ•ã‚£ãƒ«ã‚¿
 					std::string ext = entry.path().extension().string();
-					if (ext == filterExt) { // ‘å•¶š¬•¶š–³‹‚ÍÈ—ª
+					if (ext == filterExt) { // å¤§æ–‡å­—å°æ–‡å­—ç„¡è¦–ã¯çœç•¥
 						std::string path = entry.path().string();
 						std::replace(path.begin(), path.end(), '\\', '/');
 
@@ -339,7 +339,7 @@ private:
 						bool isSelected = (currentId == pathId);
 
 						if (ImGui::Selectable(path.c_str(), isSelected)) {
-							// šd—v: ‘I‘ğ‚³‚ê‚½‚çResourceManager‚ÉuƒpƒX‚ğƒL[‚Æ‚µ‚Äv“o˜^‚·‚é
+							// â˜…é‡è¦: é¸æŠã•ã‚ŒãŸã‚‰ResourceManagerã«ã€Œãƒ‘ã‚¹ã‚’ã‚­ãƒ¼ã¨ã—ã¦ã€ç™»éŒ²ã™ã‚‹
 							ResourceManager::Instance().RegisterResource(pathId, path, type);
 							currentId = pathId;
 						}
@@ -350,7 +350,7 @@ private:
 			ImGui::EndCombo();
 		}
 
-		// 3. ƒhƒ‰ƒbƒO•ƒhƒƒbƒvó‚¯“ü‚ê
+		// 3. ãƒ‰ãƒ©ãƒƒã‚°ï¼†ãƒ‰ãƒ­ãƒƒãƒ—å—ã‘å…¥ã‚Œ
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_PATH"))
@@ -358,7 +358,7 @@ private:
 				const char* droppedPath = (const char*)payload->Data;
 				StringId newId(droppedPath);
 
-				// ƒhƒƒbƒv‚³‚ê‚½‚çResourceManager‚É“o˜^‚·‚é
+				// ãƒ‰ãƒ­ãƒƒãƒ—ã•ã‚ŒãŸã‚‰ResourceManagerã«ç™»éŒ²ã™ã‚‹
 				ResourceManager::Instance().RegisterResource(newId, droppedPath, type);
 
 				currentId = newId;

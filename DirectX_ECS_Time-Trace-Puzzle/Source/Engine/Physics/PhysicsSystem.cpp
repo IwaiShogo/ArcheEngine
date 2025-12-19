@@ -1,55 +1,55 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	PhysicsSystem.cpp
- * @brief	•¨—‹““®ƒVƒXƒeƒ€‚ÌÀ‘•
+ * @brief	ç‰©ç†æŒ™å‹•ã‚·ã‚¹ãƒ†ãƒ ã®å®Ÿè£…
  * 
  * @details	
- * •¨—‹““®‚ğŒvZ‚µAƒGƒ“ƒeƒBƒeƒB‚Ì“®‚«‚ğŠÇ—‚µ‚Ü‚·B
+ * ç‰©ç†æŒ™å‹•ã‚’è¨ˆç®—ã—ã€ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã®å‹•ãã‚’ç®¡ç†ã—ã¾ã™ã€‚
  * 
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/15	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/15	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/12/16	ÅIXV“ú
- * 			ì‹Æ“à—eF	- •¨—ƒVƒXƒeƒ€‚ÌŠî–{“I‚ÈƒtƒŒ[ƒ€ƒ[ƒN‚ğ’Ç‰Á
+ * @update	2025/12/16	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- ç‰©ç†ã‚·ã‚¹ãƒ†ãƒ ã®åŸºæœ¬çš„ãªãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¯ãƒ¼ã‚¯ã‚’è¿½åŠ 
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Physics/PhysicsSystem.h"
 
-// ===== ’è”Eƒ}ƒNƒ’è‹` =====
+// ===== å®šæ•°ãƒ»ãƒã‚¯ãƒ­å®šç¾© =====
 static const float GRAVITY = 9.81f;
 static const int SOLVER_ITERATIONS = 8;
 
 // ============================================================
-// Update: Ï•ªiSemi-Implicit Eulerj
+// Update: ç©åˆ†ï¼ˆSemi-Implicit Eulerï¼‰
 // ============================================================
 
 void PhysicsSystem::Update(Registry& registry)
 {
-	// ƒfƒ‹ƒ^ƒ^ƒCƒ€‚Ì§ŒÀiƒtƒŒ[ƒ€ƒŒ[ƒg’á‰º‚Ì•t‚«”²‚¯–h~j
+	// ãƒ‡ãƒ«ã‚¿ã‚¿ã‚¤ãƒ ã®åˆ¶é™ï¼ˆãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆä½ä¸‹æ™‚ã®ä»˜ãæŠœã‘é˜²æ­¢ï¼‰
 	float dt = std::min(Time::DeltaTime(), 0.05f);
 
 	registry.view<Transform, Rigidbody>().each([&](Entity e, Transform& t, Rigidbody& rb)
 	{
-		// Static‚Í‰½‚à‚µ‚È‚¢
+		// Staticã¯ä½•ã‚‚ã—ãªã„
 		if (rb.type == BodyType::Static) return;
 
-		// Kinematic‚ÆDynamic‚Ì‹¤’Êˆ—
+		// Kinematicã¨Dynamicã®å…±é€šå‡¦ç†
 		if (rb.type == BodyType::Dynamic)
 		{
-			// 1. d—Í
+			// 1. é‡åŠ›
 			if (rb.useGravity)
 			{
 				rb.velocity.y -= GRAVITY * dt;
 			}
 
-			// 2. ‹ó‹C’ïR
+			// 2. ç©ºæ°—æŠµæŠ—
 			float dump = 1.0f - (rb.drag * dt);
 			if (dump < 0.0f) dump = 0.0f;
 			rb.velocity.x *= dump;
@@ -57,12 +57,12 @@ void PhysicsSystem::Update(Registry& registry)
 			// rb.velocity.y *= dump;
 		}
 
-		// 3. ˆÊ’uXViEulerÏ•ªj
+		// 3. ä½ç½®æ›´æ–°ï¼ˆEulerç©åˆ†ï¼‰
 		t.position.x += rb.velocity.x * dt;
 		t.position.y += rb.velocity.y * dt;
 		t.position.z += rb.velocity.z * dt;
 
-		// ƒfƒoƒbƒO—pF°”²‚¯–h~ƒŠƒZƒbƒg
+		// ãƒ‡ãƒãƒƒã‚°ç”¨ï¼šåºŠæŠœã‘é˜²æ­¢ãƒªã‚»ãƒƒãƒˆ
 		if (t.position.y < -50.0f)
 		{
 			t.position = { 0, 10, 0 };
@@ -72,7 +72,7 @@ void PhysicsSystem::Update(Registry& registry)
 }
 
 // ============================================================
-// Solve: Õ“Ë‰ğŒˆ
+// Solve: è¡çªè§£æ±º
 // ============================================================
 void PhysicsSystem::Solve(Registry& registry, const std::vector<Physics::Contact>& contacts)
 {
@@ -89,18 +89,18 @@ void PhysicsSystem::Solve(Registry& registry, const std::vector<Physics::Contact
 		bool fixedA = (rbA.type == BodyType::Static || rbA.type == BodyType::Kinematic);
 		bool fixedB = (rbB.type == BodyType::Static || rbB.type == BodyType::Kinematic);
 
-		// —¼•ûŒÅ’è‚È‚ç‰½‚à‚µ‚È‚¢
+		// ä¸¡æ–¹å›ºå®šãªã‚‰ä½•ã‚‚ã—ãªã„
 		if (fixedA && fixedB) continue;
 
 		using namespace DirectX;
-		XMVECTOR n = XMLoadFloat3(&contact.normal); // A -> B ‚Ì–@ü
+		XMVECTOR n = XMLoadFloat3(&contact.normal); // A -> B ã®æ³•ç·š
 		float depth = contact.depth;
 
 		// ---------------------------------------------------------
-		// 1. —¼•û“®‚­ê‡ (Dynamic vs Dynamic)
+		// 1. ä¸¡æ–¹å‹•ãå ´åˆ (Dynamic vs Dynamic)
 		// ---------------------------------------------------------
 		if (!fixedA && !fixedB) {
-			// ˆÊ’u•â³ (Šù‘¶)
+			// ä½ç½®è£œæ­£ (æ—¢å­˜)
 			float totalMass = rbA.mass + rbB.mass;
 			float ratioA = rbB.mass / totalMass;
 			float ratioB = rbA.mass / totalMass;
@@ -112,17 +112,17 @@ void PhysicsSystem::Solve(Registry& registry, const std::vector<Physics::Contact
 			XMStoreFloat3(&tA.position, posA);
 			XMStoreFloat3(&tB.position, posB);
 
-			// y’Ç‰Áz‘¬“x•â³
-			// ‚¨Œİ‚¢‚Ì‘Š‘Î‘¬“x‚ğŒvZ‚µA–@ü•ûŒü‚Ì¬•ª‚ğ‘Å‚¿Á‚·
+			// ã€è¿½åŠ ã€‘é€Ÿåº¦è£œæ­£
+			// ãŠäº’ã„ã®ç›¸å¯¾é€Ÿåº¦ã‚’è¨ˆç®—ã—ã€æ³•ç·šæ–¹å‘ã®æˆåˆ†ã‚’æ‰“ã¡æ¶ˆã™
 			XMVECTOR velA = XMLoadFloat3(&rbA.velocity);
 			XMVECTOR velB = XMLoadFloat3(&rbB.velocity);
 			XMVECTOR relativeVel = velB - velA;
 			float velDot = XMVectorGetX(XMVector3Dot(relativeVel, n));
 
-			// Ú‹ß‚µ‚Ä‚¢‚éê‡‚Ì‚İ (—£‚ê‚æ‚¤‚Æ‚µ‚Ä‚¢‚é‚Í‰½‚à‚µ‚È‚¢)
+			// æ¥è¿‘ã—ã¦ã„ã‚‹å ´åˆã®ã¿ (é›¢ã‚Œã‚ˆã†ã¨ã—ã¦ã„ã‚‹æ™‚ã¯ä½•ã‚‚ã—ãªã„)
 			if (velDot < 0.0f) {
-				// ÕŒ‚ŒW”(e) = 0 (’µ‚Ë•Ô‚ç‚È‚¢) ‚Æ‰¼’è
-				// –@ü•ûŒü‚Ì‘Š‘Î‘¬“x¬•ª‚ğ•ª”z‚µ‚Ä‰ÁZ
+				// è¡æ’ƒä¿‚æ•°(e) = 0 (è·³ã­è¿”ã‚‰ãªã„) ã¨ä»®å®š
+				// æ³•ç·šæ–¹å‘ã®ç›¸å¯¾é€Ÿåº¦æˆåˆ†ã‚’åˆ†é…ã—ã¦åŠ ç®—
 				XMVECTOR impulse = n * velDot;
 				velA += impulse * ratioA;
 				velB -= impulse * ratioB;
@@ -132,42 +132,42 @@ void PhysicsSystem::Solve(Registry& registry, const std::vector<Physics::Contact
 			}
 		}
 		// ---------------------------------------------------------
-		// 2. A‚¾‚¯“®‚­ê‡ (Player vs Wall)
+		// 2. Aã ã‘å‹•ãå ´åˆ (Player vs Wall)
 		// ---------------------------------------------------------
 		else if (!fixedA && fixedB) {
-			// ˆÊ’u•â³ (Šù‘¶)
+			// ä½ç½®è£œæ­£ (æ—¢å­˜)
 			XMVECTOR posA = XMLoadFloat3(&tA.position);
 			posA -= n * depth;
 			XMStoreFloat3(&tA.position, posA);
 
-			// y’Ç‰Áz‘¬“x•â³ (‚±‚ê‚ªd—vI)
+			// ã€è¿½åŠ ã€‘é€Ÿåº¦è£œæ­£ (ã“ã‚ŒãŒé‡è¦ï¼)
 			XMVECTOR velA = XMLoadFloat3(&rbA.velocity);
-			// –@ü•ûŒü‚Ì‘¬“x¬•ª‚ğŒvZ
-			// A‚ÍB‚É‘Î‚µ‚Ä -n •ûŒü‚É‰Ÿ‚µo‚³‚ê‚é‚Ì‚ÅAvelocity ‚Æ -n ‚Ì“àÏ‚ğŒ©‚é‚×‚«‚¾‚ªA
-			// ‚±‚±‚Å‚Íu•Ç‚ÉŒü‚©‚¤¬•ªv‚ğÁ‚·‚Æl‚¦‚ê‚Î‚æ‚¢B
-			// –@ü n ‚Í A->B ‚È‚Ì‚ÅA•Ç‚ÌŒü‚«Bvelocity ‚Æ n ‚Ì“àÏ‚ªƒvƒ‰ƒX‚È‚ç•Ç‚ÉŒü‚©‚Á‚Ä‚¢‚éB
+			// æ³•ç·šæ–¹å‘ã®é€Ÿåº¦æˆåˆ†ã‚’è¨ˆç®—
+			// Aã¯Bã«å¯¾ã—ã¦ -n æ–¹å‘ã«æŠ¼ã—å‡ºã•ã‚Œã‚‹ã®ã§ã€velocity ã¨ -n ã®å†…ç©ã‚’è¦‹ã‚‹ã¹ãã ãŒã€
+			// ã“ã“ã§ã¯ã€Œå£ã«å‘ã‹ã†æˆåˆ†ã€ã‚’æ¶ˆã™ã¨è€ƒãˆã‚Œã°ã‚ˆã„ã€‚
+			// æ³•ç·š n ã¯ A->B ãªã®ã§ã€å£ã®å‘ãã€‚velocity ã¨ n ã®å†…ç©ãŒãƒ—ãƒ©ã‚¹ãªã‚‰å£ã«å‘ã‹ã£ã¦ã„ã‚‹ã€‚
 			float velDot = XMVectorGetX(XMVector3Dot(velA, n));
 
-			// •Ç‚ÉŒü‚©‚Á‚Äi‚ñ‚Å‚¢‚éê‡‚Ì‚İ•â³
+			// å£ã«å‘ã‹ã£ã¦é€²ã‚“ã§ã„ã‚‹å ´åˆã®ã¿è£œæ­£
 			if (velDot > 0.0f) {
-				// –@ü•ûŒü‚Ì¬•ª‚ğˆø‚­‚±‚Æ‚ÅA•Ç‚É‰ˆ‚Á‚ÄŠŠ‚é“®‚«‚É‚È‚é
+				// æ³•ç·šæ–¹å‘ã®æˆåˆ†ã‚’å¼•ãã“ã¨ã§ã€å£ã«æ²¿ã£ã¦æ»‘ã‚‹å‹•ãã«ãªã‚‹
 				velA -= n * velDot;
 				XMStoreFloat3(&rbA.velocity, velA);
 			}
 		}
 		// ---------------------------------------------------------
-		// 3. B‚¾‚¯“®‚­ê‡ (Wall vs Enemy)
+		// 3. Bã ã‘å‹•ãå ´åˆ (Wall vs Enemy)
 		// ---------------------------------------------------------
 		else if (fixedA && !fixedB) {
-			// ˆÊ’u•â³ (Šù‘¶)
+			// ä½ç½®è£œæ­£ (æ—¢å­˜)
 			XMVECTOR posB = XMLoadFloat3(&tB.position);
 			posB += n * depth;
 			XMStoreFloat3(&tB.position, posB);
 
-			// y’Ç‰Áz‘¬“x•â³
+			// ã€è¿½åŠ ã€‘é€Ÿåº¦è£œæ­£
 			XMVECTOR velB = XMLoadFloat3(&rbB.velocity);
-			// B‚Í n •ûŒü‚É‰Ÿ‚µo‚³‚ê‚éB
-			// n ‚Í A->B ‚È‚Ì‚ÅAvelocity ‚Æ n ‚Ì“àÏ‚ªƒ}ƒCƒiƒX‚È‚çA(•Ç)‚ÉŒü‚©‚Á‚Ä‚¢‚éB
+			// Bã¯ n æ–¹å‘ã«æŠ¼ã—å‡ºã•ã‚Œã‚‹ã€‚
+			// n ã¯ A->B ãªã®ã§ã€velocity ã¨ n ã®å†…ç©ãŒãƒã‚¤ãƒŠã‚¹ãªã‚‰A(å£)ã«å‘ã‹ã£ã¦ã„ã‚‹ã€‚
 			float velDot = XMVectorGetX(XMVector3Dot(velB, n));
 
 			if (velDot < 0.0f) {

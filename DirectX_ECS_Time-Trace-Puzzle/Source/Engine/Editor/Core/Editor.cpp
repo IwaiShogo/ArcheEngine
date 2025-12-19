@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Editor.cpp
  * @brief	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Editor/Windows/HierarchyWindow.h"
@@ -41,17 +41,17 @@ void Editor::Draw(World& world, Context& ctx)
 {	
 	Registry& reg = world.getRegistry();
 
-	// ŠeƒEƒBƒ“ƒhƒE‚ğ•`‰æ
+	// å„ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’æç”»
 	for (auto& window : m_windows)
 	{
 		window->Draw(world, m_selectedEntity, ctx);
 	}
 
-	// ƒfƒoƒbƒOUI
+	// ãƒ‡ãƒãƒƒã‚°UI
 	ResourceManager::Instance().OnInspector();
 	AudioManager::Instance().OnInspector();
 
-	// ƒƒOƒEƒBƒ“ƒhƒE‚Ì•`‰æ
+	// ãƒ­ã‚°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®æç”»
 	Logger::Draw("Debug Logger");
 }
 

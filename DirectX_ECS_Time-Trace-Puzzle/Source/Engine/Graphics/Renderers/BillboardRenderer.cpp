@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	BillboardRenderer.cpp
  * @brief	
  * 
@@ -8,21 +8,21 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/BillboardRenderer.h"
 
 struct BillboardVertex {
-	XMFLOAT3 pos; // ƒIƒtƒZƒbƒgˆÊ’u (-0.5 ~ 0.5)
+	XMFLOAT3 pos; // ã‚ªãƒ•ã‚»ãƒƒãƒˆä½ç½® (-0.5 ~ 0.5)
 	XMFLOAT2 uv;
 };
 
@@ -31,7 +31,7 @@ BillboardRenderer::BillboardRenderer(ID3D11Device* device, ID3D11DeviceContext* 
 }
 
 void BillboardRenderer::Initialize() {
-	// 1. ƒVƒF[ƒ_[ƒRƒ“ƒpƒCƒ‹ (Billboard.hlsl)
+	// 1. ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚³ãƒ³ãƒ‘ã‚¤ãƒ« (Billboard.hlsl)
 	ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
 	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
 
@@ -43,26 +43,26 @@ void BillboardRenderer::Initialize() {
 	if (FAILED(hr)) throw std::runtime_error("Failed to compile Billboard PS");
 	m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &m_ps);
 
-	// 2. “ü—ÍƒŒƒCƒAƒEƒg
+	// 2. å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,	  0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	m_device->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &m_inputLayout);
 
-	// 3. ’è”ƒoƒbƒtƒ@
+	// 3. å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(ConstantBufferData);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	m_device->CreateBuffer(&bd, nullptr, &m_constantBuffer);
 
-	// 4. ’¸“_ƒoƒbƒtƒ@ (’PˆÊ³•ûŒ`: ’†SŠî€)
+	// 4. é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ (å˜ä½æ­£æ–¹å½¢: ä¸­å¿ƒåŸºæº–)
 	BillboardVertex vertices[] = {
-		{ XMFLOAT3(-0.5f, 0.5f, 0),	 XMFLOAT2(0, 0) }, // ¶ã
-		{ XMFLOAT3(0.5f, 0.5f, 0),	 XMFLOAT2(1, 0) }, // ‰Eã
-		{ XMFLOAT3(-0.5f, -0.5f, 0), XMFLOAT2(0, 1) }, // ¶‰º
-		{ XMFLOAT3(0.5f, -0.5f, 0), XMFLOAT2(1, 1) }, // ‰E‰º
+		{ XMFLOAT3(-0.5f, 0.5f, 0),	 XMFLOAT2(0, 0) }, // å·¦ä¸Š
+		{ XMFLOAT3(0.5f, 0.5f, 0),	 XMFLOAT2(1, 0) }, // å³ä¸Š
+		{ XMFLOAT3(-0.5f, -0.5f, 0), XMFLOAT2(0, 1) }, // å·¦ä¸‹
+		{ XMFLOAT3(0.5f, -0.5f, 0), XMFLOAT2(1, 1) }, // å³ä¸‹
 	};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(BillboardVertex) * 4;
@@ -71,7 +71,7 @@ void BillboardRenderer::Initialize() {
 	initData.pSysMem = vertices;
 	m_device->CreateBuffer(&bd, &initData, &m_vertexBuffer);
 
-	// 5. ƒTƒ“ƒvƒ‰[ & ƒ‰ƒXƒ^ƒ‰ƒCƒU & ƒuƒŒƒ“ƒh
+	// 5. ã‚µãƒ³ãƒ—ãƒ©ãƒ¼ & ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ & ãƒ–ãƒ¬ãƒ³ãƒ‰
 	D3D11_SAMPLER_DESC sd = {};
 	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -80,7 +80,7 @@ void BillboardRenderer::Initialize() {
 	m_device->CreateSamplerState(&sd, &m_samplerState);
 
 	D3D11_RASTERIZER_DESC rd = {};
-	rd.CullMode = D3D11_CULL_NONE; // —¼–Ê•`‰æ
+	rd.CullMode = D3D11_CULL_NONE; // ä¸¡é¢æç”»
 	rd.FillMode = D3D11_FILL_SOLID;
 	m_device->CreateRasterizerState(&rd, &m_rsBillboard);
 
@@ -116,7 +116,7 @@ void BillboardRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection) 
 	float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	m_context->OMSetBlendState(m_blendState.Get(), blendFactor, 0xffffffff);
 
-	// ƒrƒ…[EƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñƒZƒbƒg
+	// ãƒ“ãƒ¥ãƒ¼ãƒ»ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚»ãƒƒãƒˆ
 	m_cbData.view = XMMatrixTranspose(view);
 	m_cbData.projection = XMMatrixTranspose(projection);
 }
@@ -124,8 +124,8 @@ void BillboardRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection) 
 void BillboardRenderer::Draw(Texture* texture, const XMFLOAT3& position, float width, float height, const XMFLOAT4& color) {
 	if (!texture) return;
 
-	// 1. ƒ[ƒ‹ƒhs—ñiˆÊ’u‚ÆƒTƒCƒY‚Ì‚İB‰ñ“]‚ÍƒVƒF[ƒ_[‚ª‚â‚éj
-	// ƒXƒP[ƒ‹s—ñ‚Å•‚Æ‚‚³‚ğİ’è
+	// 1. ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ï¼ˆä½ç½®ã¨ã‚µã‚¤ã‚ºã®ã¿ã€‚å›è»¢ã¯ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãŒã‚„ã‚‹ï¼‰
+	// ã‚¹ã‚±ãƒ¼ãƒ«è¡Œåˆ—ã§å¹…ã¨é«˜ã•ã‚’è¨­å®š
 	XMMATRIX S = XMMatrixScaling(width, height, 1.0f);
 	XMMATRIX T = XMMatrixTranslation(position.x, position.y, position.z);
 	XMMATRIX world = S * T;
@@ -134,9 +134,9 @@ void BillboardRenderer::Draw(Texture* texture, const XMFLOAT3& position, float w
 	m_cbData.color = color;
 	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);
 
-	// 2. ƒeƒNƒXƒ`ƒƒƒZƒbƒg
+	// 2. ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚»ãƒƒãƒˆ
 	m_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 
-	// 3. •`‰æ
+	// 3. æç”»
 	m_context->Draw(4, 0);
 }

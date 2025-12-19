@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	InputSystem.h
- * @brief	“ü—Íˆ—
+ * @brief	å…¥åŠ›å‡¦ç†
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/24	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/24	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___INPUT_SYSTEM_H___
 #define ___INPUT_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Core/Input.h"
@@ -33,14 +33,14 @@ public:
 
 	void Update(Registry& registry) override
 	{
-		// ƒfƒoƒbƒOƒJƒƒ‰ƒ‚[ƒh‚È‚çó‚¯•t‚¯‚È‚¢
+		// ãƒ‡ãƒãƒƒã‚°ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ãƒ‰ãªã‚‰å—ã‘ä»˜ã‘ãªã„
 		if (m_context && m_context->debug.useDebugCamera) return;
 
-		// InputƒNƒ‰ƒX‚©‚ç’l‚ğæ“¾
+		// Inputã‚¯ãƒ©ã‚¹ã‹ã‚‰å€¤ã‚’å–å¾—
 		float x = Input::GetAxis(Axis::Horizontal);
 		float z = Input::GetAxis(Axis::Vertical);
 
-		// Î‚ßˆÚ“®‚Ì³‹K‰»
+		// æ–œã‚ç§»å‹•ã®æ­£è¦åŒ–
 		if (x != 0.0f || z != 0.0f)
 		{
 			float length = std::sqrt(x * x + z * z);
@@ -58,7 +58,7 @@ public:
 
 				if (Input::GetButtonDown(Button::A))
 				{
-					// ã•ûŒüiYj‚É‘¬“x‚ğ—^‚¦‚é
+					// ä¸Šæ–¹å‘ï¼ˆYï¼‰ã«é€Ÿåº¦ã‚’ä¸ãˆã‚‹
 					rb.velocity.y = input.jumpPower;
 				}
 			});

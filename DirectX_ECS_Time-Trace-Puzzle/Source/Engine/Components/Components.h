@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Components.h
- * @brief	Šî–{“I‚ÈƒRƒ“ƒ|[ƒlƒ“ƒg
+ * @brief	åŸºæœ¬çš„ãªã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
  * 
  * @details	
  * 
@@ -8,49 +8,49 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___COMPONENTS_H___
 #define ___COMPONENTS_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/StringId.h"
 #include "Engine/Config.h"
 #include "Engine/ECS/EntityDef.h"
 
 // ============================================================
-// Šî–{ƒRƒ“ƒ|[ƒlƒ“ƒg
+// åŸºæœ¬ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
 // ============================================================
 /**
  * @struct	Tag
- * @brief	–¼‘O
+ * @brief	åå‰
  */
 struct Tag
 {
 	StringId name;
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Tag() = default;
 	Tag(const char* str) : name(str) {}
 	Tag(const std::string& str) : name(str) {}
 	Tag(const StringId& id) : name(id) {}
 
-	// ”äŠr‰‰ZqiStringId‚Ì”äŠr‚ÉˆÏ÷j
+	// æ¯”è¼ƒæ¼”ç®—å­ï¼ˆStringIdã®æ¯”è¼ƒã«å§”è­²ï¼‰
 	bool operator==(const Tag& other) const { return name == other.name; }
 	bool operator==(const StringId& strId) const { return name == strId; }
 };
 
 /**
  * @struct	Transform
- * @brief	ˆÊ’uE‰ñ“]EƒXƒP[ƒ‹
+ * @brief	ä½ç½®ãƒ»å›è»¢ãƒ»ã‚¹ã‚±ãƒ¼ãƒ«
  */
 struct Transform
 {
@@ -60,7 +60,7 @@ struct Transform
 
 	XMFLOAT4X4 worldMatrix;
 
-	// s—ñæ“¾ƒwƒ‹ƒp[
+	// è¡Œåˆ—å–å¾—ãƒ˜ãƒ«ãƒ‘ãƒ¼
 	XMMATRIX GetWorldMatrix() const
 	{
 		return XMLoadFloat4x4(&worldMatrix);
@@ -75,7 +75,7 @@ struct Transform
 
 /**
  * @struct	Relationship
- * @brief	eqŠÖŒW
+ * @brief	è¦ªå­é–¢ä¿‚
  */
 struct Relationship
 {
@@ -88,60 +88,60 @@ struct Relationship
 
 /**
  * @struct	Lifetime
- * @brief	õ–½i•bj
+ * @brief	å¯¿å‘½ï¼ˆç§’ï¼‰
  */
 struct Lifetime
 {
-	float time;	// c‚èŠÔ
+	float time;	// æ®‹ã‚Šæ™‚é–“
 
 	Lifetime(float t = 0.0f)
 		: time(t) {}
 };
 
 // ============================================================
-// •¨—ƒRƒ“ƒ|[ƒlƒ“ƒg
+// ç‰©ç†ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
 // ============================================================
 /**
  * @enum	BodyType
- * @brief	•¨—‹““®‚Ìí—Ş
+ * @brief	ç‰©ç†æŒ™å‹•ã®ç¨®é¡
  */
 enum class BodyType
 {
-	Static,		// “®‚©‚È‚¢i¿—Ê–³ŒÀ‘åjB•ÇA’n–Ê‚È‚ÇB
-	Dynamic,	// •¨—‰‰Z‚Å“®‚­Bd—Í‚âÕ“Ë‚Ì‰e‹¿‚ğó‚¯‚éBƒvƒŒƒCƒ„[A“GA” ‚È‚ÇB
-	Kinematic,	// •¨—‰‰Z‚ğ–³‹‚µAƒvƒƒOƒ‰ƒ€‚Å“®‚©‚·BˆÚ“®°AƒGƒŒƒx[ƒ^[‚È‚ÇB
+	Static,		// å‹•ã‹ãªã„ï¼ˆè³ªé‡ç„¡é™å¤§ï¼‰ã€‚å£ã€åœ°é¢ãªã©ã€‚
+	Dynamic,	// ç‰©ç†æ¼”ç®—ã§å‹•ãã€‚é‡åŠ›ã‚„è¡çªã®å½±éŸ¿ã‚’å—ã‘ã‚‹ã€‚ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã€æ•µã€ç®±ãªã©ã€‚
+	Kinematic,	// ç‰©ç†æ¼”ç®—ã‚’ç„¡è¦–ã—ã€ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã§å‹•ã‹ã™ã€‚ç§»å‹•åºŠã€ã‚¨ãƒ¬ãƒ™ãƒ¼ã‚¿ãƒ¼ãªã©ã€‚
 };
 
 /**
  * @struct	Rigidbody
- * @brief	•¨—‹““®
+ * @brief	ç‰©ç†æŒ™å‹•
  */
 struct Rigidbody
 {
-	BodyType type;			// •¨—‹““®‚Ìí—Ş
-	XMFLOAT3 velocity;		// ‘¬“x
-	float mass;				// ¿—Ê
-	float drag;				// ‹ó‹C’ïR
-	bool useGravity;		// d—Í‚ğg—p‚·‚é‚©
-	bool freezeRotation;	// ‰ñ“]‚ğŒÅ’è‚·‚é‚©
-	float restitution;		// ”½”­ŒW” (0.0: ”ñ”½”­ ` 1.0: Š®‘S”½”­)
-	float friction;			// –€CŒW”i0.0: ƒcƒ‹ƒcƒ‹ ` 1.0: ƒUƒ‰ƒUƒ‰j
-	bool isGrounded;		// ’n–Ê‚ÉÚ’n‚µ‚Ä‚¢‚é‚©iƒWƒƒƒ“ƒv§Œä—p‚È‚Çj
+	BodyType type;			// ç‰©ç†æŒ™å‹•ã®ç¨®é¡
+	XMFLOAT3 velocity;		// é€Ÿåº¦
+	float mass;				// è³ªé‡
+	float drag;				// ç©ºæ°—æŠµæŠ—
+	bool useGravity;		// é‡åŠ›ã‚’ä½¿ç”¨ã™ã‚‹ã‹
+	bool freezeRotation;	// å›è»¢ã‚’å›ºå®šã™ã‚‹ã‹
+	float restitution;		// åç™ºä¿‚æ•° (0.0: éåç™º ï½ 1.0: å®Œå…¨åç™º)
+	float friction;			// æ‘©æ“¦ä¿‚æ•°ï¼ˆ0.0: ãƒ„ãƒ«ãƒ„ãƒ« ï½ 1.0: ã‚¶ãƒ©ã‚¶ãƒ©ï¼‰
+	bool isGrounded;		// åœ°é¢ã«æ¥åœ°ã—ã¦ã„ã‚‹ã‹ï¼ˆã‚¸ãƒ£ãƒ³ãƒ—åˆ¶å¾¡ç”¨ãªã©ï¼‰
 
 	Rigidbody(BodyType t = BodyType::Dynamic, float m = 1.0f)
 		: type(t), velocity({ 0,0,0 }), mass(m), drag(0.1f), useGravity(true), freezeRotation(true), restitution(0.5f), friction(0.5f), isGrounded(false)
 	{
-		// Static‚âKinematic‚È‚çd—ÍOFF‚É‚·‚é‚È‚Ç‚Ì‰Šú‰»
+		// Staticã‚„Kinematicãªã‚‰é‡åŠ›OFFã«ã™ã‚‹ãªã©ã®åˆæœŸåŒ–
 		if (type != BodyType::Dynamic) useGravity = false;
 	}
 };
 
 // ============================================================
-// ƒŒƒCƒ„[ƒVƒXƒeƒ€
+// ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚·ã‚¹ãƒ†ãƒ 
 // ============================================================
 /**
  * @enum	Layer
- * @brief	ƒŒƒCƒ„[’è‹`iƒrƒbƒgƒ}ƒXƒNj
+ * @brief	ãƒ¬ã‚¤ãƒ¤ãƒ¼å®šç¾©ï¼ˆãƒ“ãƒƒãƒˆãƒã‚¹ã‚¯ï¼‰
  */
 enum class Layer : uint32_t
 {
@@ -152,77 +152,77 @@ enum class Layer : uint32_t
 	Wall = 1 << 3,
 	Item = 1 << 4,
 	Projectile = 1 << 5,
-	// •K—v‚É‰‚¶‚Ä’Ç‰ÁiÅ‘å32ƒŒƒCƒ„[j
+	// å¿…è¦ã«å¿œã˜ã¦è¿½åŠ ï¼ˆæœ€å¤§32ãƒ¬ã‚¤ãƒ¤ãƒ¼ï¼‰
 
 	All = 0xFFFFFFFF
 };
 
-// ‰‰ZqƒI[ƒo[ƒ[ƒhiLayer“¯m‚Ìƒrƒbƒg‰‰Z—pj
+// æ¼”ç®—å­ã‚ªãƒ¼ãƒãƒ¼ãƒ­ãƒ¼ãƒ‰ï¼ˆLayeråŒå£«ã®ãƒ“ãƒƒãƒˆæ¼”ç®—ç”¨ï¼‰
 constexpr Layer operator|(Layer a, Layer b) { return static_cast<Layer>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); }
 constexpr Layer operator&(Layer a, Layer b) { return static_cast<Layer>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); }
 constexpr Layer operator~(Layer a) { return static_cast<Layer>(~static_cast<uint32_t>(a)); }
 constexpr Layer& operator|=(Layer& a, Layer b) { a = a | b; return a; }
 constexpr Layer& operator&=(Layer& a, Layer b) { a = a & b; return a; }
-// bool”»’è—p
+// boolåˆ¤å®šç”¨
 constexpr bool operator&&(Layer a, Layer b) { return (static_cast<uint32_t>(a) & static_cast<uint32_t>(b)) != 0; }
 constexpr bool operator||(Layer a, Layer b) { return (static_cast<uint32_t>(a) | static_cast<uint32_t>(b)) != 0; }
 constexpr bool operator!(Layer a) { return static_cast<uint32_t>(a) == 0; }
 
 // ============================================================
-// Õ“Ëƒ}ƒgƒŠƒbƒNƒXiƒOƒ[ƒoƒ‹İ’èj
+// è¡çªãƒãƒˆãƒªãƒƒã‚¯ã‚¹ï¼ˆã‚°ãƒ­ãƒ¼ãƒãƒ«è¨­å®šï¼‰
 // ============================================================
 /**
  * @class	PhysicsConfig
- * @brief	•¨—İ’èiƒŒƒCƒ„[‚²‚Æ‚ÌÕ“Ëİ’èj
+ * @brief	ç‰©ç†è¨­å®šï¼ˆãƒ¬ã‚¤ãƒ¤ãƒ¼ã”ã¨ã®è¡çªè¨­å®šï¼‰
  */
 class PhysicsConfig
 {
 public:
-	// İ’è—pƒwƒ‹ƒp[\‘¢‘Ìiƒƒ\ƒbƒhƒ`ƒF[ƒ“—pj
+	// è¨­å®šç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼æ§‹é€ ä½“ï¼ˆãƒ¡ã‚½ãƒƒãƒ‰ãƒã‚§ãƒ¼ãƒ³ç”¨ï¼‰
 	struct RuleBuilder
 	{
 		Layer target;
 
 		RuleBuilder(Layer l) : target(l) {}
 
-		// @brief	Õ“Ëİ’è‚ğ’Ç‰Á
+		// @brief	è¡çªè¨­å®šã‚’è¿½åŠ 
 		RuleBuilder& collidesWith(Layer other)
 		{
 			PhysicsConfig::matrix[target] |= other;
-			PhysicsConfig::matrix[other] |= target;	// ‘Šè‘¤‚É‚à©•ª‚ğ’Ç‰Á
+			PhysicsConfig::matrix[other] |= target;	// ç›¸æ‰‹å´ã«ã‚‚è‡ªåˆ†ã‚’è¿½åŠ 
 			return *this;
 		}
 
-		// @brief	Õ“Ëİ’è‚ğœŠO
+		// @brief	è¡çªè¨­å®šã‚’é™¤å¤–
 		RuleBuilder& ignore(Layer other)
 		{
 			PhysicsConfig::matrix[target] &= ~other;
-			PhysicsConfig::matrix[other] &= ~target;	// ‘Šè‘¤‚©‚ç‚à©•ª‚ğœŠO
+			PhysicsConfig::matrix[other] &= ~target;	// ç›¸æ‰‹å´ã‹ã‚‰ã‚‚è‡ªåˆ†ã‚’é™¤å¤–
 			return *this;
 		}
 	};
 
-	// @brief	İ’èŠJniƒ`ƒF[ƒ“‚Ì‹N“_j
+	// @brief	è¨­å®šé–‹å§‹ï¼ˆãƒã‚§ãƒ¼ãƒ³ã®èµ·ç‚¹ï¼‰
 	static RuleBuilder Configure(Layer layer)
 	{
 		return RuleBuilder(layer);
 	}
 
-	// @brief	‘SƒŒƒCƒ„[‚Ìİ’è‚ğƒNƒŠƒA
+	// @brief	å…¨ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®è¨­å®šã‚’ã‚¯ãƒªã‚¢
 	static void Reset()
 	{
 		matrix.clear();
-		// Default‚ÍAll‚Æ“–‚½‚é‚Ì‚ªŠî–{
+		// Defaultã¯Allã¨å½“ãŸã‚‹ã®ãŒåŸºæœ¬
 		Configure(Layer::Default).collidesWith(Layer::All);
 	}
 
-	// @brief	w’èƒŒƒCƒ„[‚Ìƒ}ƒXƒN‚ğæ“¾iİ’è‚ª–³‚¯‚ê‚ÎAll‚ğ•Ô‚·j
+	// @brief	æŒ‡å®šãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒã‚¹ã‚¯ã‚’å–å¾—ï¼ˆè¨­å®šãŒç„¡ã‘ã‚Œã°Allã‚’è¿”ã™ï¼‰
 	static Layer GetMask(Layer layer)
 	{
 		if (matrix.find(layer) != matrix.end())
 		{
-			// İ’è‚³‚ê‚Ä‚¢‚È‚¢ƒŒƒCƒ„[‚ÍƒfƒtƒHƒ‹ƒg‚Åu‘S‚Äv‚Æ“–‚½‚é‚æ‚¤‚É‚·‚é‚©A
-			// ‚ ‚é‚¢‚ÍuDefaultv‚Æ“¯‚¶‚É‚·‚é‚©B‚±‚±‚Å‚ÍˆÀ‘S‚Ì‚½‚ßDefaultİ’è‚ğ•Ô‚·B
+			// è¨­å®šã•ã‚Œã¦ã„ãªã„ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§ã€Œå…¨ã¦ã€ã¨å½“ãŸã‚‹ã‚ˆã†ã«ã™ã‚‹ã‹ã€
+			// ã‚ã‚‹ã„ã¯ã€ŒDefaultã€ã¨åŒã˜ã«ã™ã‚‹ã‹ã€‚ã“ã“ã§ã¯å®‰å…¨ã®ãŸã‚Defaultè¨­å®šã‚’è¿”ã™ã€‚
 			if (matrix.find(Layer::Default) != matrix.end()) return matrix[Layer::Default];
 			else return Layer::All;
 		}
@@ -234,18 +234,18 @@ private:
 };
 
 // ============================================================
-// ƒRƒ‰ƒCƒ_[’è‹`iƒƒ\ƒbƒhƒ`ƒF[ƒ“‘Î‰j
+// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼å®šç¾©ï¼ˆãƒ¡ã‚½ãƒƒãƒ‰ãƒã‚§ãƒ¼ãƒ³å¯¾å¿œï¼‰
 // ============================================================
 /**
  * @enum	ColliderType
- * @brief	“–‚½‚è”»’è‚ÌŒ`ó
+ * @brief	å½“ãŸã‚Šåˆ¤å®šã®å½¢çŠ¶
  */
 enum class ColliderType
 {
-	Box,		// ƒ{ƒbƒNƒX
-	Sphere,		// ‹…‘Ì
-	Capsule,	// ƒJƒvƒZƒ‹
-	Cylinder,	// ‰~’Œ
+	Box,		// ãƒœãƒƒã‚¯ã‚¹
+	Sphere,		// çƒä½“
+	Capsule,	// ã‚«ãƒ—ã‚»ãƒ«
+	Cylinder,	// å††æŸ±
 };
 
 struct ColliderInfo
@@ -259,16 +259,16 @@ struct ColliderInfo
 
 /**
  * @struct	Collider
- * @brief	“–‚½‚è”»’èiƒƒ\ƒbƒhƒ`ƒF[ƒ“‘Î‰j
+ * @brief	å½“ãŸã‚Šåˆ¤å®šï¼ˆãƒ¡ã‚½ãƒƒãƒ‰ãƒã‚§ãƒ¼ãƒ³å¯¾å¿œï¼‰
  */
 struct Collider
 {
-	ColliderType type;	// ƒ^ƒCƒv‚Ìí—Ş
-	bool isTrigger;		// •¨—Õ“Ë‚ğ–³‹‚µ‚ÄƒCƒxƒ“ƒg‚Ì‚İ”­¶‚³‚¹‚é‚©	
-	Layer layer;		// Š‘®
-	Layer mask;			// Õ“Ë”»’è‚ğs‚¤ƒŒƒCƒ„[‚Ìƒ}ƒXƒN
+	ColliderType type;	// ã‚¿ã‚¤ãƒ—ã®ç¨®é¡
+	bool isTrigger;		// ç‰©ç†è¡çªã‚’ç„¡è¦–ã—ã¦ã‚¤ãƒ™ãƒ³ãƒˆã®ã¿ç™ºç”Ÿã•ã›ã‚‹ã‹	
+	Layer layer;		// æ‰€å±
+	Layer mask;			// è¡çªåˆ¤å®šã‚’è¡Œã†ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒã‚¹ã‚¯
 
-	// ‹¤—p‘Ì‚Åƒƒ‚ƒŠß–ñ
+	// å…±ç”¨ä½“ã§ãƒ¡ãƒ¢ãƒªç¯€ç´„
 	union
 	{
 		struct { float x, y, z; } boxSize;
@@ -276,18 +276,18 @@ struct Collider
 		struct { float radius, height; } capsule;
 		struct { float radius, height; } cylinder;
 	};
-	XMFLOAT3 offset;	// ƒIƒtƒZƒbƒg
+	XMFLOAT3 offset;	// ã‚ªãƒ•ã‚»ãƒƒãƒˆ
 
-	// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Collider() :type(ColliderType::Box), isTrigger(false), layer(Layer::Default), mask(Layer::All), boxSize{ 1.0f, 1.0f, 1.0f }, offset{ 0.0f, 0.0f, 0.0f } {}
 
-	// ˆêŠ‡İ’èƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ä¸€æ‹¬è¨­å®šã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Collider(const ColliderInfo& info)
 		: type(info.type), isTrigger(info.isTrigger), layer(info.layer), offset(info.offset)
 	{
-		// Õ“Ëƒ}ƒXƒN‚ğƒOƒ[ƒoƒ‹İ’è‚©‚çæ“¾
+		// è¡çªãƒã‚¹ã‚¯ã‚’ã‚°ãƒ­ãƒ¼ãƒãƒ«è¨­å®šã‹ã‚‰å–å¾—
 		mask = PhysicsConfig::GetMask(layer);
-		// ƒTƒCƒYİ’è
+		// ã‚µã‚¤ã‚ºè¨­å®š
 		if (type == ColliderType::Box) { boxSize = { info.size.x, info.size.y, info.size.z }; }
 		else if (type == ColliderType::Sphere) { sphere.radius = info.size.x; }
 		else if (type == ColliderType::Capsule) { capsule.radius = info.size.x; capsule.height = info.size.y; }
@@ -295,46 +295,46 @@ struct Collider
 	}
 
 	// ------------------------------------------------------------
-	// Fluent Interface—pƒZƒbƒ^[
+	// Fluent Interfaceç”¨ã‚»ãƒƒã‚¿ãƒ¼
 	// ------------------------------------------------------------
 
-	// @brief	©•ª‚ÌŠ‘®‚ğİ’è
+	// @brief	è‡ªåˆ†ã®æ‰€å±ã‚’è¨­å®š
 	Collider& setGroup(Layer l)
 	{
 		this->layer = l;
-		this->mask = PhysicsConfig::GetMask(l); // ƒ}ƒXƒN‚àXV
+		this->mask = PhysicsConfig::GetMask(l); // ãƒã‚¹ã‚¯ã‚‚æ›´æ–°
 		return *this;
 	}
 
-	// @brief	Õ“Ë‘ÎÛ‚ğã‘‚«İ’è
+	// @brief	è¡çªå¯¾è±¡ã‚’ä¸Šæ›¸ãè¨­å®š
 	Collider& setMask(Layer l)
 	{
 		this->mask = l;
 		return *this;
 	}
 
-	// @brief	Õ“Ë‘ÎÛ‚ğ’Ç‰Ái—áFcollidesWith(Layer::Enemy)j
+	// @brief	è¡çªå¯¾è±¡ã‚’è¿½åŠ ï¼ˆä¾‹ï¼šcollidesWith(Layer::Enemy)ï¼‰
 	Collider& collidesWith(Layer l)
 	{
 		this->mask |= l;
 		return *this;
 	}
 
-	// @brief	Õ“Ë‘ÎÛ‚©‚çœŠOi—áFignore(Layer::Player)j
+	// @brief	è¡çªå¯¾è±¡ã‹ã‚‰é™¤å¤–ï¼ˆä¾‹ï¼šignore(Layer::Player)ï¼‰
 	Collider& ignore(Layer l)
 	{
 		this->mask = this->mask & (~l);
 		return *this;
 	}
 
-	// @brief	ƒgƒŠƒK[İ’è
+	// @brief	ãƒˆãƒªã‚¬ãƒ¼è¨­å®š
 	Collider& setTrigger(bool trigger)
 	{
 		this->isTrigger = trigger;
 		return *this;
 	}
 
-	// @brief	ƒIƒtƒZƒbƒgİ’è
+	// @brief	ã‚ªãƒ•ã‚»ãƒƒãƒˆè¨­å®š
 	Collider& setOffset(const XMFLOAT3& off)
 	{
 		this->offset = off;
@@ -360,15 +360,15 @@ struct Collider
 	{
 		return Collider(ColliderInfo{ ColliderType::Cylinder, l, false, { radius, height, 0 }, { 0,0,0 } });
 	}
-	// ƒgƒŠƒK[ì¬—pƒVƒ‡[ƒgƒJƒbƒg
+	// ãƒˆãƒªã‚¬ãƒ¼ä½œæˆç”¨ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆ
 	static Collider CreateTriggerBox(float x, float y, float z, Layer l = Layer::Default)
 	{
 		return Collider(ColliderInfo{ ColliderType::Box, l, true, { x, y, z }, { 0,0,0 } });
 	}
 };
 
-// •¨—ƒGƒ“ƒWƒ“‚ªŒvZ‚µ‚Äg‚¤uƒLƒƒƒbƒVƒ…ƒf[ƒ^v
-// ‚±‚ê‚ğObserver‚ÅXV‚µAƒ}ƒCƒtƒŒ[ƒ€‚ÌŒvZ‚ğƒXƒLƒbƒv‚·‚é
+// ç‰©ç†ã‚¨ãƒ³ã‚¸ãƒ³ãŒè¨ˆç®—ã—ã¦ä½¿ã†ã€Œã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿ã€
+// ã“ã‚Œã‚’Observerã§æ›´æ–°ã—ã€ãƒã‚¤ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¨ˆç®—ã‚’ã‚¹ã‚­ãƒƒãƒ—ã™ã‚‹
 struct AABB
 {
 	XMFLOAT3 min;
@@ -379,11 +379,11 @@ struct AABB
 
 /**
  * @struct	WorldCollider
- * @brief	ƒ[ƒ‹ƒh‹óŠÔ‚Å‚ÌŒ`óƒf[ƒ^ƒLƒƒƒbƒVƒ…
+ * @brief	ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã§ã®å½¢çŠ¶ãƒ‡ãƒ¼ã‚¿ã‚­ãƒ£ãƒƒã‚·ãƒ¥
  */
 struct WorldCollider
 {
-	// Œ`óƒf[ƒ^
+	// å½¢çŠ¶ãƒ‡ãƒ¼ã‚¿
 	union
 	{
 		struct { XMFLOAT3 center; XMFLOAT3 extents; XMFLOAT3 axes[3]; } obb;
@@ -392,10 +392,10 @@ struct WorldCollider
 		struct { XMFLOAT3 center; XMFLOAT3 axis; float height; float radius; } cylinder;
 	};
 
-	// ƒuƒ[ƒhƒtƒF[ƒY—pAABB
+	// ãƒ–ãƒ­ãƒ¼ãƒ‰ãƒ•ã‚§ãƒ¼ã‚ºç”¨AABB
 	AABB aabb;
 
-	// XV‚ª•K—v‚©‚Ç‚¤‚©iƒVƒXƒeƒ€‘¤‚ÅŠÇ—j
+	// æ›´æ–°ãŒå¿…è¦ã‹ã©ã†ã‹ï¼ˆã‚·ã‚¹ãƒ†ãƒ å´ã§ç®¡ç†ï¼‰
 	bool isDirty = true;
 
 	WorldCollider() {
@@ -405,11 +405,11 @@ struct WorldCollider
 };
 
 // ============================================================
-// ƒQ[ƒ€ƒƒWƒbƒNE“ü—Í
+// ã‚²ãƒ¼ãƒ ãƒ­ã‚¸ãƒƒã‚¯ãƒ»å…¥åŠ›
 // ============================================================
 /**
  * @struct	PlayerInput
- * @brief	‘€ì‰Â”\ƒtƒ‰ƒO
+ * @brief	æ“ä½œå¯èƒ½ãƒ•ãƒ©ã‚°
  */
 struct PlayerInput
 {
@@ -422,17 +422,17 @@ struct PlayerInput
 };
 
 // ============================================================
-// ƒŒƒ“ƒ_ƒŠƒ“ƒOŠÖ˜A
+// ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°é–¢é€£
 // ============================================================
 /**
  * @struct	MeshComponent
- * @brief	ƒ‚ƒfƒ‹•`‰æ
+ * @brief	ãƒ¢ãƒ‡ãƒ«æç”»
  */
 struct MeshComponent
 {
-	StringId modelKey;	// ResourceManager‚ÌƒL[
-	XMFLOAT3 scaleOffset;	// ƒ‚ƒfƒ‹ŒÅ—L‚ÌƒXƒP[ƒ‹•â³iƒAƒZƒbƒg‚ª‹‘å/‹É¬‚Èê‡—pj
-	XMFLOAT4 color;			// ƒ}ƒeƒŠƒAƒ‹ƒJƒ‰[æZ—p
+	StringId modelKey;	// ResourceManagerã®ã‚­ãƒ¼
+	XMFLOAT3 scaleOffset;	// ãƒ¢ãƒ‡ãƒ«å›ºæœ‰ã®ã‚¹ã‚±ãƒ¼ãƒ«è£œæ­£ï¼ˆã‚¢ã‚»ãƒƒãƒˆãŒå·¨å¤§/æ¥µå°ãªå ´åˆç”¨ï¼‰
+	XMFLOAT4 color;			// ãƒãƒ†ãƒªã‚¢ãƒ«ã‚«ãƒ©ãƒ¼ä¹—ç®—ç”¨
 
 	MeshComponent(StringId key = "", const XMFLOAT3& scale = {1,1,1}, const XMFLOAT4& c = {1, 1, 1, 1})
 		: modelKey(key), scaleOffset(scale), color(c) {}
@@ -440,12 +440,12 @@ struct MeshComponent
 
 /**
  * @struct	SpriteComponent
- * @brief	2D•`‰æ
+ * @brief	2Dæç”»
  */
 struct SpriteComponent
 {
-	StringId textureKey;	// ResourceManager‚Åg‚¤ƒL[
-	XMFLOAT4 color;			// F‚Æ“§–¾“x
+	StringId textureKey;	// ResourceManagerã§ä½¿ã†ã‚­ãƒ¼
+	XMFLOAT4 color;			// è‰²ã¨é€æ˜åº¦
 
 	SpriteComponent(StringId key = "", const XMFLOAT4& c = { 1, 1, 1, 1 })
 		: textureKey(key), color(c) {}
@@ -453,12 +453,12 @@ struct SpriteComponent
 
 /**
  * @struct	BillboardComponent
- * @brief	ƒrƒ‹ƒ{[ƒh
+ * @brief	ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰
  */
 struct BillboardComponent
 {
 	StringId textureKey;
-	XMFLOAT2 size;	// •A‚‚³
+	XMFLOAT2 size;	// å¹…ã€é«˜ã•
 	XMFLOAT4 color;
 
 	BillboardComponent(StringId key = "", float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1,1,1,1 })
@@ -468,45 +468,45 @@ struct BillboardComponent
 
 /**
  * @struct	TextComponent
- * @brief	ƒeƒLƒXƒg•`‰æiDirectWritej
+ * @brief	ãƒ†ã‚­ã‚¹ãƒˆæç”»ï¼ˆDirectWriteï¼‰
  */
 struct TextComponent
 {
 	std::string text;
-	StringId fontKey;	// ƒtƒHƒ“ƒg–¼i—á: "Meiryo", "CustomFont"j
-	float fontSize;		// Šî–{ƒTƒCƒYi1080pŠî€‚È‚Çj
-	XMFLOAT4 color;		// ƒJƒ‰[
-	XMFLOAT2 offset;	// eTransform‚©‚ç‚ÌƒIƒtƒZƒbƒg
+	std::string fontKey;	// ãƒ•ã‚©ãƒ³ãƒˆåï¼ˆä¾‹: "Meiryo", "CustomFont"ï¼‰
+	float fontSize;		// åŸºæœ¬ã‚µã‚¤ã‚ºï¼ˆ1080påŸºæº–ãªã©ï¼‰
+	XMFLOAT4 color;		// ã‚«ãƒ©ãƒ¼
+	XMFLOAT2 offset;	// è¦ªTransformã‹ã‚‰ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆ
 
-	// ƒŒƒCƒAƒEƒgİ’è
-	float maxWidth = 0.0f;		// 0‚È‚ç§ŒÀ‚È‚µ
+	// ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆè¨­å®š
+	float maxWidth = 0.0f;		// 0ãªã‚‰åˆ¶é™ãªã—
 	bool centerAlign = false;
 
-	// ƒXƒ^ƒCƒ‹ƒIƒvƒVƒ‡ƒ“
+	// ã‚¹ã‚¿ã‚¤ãƒ«ã‚ªãƒ—ã‚·ãƒ§ãƒ³
 	bool isBold = false;
 	bool isItalic = false;
 
-	TextComponent(const std::string& t = "Text", StringId font = "Meiryo", float size = 24.0f, const XMFLOAT4& c = { 1,1,1,1 })
+	TextComponent(const std::string& t = "Text", std::string font = "Meiryo", float size = 24.0f, const XMFLOAT4& c = { 1,1,1,1 })
 		: text(t), fontKey(font), fontSize(size), color(c), offset({ 0,0 }) {}
 };
 
 // ============================================================
-// ƒI[ƒfƒBƒIŠÖ˜A
+// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªé–¢é€£
 // ============================================================
 
 /**
  * @struct	Audiosource
- * @brief	‰¹Œ¹i–Â‚ç‚·‘¤j
+ * @brief	éŸ³æºï¼ˆé³´ã‚‰ã™å´ï¼‰
  */
 struct AudioSource
 {
-	StringId soundKey;	// ResourceManager‚ÌƒL[
-	float volume;			// Šî–{‰¹—Ê
-	float range;			// ‰¹‚ª•·‚±‚¦‚éÅ‘å‹——£i3DƒTƒEƒ“ƒh—pj
-	bool isLoop;			// ƒ‹[ƒv‚·‚é‚©
-	bool playOnAwake;		// ¶¬‚É‘¦Ä¶‚·‚é‚©
+	StringId soundKey;	// ResourceManagerã®ã‚­ãƒ¼
+	float volume;			// åŸºæœ¬éŸ³é‡
+	float range;			// éŸ³ãŒèã“ãˆã‚‹æœ€å¤§è·é›¢ï¼ˆ3Dã‚µã‚¦ãƒ³ãƒ‰ç”¨ï¼‰
+	bool isLoop;			// ãƒ«ãƒ¼ãƒ—ã™ã‚‹ã‹
+	bool playOnAwake;		// ç”Ÿæˆæ™‚ã«å³å†ç”Ÿã™ã‚‹ã‹
 
-	// “à•”ó‘ÔŠÇ——p
+	// å†…éƒ¨çŠ¶æ…‹ç®¡ç†ç”¨
 	bool isPlaying = false;
 
 	AudioSource(StringId key = "", float vol = 1.0f, float r = 20.0f, bool loop = false, bool awake = false)
@@ -515,93 +515,93 @@ struct AudioSource
 
 /**
  * @struct	AudioListener
- * @brief	•·‚­‘¤i’Êí‚ÍƒJƒƒ‰‚©ƒvƒŒƒCƒ„[‚É1‚Â‚¾‚¯‚Â‚¯‚éj
+ * @brief	èãå´ï¼ˆé€šå¸¸ã¯ã‚«ãƒ¡ãƒ©ã‹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«1ã¤ã ã‘ã¤ã‘ã‚‹ï¼‰
  */
 struct AudioListener
 {
-	// ƒf[ƒ^‚Í•s—vAƒ^ƒO‚Æ‚µ‚Ä‹@”\‚·‚éB
+	// ãƒ‡ãƒ¼ã‚¿ã¯ä¸è¦ã€ã‚¿ã‚°ã¨ã—ã¦æ©Ÿèƒ½ã™ã‚‹ã€‚
 };
 
 /**
  * @struct	Camera
- * @brief	ƒJƒƒ‰
+ * @brief	ã‚«ãƒ¡ãƒ©
  */
 struct Camera
 {
-	float fov;			// ‹–ìŠpiRadianj
-	float nearZ, farZ;	// ‹‘ä‚Ì”ÍˆÍ
-	float aspect;		// ƒAƒXƒyƒNƒg”ä
+	float fov;			// è¦–é‡è§’ï¼ˆRadianï¼‰
+	float nearZ, farZ;	// è¦–éŒå°ã®ç¯„å›²
+	float aspect;		// ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Camera(float f = XM_PIDIV4, float n = 0.1f, float r = 1000.0f, float a = static_cast<float>(Config::SCREEN_WIDTH) / static_cast<float>(Config::SCREEN_HEIGHT))
 		: fov(f), nearZ(n), farZ(r), aspect(a) {
 	}
 };
 
 // ============================================================
-// 2D / UIŠÖ˜A
+// 2D / UIé–¢é€£
 // ============================================================
 
 /**
  * @struct	Transform2D
- * @brief	UI‚â2DƒIƒuƒWƒFƒNƒgê—p‚ÌÀ•WEƒTƒCƒYŠÇ—
+ * @brief	UIã‚„2Dã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå°‚ç”¨ã®åº§æ¨™ãƒ»ã‚µã‚¤ã‚ºç®¡ç†
  */
 struct Transform2D
 {
-	// --- Šî–{ƒpƒ‰ƒ[ƒ^ ---
-	XMFLOAT2 position = { 0.0f, 0.0f };			// ƒAƒ“ƒJ[’†S‚©‚ç‚ÌƒIƒtƒZƒbƒgÀ•W
-	XMFLOAT2 size = { 100.0f, 100.0f };			// •‚Æ‚‚³
-	XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };	// ‰ñ“]iX, Y, Zj
-	XMFLOAT2 scale = { 1.0f, 1.0f };			// ƒXƒP[ƒ‹
+	// --- åŸºæœ¬ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ---
+	XMFLOAT2 position = { 0.0f, 0.0f };			// ã‚¢ãƒ³ã‚«ãƒ¼ä¸­å¿ƒã‹ã‚‰ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆåº§æ¨™
+	XMFLOAT2 size = { 100.0f, 100.0f };			// å¹…ã¨é«˜ã•
+	XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };	// å›è»¢ï¼ˆX, Y, Zï¼‰
+	XMFLOAT2 scale = { 1.0f, 1.0f };			// ã‚¹ã‚±ãƒ¼ãƒ«
 
-	// --- UIƒŒƒCƒAƒEƒg—p ---
-	XMFLOAT2 pivot = { 0.5f, 0.5f };			// ‰ñ“]EŠg‘åk¬‚Ì’†Si0.0 = ¶ã, 0.5 = ’†‰›, 1.0 = ‰E‰ºj
+	// --- UIãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆç”¨ ---
+	XMFLOAT2 pivot = { 0.5f, 0.5f };			// å›è»¢ãƒ»æ‹¡å¤§ç¸®å°ã®ä¸­å¿ƒï¼ˆ0.0 = å·¦ä¸Š, 0.5 = ä¸­å¤®, 1.0 = å³ä¸‹ï¼‰
 
-	// ƒAƒ“ƒJ[ie‚Ì‚Ç‚ÌˆÊ’u‚ğŠî€‚É‚·‚é‚© 0.0 ~ 1.0j
-	// —á: min{0.5, 0.5}, max{0.5, 0.5} = e‚Ì’†‰›‚ÉŒÅ’è
-	//     min{0, 0}, max{1, 1} = e‘S‘Ì‚ÉƒXƒgƒŒƒbƒ`i‘S‰æ–Ê‚È‚Çj
+	// ã‚¢ãƒ³ã‚«ãƒ¼ï¼ˆè¦ªã®ã©ã®ä½ç½®ã‚’åŸºæº–ã«ã™ã‚‹ã‹ 0.0 ~ 1.0ï¼‰
+	// ä¾‹: min{0.5, 0.5}, max{0.5, 0.5} = è¦ªã®ä¸­å¤®ã«å›ºå®š
+	//     min{0, 0}, max{1, 1} = è¦ªå…¨ä½“ã«ã‚¹ãƒˆãƒ¬ãƒƒãƒï¼ˆå…¨ç”»é¢ãªã©ï¼‰
 	XMFLOAT2 anchorMin = { 0.5f, 0.5f };
 	XMFLOAT2 anchorMax = { 0.5f, 0.5f };
 
-	// •`‰æ‡iè‘O‚É•\¦‚µ‚½‚¢‚à‚Ì‚Í‘å‚«‚­‚·‚éj
+	// æç”»é †ï¼ˆæ‰‹å‰ã«è¡¨ç¤ºã—ãŸã„ã‚‚ã®ã¯å¤§ããã™ã‚‹ï¼‰
 	int zIndex = 0;
 
-	// --- “à•”ŒvZ—piSystem‚ª‘‚«‚Şj---
-	// •`‰æ—p‚Ì•ÏŠ·s—ñiDirect2D—pj
+	// --- å†…éƒ¨è¨ˆç®—ç”¨ï¼ˆSystemãŒæ›¸ãè¾¼ã‚€ï¼‰---
+	// æç”»ç”¨ã®å¤‰æ›è¡Œåˆ—ï¼ˆDirect2Dç”¨ï¼‰
 	D2D1_MATRIX_3X2_F worldMatrix = D2D1::IdentityMatrix();
 
-	// ŒvZÏ‚İ‚ÌƒXƒNƒŠ[ƒ“‹éŒ` { left, up, right, bottom }
-	// ƒ}ƒEƒX”»’èi“–‚½‚è”»’èj‚È‚Ç‚Åg—p
+	// è¨ˆç®—æ¸ˆã¿ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³çŸ©å½¢ { left, up, right, bottom }
+	// ãƒã‚¦ã‚¹åˆ¤å®šï¼ˆå½“ãŸã‚Šåˆ¤å®šï¼‰ãªã©ã§ä½¿ç”¨
 	XMFLOAT4 calculatedRect = { 0, 0, 0, 0 };
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	// ------------------------------------------------------------
-	// 1. ƒfƒtƒHƒ‹ƒg
+	// 1. ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
 	Transform2D() = default;
 
-	// 2. ˆÊ’u‚Ì‚İw’è (ƒTƒCƒY‚Í100x100)
+	// 2. ä½ç½®ã®ã¿æŒ‡å®š (ã‚µã‚¤ã‚ºã¯100x100)
 	Transform2D(const XMFLOAT2& pos)
 		: position(pos)
 	{
 		calculatedRect = { pos.x, pos.y, pos.x + size.x, pos.y + size.y };
 	}
 
-	// 3. ˆÊ’u‚ÆƒTƒCƒYw’è
+	// 3. ä½ç½®ã¨ã‚µã‚¤ã‚ºæŒ‡å®š
 	Transform2D(const XMFLOAT2& pos, const XMFLOAT2& sz)
 		: position(pos), size(sz)
 	{
 		calculatedRect = { pos.x, pos.y, pos.x + sz.x, pos.y + sz.y };
 	}
 
-	// 4. float‚Å’¼Úw’è (x, y, w, h) - ‚±‚ê‚ªˆê”ÔŠy‚©‚à‚µ‚ê‚Ü‚¹‚ñ
+	// 4. floatã§ç›´æ¥æŒ‡å®š (x, y, w, h) - ã“ã‚ŒãŒä¸€ç•ªæ¥½ã‹ã‚‚ã—ã‚Œã¾ã›ã‚“
 	Transform2D(float x, float y, float w, float h)
 		: position({ x, y }), size({ w, h })
 	{
 		calculatedRect = { x, y, x + w, y + h };
 	}
 
-	// 5. ˆÊ’uEƒTƒCƒYEƒAƒ“ƒJ[w’è (UI”z’u—p)
-	// anchor‚ğ1‚Â“n‚·‚ÆAmin/max—¼•û‚ÉƒZƒbƒg‚µ‚Ü‚·iŒÅ’è”z’uj
+	// 5. ä½ç½®ãƒ»ã‚µã‚¤ã‚ºãƒ»ã‚¢ãƒ³ã‚«ãƒ¼æŒ‡å®š (UIé…ç½®ç”¨)
+	// anchorã‚’1ã¤æ¸¡ã™ã¨ã€min/maxä¸¡æ–¹ã«ã‚»ãƒƒãƒˆã—ã¾ã™ï¼ˆå›ºå®šé…ç½®ï¼‰
 	Transform2D(const XMFLOAT2& pos, const XMFLOAT2& sz, const XMFLOAT2& anchor)
 		: position(pos), size(sz), anchorMin(anchor), anchorMax(anchor)
 	{
@@ -611,21 +611,21 @@ struct Transform2D
 
 /**
  * @struct	Canvas
- * @brief	UI‚Ìƒ‹[ƒg—v‘fB‰æ–ÊƒTƒCƒYî•ñ‚ğ’ñ‹Ÿ‚·‚éƒ^ƒO“I‚ÈƒRƒ“ƒ|[ƒlƒ“ƒg
+ * @brief	UIã®ãƒ«ãƒ¼ãƒˆè¦ç´ ã€‚ç”»é¢ã‚µã‚¤ã‚ºæƒ…å ±ã‚’æä¾›ã™ã‚‹ã‚¿ã‚°çš„ãªã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
  */
 struct Canvas
 {
-	bool isScreenSpace = true;	// true‚È‚ç‰æ–Ê‰ğ‘œ“x‚É‡‚í‚¹‚é
-	XMFLOAT2 referenceSize = { 1920.0f, 1080.0f };	// Šî€‰ğ‘œ“x
+	bool isScreenSpace = true;	// trueãªã‚‰ç”»é¢è§£åƒåº¦ã«åˆã‚ã›ã‚‹
+	XMFLOAT2 referenceSize = { 1920.0f, 1080.0f };	// åŸºæº–è§£åƒåº¦
 
-	// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Canvas() = default;
 
-	// ˆø”•t‚«ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// å¼•æ•°ä»˜ãã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Canvas(bool isScreen, const XMFLOAT2& size)
 		: isScreenSpace(isScreen), referenceSize(size) {}
 
-	// ˆø”•t‚«ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// å¼•æ•°ä»˜ãã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	Canvas(bool isScreen, float w, float h)
 		: isScreenSpace(isScreen), referenceSize({ w, h }) {}
 };

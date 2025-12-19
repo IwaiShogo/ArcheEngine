@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	main.cpp
- * @brief	ƒvƒƒOƒ‰ƒ€‚ÌƒGƒ“ƒgƒŠ[ƒ|ƒCƒ“ƒg
+ * @brief	ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆ
  * 
  * @details	
  * 
@@ -8,31 +8,31 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "main.h"
 #include "Engine/Core/Application.h"
 
-// ƒQ[ƒ€ŒÅ—L‚ÌƒV[ƒ“‚ğƒCƒ“ƒNƒ‹[ƒh
+// ã‚²ãƒ¼ãƒ å›ºæœ‰ã®ã‚·ãƒ¼ãƒ³ã‚’ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰
 #include "Game/Scenes/SceneTitle.h"
 #include "Game/Scenes/SceneGame.h"
 
-// ImGui‚Ìƒnƒ“ƒhƒ‰‚ğ’è‹`i‘O•ûéŒ¾j
+// ImGuiã®ãƒãƒ³ãƒ‰ãƒ©ã‚’å®šç¾©ï¼ˆå‰æ–¹å®£è¨€ï¼‰
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-// ƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ
+// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// ImGui‚Ö‚ÌƒƒbƒZ[ƒW‚ğ“n‚·
+	// ImGuiã¸ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’æ¸¡ã™
 	if(ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) return true;
 
 	if (uMsg == WM_DESTROY)
@@ -44,20 +44,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 /**
- * @brief	ƒvƒƒOƒ‰ƒ€‚ÌƒGƒ“ƒgƒŠ[ƒ|ƒCƒ“ƒg
+ * @brief	ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆ
  */
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
-	// ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX“o˜^
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹ç™»éŒ²
 	WNDCLASS wc = {};
 	wc.lpfnWndProc = WindowProc;
 	wc.hInstance = hInstance;
 	wc.lpszClassName = "TimeTracePuzzleClass";
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);	// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğ•\¦
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);	// ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ã‚’è¡¨ç¤º
 	RegisterClass(&wc);
 
-	// ƒEƒBƒ“ƒhƒE¶¬
-	// ÀÛ‚ÌƒNƒ‰ƒCƒAƒ“ƒg—Ìˆæ‚ğ’²®
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ç”Ÿæˆ
+	// å®Ÿéš›ã®ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆé ˜åŸŸã‚’èª¿æ•´
 	RECT rc = { 0, 0, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
@@ -75,7 +75,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 
 	ShowWindow(hwnd, SW_SHOW);
 
-	// ApplicationƒNƒ‰ƒX‚Ì‰Šú‰»
+	// Applicationã‚¯ãƒ©ã‚¹ã®åˆæœŸåŒ–
 	Application app(hwnd);
 	try
 	{
@@ -85,7 +85,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 		sceneManager.RegisterScene<SceneTitle>("Title");
 		sceneManager.RegisterScene<SceneGame>("Game");
 
-		// Å‰‚ÌƒV[ƒ“‚ğŠJn
+		// æœ€åˆã®ã‚·ãƒ¼ãƒ³ã‚’é–‹å§‹
 		sceneManager.ChangeScene("Title");
 	}
 	catch (const std::exception& e)
@@ -94,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 		return -1;
 	}
 
-	// ƒƒbƒZ[ƒWƒ‹[ƒv
+	// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ«ãƒ¼ãƒ—
 	MSG msg = {};
 	while (msg.message != WM_QUIT)
 	{
@@ -105,7 +105,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 		}
 		else
 		{
-			// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒ‹[ƒvÀs
+			// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ«ãƒ¼ãƒ—å®Ÿè¡Œ
 			app.Run();
 		}
 	}

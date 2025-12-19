@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	UISystem.h
  * @brief	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___UI_SYSTEM_H___
 #define ___UI_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
@@ -32,21 +32,21 @@ public:
 
 	void Update(Registry& registry) override
 	{
-		// 1. ‰æ–ÊƒTƒCƒYiCanvasj‚Ìæ“¾
-		// CanvasƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ‚ÂƒGƒ“ƒeƒBƒeƒB‚ğ’T‚·
+		// 1. ç”»é¢ã‚µã‚¤ã‚ºï¼ˆCanvasï¼‰ã®å–å¾—
+		// Canvasã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’æŒã¤ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’æ¢ã™
 		float screenW = 1920.0f;
 		float screenH = 1080.0f;
 
-		// Canvas‚ªŒ©‚Â‚©‚ê‚ÎA‚»‚ÌƒTƒCƒY‚ğ‰æ–ÊƒTƒCƒY‚Æ‚·‚é
+		// CanvasãŒè¦‹ã¤ã‹ã‚Œã°ã€ãã®ã‚µã‚¤ã‚ºã‚’ç”»é¢ã‚µã‚¤ã‚ºã¨ã™ã‚‹
 		auto canvasView = registry.view<Canvas>();
 		for (auto e : canvasView) {
 			const auto& canvas = canvasView.get<Canvas>(e);
 			screenW = canvas.referenceSize.x;
 			screenH = canvas.referenceSize.y;
-			break; // ƒ‹[ƒg‚Í1‚Â‚Æ‰¼’è
+			break; // ãƒ«ãƒ¼ãƒˆã¯1ã¤ã¨ä»®å®š
 		}
 
-		// 2. Ä‹AŒvZ—p‚ÌŠÖ”
+		// 2. å†å¸°è¨ˆç®—ç”¨ã®é–¢æ•°
 		std::function<void(Entity, const D2D1_RECT_F&, const D2D1_MATRIX_3X2_F&)> updateNode =
 			[&](Entity entity, const D2D1_RECT_F& parentRect, const D2D1_MATRIX_3X2_F& parentMat)
 			{
@@ -56,36 +56,36 @@ public:
 				float parentW = parentRect.right - parentRect.left;
 				float parentH = parentRect.bottom - parentRect.top;
 
-				// ƒAƒ“ƒJ[Šî€ˆÊ’u
+				// ã‚¢ãƒ³ã‚«ãƒ¼åŸºæº–ä½ç½®
 				float anchorX = parentRect.left + (parentW * (t.anchorMin.x + t.anchorMax.x) * 0.5f);
 				float anchorY = parentRect.top + (parentH * (t.anchorMin.y + t.anchorMax.y) * 0.5f);
 
-				// ’†SÀ•W
+				// ä¸­å¿ƒåº§æ¨™
 				float posX = anchorX + t.position.x;
 				float posY = anchorY + t.position.y;
 
-				// ƒTƒCƒY (ŠÈˆÕ”Å)
+				// ã‚µã‚¤ã‚º (ç°¡æ˜“ç‰ˆ)
 				float width = t.size.x;
 				float height = t.size.y;
 
-				// ‹éŒ`ŒvZ (¶ã)
+				// çŸ©å½¢è¨ˆç®— (å·¦ä¸Š)
 				float left = posX - (width * t.pivot.x);
 				float top = posY - (height * t.pivot.y);
 
-				// ŒvZŒ‹‰Ê‚ğ•Û‘¶
+				// è¨ˆç®—çµæœã‚’ä¿å­˜
 				t.calculatedRect = { left, top, left + width, top + height };
 
-				// s—ñŒvZ (‰ñ“]EƒXƒP[ƒ‹)
+				// è¡Œåˆ—è¨ˆç®— (å›è»¢ãƒ»ã‚¹ã‚±ãƒ¼ãƒ«)
 				D2D1_POINT_2F centerPoint = { left + (width * t.pivot.x), top + (height * t.pivot.y) };
 
 				D2D1_MATRIX_3X2_F localMat =
 					D2D1::Matrix3x2F::Scale(t.scale.x, t.scale.y, centerPoint) *
-					D2D1::Matrix3x2F::Rotation(t.rotation.z, centerPoint); // Z²‰ñ“]
+					D2D1::Matrix3x2F::Rotation(t.rotation.z, centerPoint); // Zè»¸å›è»¢
 
-				// es—ñ‚Æ‡¬
+				// è¦ªè¡Œåˆ—ã¨åˆæˆ
 				t.worldMatrix = localMat * parentMat;
 
-				// q‚ÖÄ‹A
+				// å­ã¸å†å¸°
 				if (registry.has<Relationship>(entity)) {
 					for (Entity child : registry.get<Relationship>(entity).children) {
 						
@@ -101,21 +101,21 @@ public:
 				}
 			};
 
-		// 3. ƒ‹[ƒg—v‘fiCanvas ‚Ü‚½‚Í e‚È‚µTransform2Dj‚©‚çŒvZŠJn
+		// 3. ãƒ«ãƒ¼ãƒˆè¦ç´ ï¼ˆCanvas ã¾ãŸã¯ è¦ªãªã—Transform2Dï¼‰ã‹ã‚‰è¨ˆç®—é–‹å§‹
 		D2D1_RECT_F rootRect = D2D1::RectF(0, 0, screenW, screenH);
 		D2D1_MATRIX_3X2_F identity = D2D1::IdentityMatrix();
 
-		// Canvas‚ğ‚ÂƒGƒ“ƒeƒBƒeƒB‚ª‚ ‚ê‚Î‚»‚ê‚ğ‹N“_‚É‚·‚é
+		// Canvasã‚’æŒã¤ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ãŒã‚ã‚Œã°ãã‚Œã‚’èµ·ç‚¹ã«ã™ã‚‹
 		bool canvasFound = false;
 		for (auto e : canvasView) {
 			updateNode(e, rootRect, identity);
 			canvasFound = true;
 		}
 
-		// Canvas‚ª‚È‚¢A‚Ü‚½‚ÍCanvasŠO‚Ìƒ‹[ƒg—v‘f‚àƒPƒA‚·‚éê‡
+		// CanvasãŒãªã„ã€ã¾ãŸã¯Canvaså¤–ã®ãƒ«ãƒ¼ãƒˆè¦ç´ ã‚‚ã‚±ã‚¢ã™ã‚‹å ´åˆ
 		if (!canvasFound) {
 			registry.view<Transform2D>().each([&](Entity e, Transform2D& t) {
-				// e‚ª‚¢‚È‚¢A‚©‚ÂCanvas‚à‚Á‚Ä‚¢‚È‚¢‚à‚Ì‚ğƒ‹[ƒg‚Æ‚İ‚È‚·
+				// è¦ªãŒã„ãªã„ã€ã‹ã¤Canvasã‚‚æŒã£ã¦ã„ãªã„ã‚‚ã®ã‚’ãƒ«ãƒ¼ãƒˆã¨ã¿ãªã™
 				bool isRoot = true;
 				if (registry.has<Relationship>(e)) {
 					Entity p = registry.get<Relationship>(e).parent;

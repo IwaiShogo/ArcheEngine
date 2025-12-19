@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	RenderTarget.cpp
  * @brief	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/29	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/29	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Core/RenderTarget.h"
 
@@ -31,12 +31,12 @@ void RenderTarget::Resize(ID3D11Device* device, int width, int height) {
 	m_width = width;
 	m_height = height;
 
-	// ŒÃ‚¢ƒŠƒ\[ƒX‚ğ‰ğ•ú
+	// å¤ã„ãƒªã‚½ãƒ¼ã‚¹ã‚’è§£æ”¾
 	m_texture.Reset();
 	m_rtv.Reset();
 	m_srv.Reset();
 
-	// 1. ƒeƒNƒXƒ`ƒƒì¬
+	// 1. ãƒ†ã‚¯ã‚¹ãƒãƒ£ä½œæˆ
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = width;
 	desc.Height = height;
@@ -49,17 +49,17 @@ void RenderTarget::Resize(ID3D11Device* device, int width, int height) {
 
 	device->CreateTexture2D(&desc, nullptr, &m_texture);
 
-	// 2. RTVì¬
+	// 2. RTVä½œæˆ
 	device->CreateRenderTargetView(m_texture.Get(), nullptr, &m_rtv);
 
-	// 3. SRVì¬ (ImGui—p)
+	// 3. SRVä½œæˆ (ImGuiç”¨)
 	device->CreateShaderResourceView(m_texture.Get(), nullptr, &m_srv);
 }
 
 void RenderTarget::Activate(ID3D11DeviceContext* context, ID3D11DepthStencilView* depthStencil) {
-	// ‚±‚ÌƒeƒNƒXƒ`ƒƒ‚ğ•`‰ææ‚Éİ’è
+	// ã“ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’æç”»å…ˆã«è¨­å®š
 	ID3D11RenderTargetView* rtvList[] = { m_rtv.Get() };
-	context->OMSetRenderTargets(1, rtvList, depthStencil); // [“xƒoƒbƒtƒ@‚Í‹¤—L‚Ü‚½‚Í•Ê“r—pˆÓ
+	context->OMSetRenderTargets(1, rtvList, depthStencil); // æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã¯å…±æœ‰ã¾ãŸã¯åˆ¥é€”ç”¨æ„
 
 	D3D11_VIEWPORT vp = {};
 	vp.Width = (float)m_width;

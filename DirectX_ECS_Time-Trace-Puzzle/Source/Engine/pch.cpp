@@ -1,4 +1,4 @@
-#include "Engine/pch.h"
+﻿#include "Engine/pch.h"
 
-// ���̃t�@�C���ɂ͉��������܂���B
-// Visual Studio�̐ݒ�Łu�v���R���p�C���ς݃w�b�_�[���쐬(/Yc)�v�Ɏw��B
+// このファイルには何も書きません。
+// Visual Studioの設定で「プリコンパイル済みヘッダーを作成(/Yc)」に指定。

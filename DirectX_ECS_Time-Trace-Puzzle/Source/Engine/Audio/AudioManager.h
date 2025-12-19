@@ -1,28 +1,28 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	AudioManager.h
- * @brief	ƒI[ƒfƒBƒIƒ}ƒl[ƒWƒƒ[
+ * @brief	ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
  * 
  * @details	
- * XAudio2ƒGƒ“ƒWƒ“‚Ì‰Šú‰»‚ÆuMasteringVoiceiƒXƒs[ƒJ[jvA
- * uSubmixVoiceiBGM/SE‚²‚Æ‚Ìƒ~ƒLƒT[jv‚ğŠÇ—‚µ‚Ü‚·B
+ * XAudio2ã‚¨ãƒ³ã‚¸ãƒ³ã®åˆæœŸåŒ–ã¨ã€ŒMasteringVoiceï¼ˆã‚¹ãƒ”ãƒ¼ã‚«ãƒ¼ï¼‰ã€ã€
+ * ã€ŒSubmixVoiceï¼ˆBGM/SEã”ã¨ã®ãƒŸã‚­ã‚µãƒ¼ï¼‰ã€ã‚’ç®¡ç†ã—ã¾ã™ã€‚
  * 
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___AUDIO_MANAGER_H___
 #define ___AUDIO_MANAGER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Audio/Sound.h"
 #include "Engine/Core/StringId.h"
@@ -31,12 +31,12 @@ struct SoundEvent
 {
 	StringId key;
 	XMFLOAT3 position;
-	float time;	// c‚è•\¦ŠÔ
+	float time;	// æ®‹ã‚Šè¡¨ç¤ºæ™‚é–“
 };
 
 /**
  * @class	AudioManager
- * @brief	ƒI[ƒfƒBƒIƒ}ƒl[ƒWƒƒ[
+ * @brief	ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
  */
 class AudioManager
 {
@@ -48,20 +48,20 @@ public:
 	}
 
 	void Initialize();
-	void Update(); // –ˆƒtƒŒ[ƒ€ŒÄ‚ÔiÄ¶I—¹‚µ‚½ƒ{ƒCƒX‚Ì‘|œ‚È‚Çj
+	void Update(); // æ¯ãƒ•ãƒ¬ãƒ¼ãƒ å‘¼ã¶ï¼ˆå†ç”Ÿçµ‚äº†ã—ãŸãƒœã‚¤ã‚¹ã®æƒé™¤ãªã©ï¼‰
 	void Finalize();
 
-	// --- Ä¶‹@”\ ---
+	// --- å†ç”Ÿæ©Ÿèƒ½ ---
 
-	// SEÄ¶ (Fire and Forget: –Â‚ç‚µ‚Á‚Ï‚È‚µ)
+	// SEå†ç”Ÿ (Fire and Forget: é³´ã‚‰ã—ã£ã±ãªã—)
 	void PlaySE(StringId key, float volume = 1.0f, float pitch = 0.0f);
 	void Play3DSE(StringId key, const XMFLOAT3& emitterPos, const XMFLOAT3& listenerPos, float range, float volume);
 
-	// BGMÄ¶ (ƒ‹[ƒvÄ¶ABGM‚Í“¯‚É1‚Â‚¾‚¯)
+	// BGMå†ç”Ÿ (ãƒ«ãƒ¼ãƒ—å†ç”Ÿã€BGMã¯åŒæ™‚ã«1ã¤ã ã‘)
 	void PlayBGM(StringId key, float volume = 1.0f, bool loop = true);
 	void StopBGM(float fadeOutSeconds = 0.0f);
 
-	// --- ‘S‘Ìİ’è ---
+	// --- å…¨ä½“è¨­å®š ---
 	void SetMasterVolume(float volume);
 	void SetSEVolume(float volume);
 	void SetBGMVolume(float volume);
@@ -77,26 +77,26 @@ private:
 	ComPtr<IXAudio2> m_xAudio2;
 	IXAudio2MasteringVoice* m_masterVoice = nullptr;
 
-	// ƒTƒuƒ~ƒbƒNƒXiƒJƒeƒSƒŠ‚²‚Æ‚Ì‰¹—Ê’²®—pj
+	// ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ï¼ˆã‚«ãƒ†ã‚´ãƒªã”ã¨ã®éŸ³é‡èª¿æ•´ç”¨ï¼‰
 	IXAudio2SubmixVoice* m_seSubmix = nullptr;
 	IXAudio2SubmixVoice* m_bgmSubmix = nullptr;
 
-	// Œ»İÄ¶’†‚ÌBGM
+	// ç¾åœ¨å†ç”Ÿä¸­ã®BGM
 	IXAudio2SourceVoice* m_currentBgmVoice = nullptr;
 
-	// Ä¶’†‚ÌSEƒŠƒXƒg (I‚í‚Á‚½‚ç‰ğ•ú‚·‚é‚½‚ß•Û)
+	// å†ç”Ÿä¸­ã®SEãƒªã‚¹ãƒˆ (çµ‚ã‚ã£ãŸã‚‰è§£æ”¾ã™ã‚‹ãŸã‚ä¿æŒ)
 	struct VoiceData {
 		IXAudio2SourceVoice* voice;
 		bool isLoop;
 	};
 	std::vector<VoiceData> m_seVoices;
 
-	// ‰¹ºŠÇ——p•Ï”
+	// éŸ³å£°ç®¡ç†ç”¨å¤‰æ•°
 	float m_masterVolume = 1.0f;
 	float m_seVolume = 1.0f;
 	float m_bgmVolume = 1.0f;
 
-	std::vector<SoundEvent> m_soundEvents;	// Ä¶—š—ğ
+	std::vector<SoundEvent> m_soundEvents;	// å†ç”Ÿå±¥æ­´
 };
 
 #endif // !___AUDIO_MANAGER_H___

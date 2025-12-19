@@ -1,5 +1,5 @@
-/*****************************************************************//**
- * @file	ƒwƒbƒ_[.h
+ï»¿/*****************************************************************//**
+ * @file	ãƒ˜ãƒƒãƒ€ãƒ¼.h
  * @brief	
  * 
  * @details	
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___GAME_COMMANDS_H___
 #define ___GAME_COMMANDS_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/Scene/SceneManager.h"
 #include "Engine/Core/Logger.h"
 #include "Engine/ECS/ECS.h"
@@ -30,8 +30,8 @@ namespace GameCommands
 {
 	void RegisterAll(World& world, Context& ctx)
 	{
-		// --- ƒRƒ}ƒ“ƒh“o˜^ ---
-		// fps [value]: FPS§ŒÀ•ÏX
+		// --- ã‚³ãƒãƒ³ãƒ‰ç™»éŒ² ---
+		// fps [value]: FPSåˆ¶é™å¤‰æ›´
 		Logger::RegisterCommand("fps", [](auto args) {
 			if (args.empty()) return;
 			int fps = std::stoi(args[0]);
@@ -39,10 +39,10 @@ namespace GameCommands
 			Logger::Log("FPS limit set to " + std::to_string(fps));
 			});
 
-		// debug [grid/axis/collider] [0/1]: •\¦Ø‘Ö
-		// ¦ m_appContext ‚Ö‚ÌƒAƒNƒZƒX‚ª•K—v‚È‚Ì‚ÅAƒ‰ƒ€ƒ_®‚ÅƒLƒƒƒvƒ`ƒƒ‚·‚é‚©A
-		//	 ApplicationƒCƒ“ƒXƒ^ƒ“ƒXŒo—R‚ÅƒAƒNƒZƒX‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
-		//	 ‚±‚±‚Å‚ÍŠÈˆÕ“I‚É static ‚Èƒ|ƒCƒ“ƒ^‚ğ—pˆÓ‚·‚é‚©Am_sceneManagerŒo—R‚Åæ“¾‚µ‚Ü‚·B
+		// debug [grid/axis/collider] [0/1]: è¡¨ç¤ºåˆ‡æ›¿
+		// â€» m_appContext ã¸ã®ã‚¢ã‚¯ã‚»ã‚¹ãŒå¿…è¦ãªã®ã§ã€ãƒ©ãƒ ãƒ€å¼ã§ã‚­ãƒ£ãƒ—ãƒãƒ£ã™ã‚‹ã‹ã€
+		//	 Applicationã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹çµŒç”±ã§ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚
+		//	 ã“ã“ã§ã¯ç°¡æ˜“çš„ã« static ãªãƒã‚¤ãƒ³ã‚¿ã‚’ç”¨æ„ã™ã‚‹ã‹ã€m_sceneManagerçµŒç”±ã§å–å¾—ã—ã¾ã™ã€‚
 		Logger::RegisterCommand("debug", [&](auto args) {
 			if (args.size() < 2) { Logger::LogWarning("Usage: debug [grid/axis/col] [0/1]"); return; }
 
@@ -55,7 +55,7 @@ namespace GameCommands
 			Logger::Log("Debug setting updated.");
 			});
 
-		// scene [title/game]: ƒV[ƒ“‘JˆÚ
+		// scene [title/game]: ã‚·ãƒ¼ãƒ³é·ç§»
 		Logger::RegisterCommand("scene", [&](auto args) {
 			if (args.empty()) return;
 			if (args[0] == "title")		SceneManager::Instance().ChangeScene("Title");
@@ -63,10 +63,10 @@ namespace GameCommands
 			Logger::Log("Switching scene...");
 			});
 
-		// wireframe [on/off]: ƒƒCƒ„[ƒtƒŒ[ƒ€•\¦‚ÌØ‚è‘Ö‚¦
+		// wireframe [on/off]: ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ è¡¨ç¤ºã®åˆ‡ã‚Šæ›¿ãˆ
 		Logger::RegisterCommand("wireframe", [&](auto args) {
 			if (args.empty()) {
-				// ˆø”‚È‚µ‚È‚çƒgƒOƒ‹
+				// å¼•æ•°ãªã—ãªã‚‰ãƒˆã‚°ãƒ«
 				ctx.debug.wireframeMode = !ctx.debug.wireframeMode;
 			}
 			else {
@@ -75,26 +75,26 @@ namespace GameCommands
 			Logger::Log("Wireframe: " + std::string(ctx.debug.wireframeMode ? "ON" : "OFF"));
 			});
 
-		// quit: ƒQ[ƒ€I—¹
+		// quit: ã‚²ãƒ¼ãƒ çµ‚äº†
 		Logger::RegisterCommand("quit", [](auto args) {
 			PostQuitMessage(0);
 			});
 
-		// play [sound_key]: ƒTƒEƒ“ƒhÄ¶ƒeƒXƒg
+		// play [sound_key]: ã‚µã‚¦ãƒ³ãƒ‰å†ç”Ÿãƒ†ã‚¹ãƒˆ
 		Logger::RegisterCommand("play", [](auto args) {
 			if (args.empty()) { Logger::LogWarning("Usage: play [sound_key]"); return; }
 			AudioManager::Instance().PlaySE(args[0]);
 			Logger::Log("Playing sound: " + args[0]);
 			});
 
-		// bgm [sound_key]: BGM•ÏX
+		// bgm [sound_key]: BGMå¤‰æ›´
 		Logger::RegisterCommand("bgm", [](auto args) {
 			if (args.empty()) { Logger::LogWarning("Usage: bgm [sound_key]"); return; }
 			AudioManager::Instance().PlayBGM(args[0]);
 			Logger::Log("Changed BGM: " + args[0]);
 			});
 
-		// tp [x] [y] [z]: ƒvƒŒƒCƒ„[‚ğƒeƒŒƒ|[ƒg
+		// tp [x] [y] [z]: ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ãƒ†ãƒ¬ãƒãƒ¼ãƒˆ
 		Logger::RegisterCommand("tp", [&world](std::vector<std::string> args) {
 			if (args.size() < 3) { Logger::LogWarning("Usage: tp [x] [y] [z]"); return; }
 
@@ -102,12 +102,12 @@ namespace GameCommands
 			float y = std::stof(args[1]);
 			float z = std::stof(args[2]);
 
-			// Playerƒ^ƒO‚ğ‚ÂEntity‚ğ’T‚µ‚ÄˆÚ“®
+			// Playerã‚¿ã‚°ã‚’æŒã¤Entityã‚’æ¢ã—ã¦ç§»å‹•
 			bool found = false;
 			world.getRegistry().view<Tag, Transform>().each([&](Entity e, Tag& tag, Transform& t) {
 				if (tag.name == "Player") {
 					t.position = { x, y, z };
-					// •¨—‹““®‚ğƒŠƒZƒbƒgi—‰º‘¬“x‚È‚Ç‚ğ0‚É‚·‚éj
+					// ç‰©ç†æŒ™å‹•ã‚’ãƒªã‚»ãƒƒãƒˆï¼ˆè½ä¸‹é€Ÿåº¦ãªã©ã‚’0ã«ã™ã‚‹ï¼‰
 					if (world.getRegistry().has<Rigidbody>(e)) {
 						world.getRegistry().get<Rigidbody>(e).velocity = { 0, 0, 0 };
 					}
@@ -119,12 +119,12 @@ namespace GameCommands
 			else Logger::LogWarning("Player not found.");
 			});
 
-		// list: Œ»İ‚Ì‘SƒGƒ“ƒeƒBƒeƒB‚ğ•\¦
+		// list: ç¾åœ¨ã®å…¨ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’è¡¨ç¤º
 		Logger::RegisterCommand("list", [&world](auto args) {
 			Logger::Log("--- Entity List ---");
 			world.getRegistry().view<Tag>().each([&](Entity e, Tag& tag) {
 				std::string msg = "ID:" + std::to_string(e) + " [" + tag.name.c_str() + "]";
-				// À•W‚à•\¦‚µ‚Ä‚İ‚é
+				// åº§æ¨™ã‚‚è¡¨ç¤ºã—ã¦ã¿ã‚‹
 				if (world.getRegistry().has<Transform>(e)) {
 					auto& t = world.getRegistry().get<Transform>(e);
 					msg += " Pos(" + std::to_string((int)t.position.x) + "," +
@@ -136,20 +136,20 @@ namespace GameCommands
 			Logger::Log("-------------------");
 			});
 
-		// kill [id] / kill all: ƒGƒ“ƒeƒBƒeƒB‚ğíœ
+		// kill [id] / kill all: ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’å‰Šé™¤
 		Logger::RegisterCommand("kill", [&world](auto args) {
 			if (args.empty()) return;
 
 			if (args[0] == "all") {
-				// ‘SíœiŠëŒ¯‚Å‚·‚ªƒfƒoƒbƒO—p‚Æ‚µ‚Äj
-				// ¦ƒ‹[ƒv’†‚Ìíœ‚ÍŠëŒ¯‚È‚Ì‚ÅIDƒŠƒXƒg‚ğì‚Á‚Ä‚©‚çÁ‚·
+				// å…¨å‰Šé™¤ï¼ˆå±é™ºã§ã™ãŒãƒ‡ãƒãƒƒã‚°ç”¨ã¨ã—ã¦ï¼‰
+				// â€»ãƒ«ãƒ¼ãƒ—ä¸­ã®å‰Šé™¤ã¯å±é™ºãªã®ã§IDãƒªã‚¹ãƒˆã‚’ä½œã£ã¦ã‹ã‚‰æ¶ˆã™
 				std::vector<Entity> ids;
 				world.getRegistry().view<Tag>().each([&](Entity e, Tag& t) { ids.push_back(e); });
 				for (auto id : ids) world.getRegistry().destroy(id);
 				Logger::Log("Killed all entities.");
 			}
 			else {
-				// IDw’èíœ
+				// IDæŒ‡å®šå‰Šé™¤
 				Entity id = (Entity)std::stoi(args[0]);
 				if (world.getRegistry().has<Tag>(id)) {
 					world.getRegistry().destroy(id);
@@ -161,12 +161,12 @@ namespace GameCommands
 			}
 			});
 
-		// spawn [enemy/cube]: ƒfƒoƒbƒO¶¬
+		// spawn [enemy/cube]: ãƒ‡ãƒãƒƒã‚°ç”Ÿæˆ
 		Logger::RegisterCommand("spawn", [&world](auto args) {
 			if (args.empty()) return;
 
-			XMFLOAT3 pos = { 0, 5, 0 }; // “ªã‚ÉƒXƒ|[ƒ“
-			// ƒvƒŒƒCƒ„[‚ª‚¢‚ê‚Î‚»‚Ì‹ß‚­‚É
+			XMFLOAT3 pos = { 0, 5, 0 }; // é ­ä¸Šã«ã‚¹ãƒãƒ¼ãƒ³
+			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒã„ã‚Œã°ãã®è¿‘ãã«
 			world.getRegistry().view<Tag, Transform>().each([&](auto, Tag& t, Transform& tr) {
 				if (t.name == "Player") pos = tr.position;
 				});
@@ -177,7 +177,7 @@ namespace GameCommands
 					.add<Tag>("Enemy")
 					.add<Transform>(pos)
 					.add<Collider>()
-					.add<MeshComponent>("hero"); // ‰¼ƒ‚ƒfƒ‹
+					.add<MeshComponent>("hero"); // ä»®ãƒ¢ãƒ‡ãƒ«
 				Logger::Log("Spawned Enemy");
 			}
 			else if (args[0] == "sound") {

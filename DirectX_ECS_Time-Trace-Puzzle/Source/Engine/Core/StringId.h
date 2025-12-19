@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	StringId.h
- * @brief	•¶š—ñ‚ğƒRƒ“ƒpƒCƒ‹i‚Ü‚½‚ÍÀsj‚É32bit/64bit®”‚É•ÏŠ·‚·‚éd‘g‚İ
+ * @brief	æ–‡å­—åˆ—ã‚’ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«æ™‚ï¼ˆã¾ãŸã¯å®Ÿè¡Œæ™‚ï¼‰ã«32bit/64bitæ•´æ•°ã«å¤‰æ›ã™ã‚‹ä»•çµ„ã¿
  * 
  * @details	
  * 
@@ -13,21 +13,21 @@
 #ifndef ___STRING_ID_H___
 #define ___STRING_ID_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 
 /**
  * @class	StringId
- * @brief	•¶š—ñ‚ğƒnƒbƒVƒ…‰»‚µ‚Ä•Û‚·‚éƒNƒ‰ƒXi‚‘¬”äŠr—pj
+ * @brief	æ–‡å­—åˆ—ã‚’ãƒãƒƒã‚·ãƒ¥åŒ–ã—ã¦ä¿æŒã™ã‚‹ã‚¯ãƒ©ã‚¹ï¼ˆé«˜é€Ÿæ¯”è¼ƒç”¨ï¼‰
  */
 class StringId
 {
 public:
 	using ValueType = uint32_t;
 
-	// --- ƒRƒ“ƒXƒgƒ‰ƒNƒ^ ---
+	// --- ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ ---
 
-	// ƒfƒtƒHƒ‹ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	StringId() : m_hash(0)
 	{
 #ifdef _DEBUG
@@ -35,18 +35,18 @@ public:
 #endif // _DEBUG
 	}
 
-	// •¶š—ñ‚©‚ç¶¬
+	// æ–‡å­—åˆ—ã‹ã‚‰ç”Ÿæˆ
 	StringId(const char* str) : m_hash(Hash(str))
 	{
 #ifdef _DEBUG
-		m_debugString = str;	// ƒfƒoƒbƒO‚ÍŒ³‚Ì•¶š—ñ‚à•Û
+		m_debugString = str;	// ãƒ‡ãƒãƒƒã‚°æ™‚ã¯å…ƒã®æ–‡å­—åˆ—ã‚‚ä¿æŒ
 #endif // _DEBUG
 	}
 
-	// std::string‚©‚ç¶¬
+	// std::stringã‹ã‚‰ç”Ÿæˆ
 	StringId(const std::string& str) : StringId(str.c_str()) {}
 
-	// ”’l‚©‚ç’¼Úì¬iƒVƒŠƒAƒ‰ƒCƒY•œŒ³—pj
+	// æ•°å€¤ã‹ã‚‰ç›´æ¥ä½œæˆï¼ˆã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚ºå¾©å…ƒç”¨ï¼‰
 	explicit StringId(ValueType hash) : m_hash(hash)
 	{
 #ifdef _DEBUG
@@ -54,25 +54,25 @@ public:
 #endif // _DEBUG
 	}
 
-	// --- ‰‰ZqƒI[ƒo[ƒ[ƒh ---
+	// --- æ¼”ç®—å­ã‚ªãƒ¼ãƒãƒ¼ãƒ­ãƒ¼ãƒ‰ ---
 	bool operator==(const StringId& other) const { return m_hash == other.m_hash; }
 	bool operator!=(const StringId& other) const { return m_hash != other.m_hash; }
 	bool operator<(const StringId& other) const { return m_hash < other.m_hash; }
 
-	// --- ƒAƒNƒZƒT ---
+	// --- ã‚¢ã‚¯ã‚»ã‚µ ---
 	ValueType GetHash() const { return m_hash; }
 	const char* c_str() const
 	{
 #ifdef _DEBUG
 		return m_debugString.c_str();
 #else
-		return "";	// Release‚Å‚Í•¶š—ñ‚ğ‚½‚È‚¢
+		return "";	// Releaseã§ã¯æ–‡å­—åˆ—ã‚’æŒãŸãªã„
 #endif
 
 	}
 
 private:
-	// CRC32ƒnƒbƒVƒ…ŠÖ”
+	// CRC32ãƒãƒƒã‚·ãƒ¥é–¢æ•°
 	static constexpr ValueType Hash(const char* str)
 	{
 		ValueType hash = 0xFFFFFFFF;
@@ -87,11 +87,11 @@ private:
 	ValueType m_hash;
 
 #ifdef _DEBUG
-	std::string m_debugString;	// ƒfƒoƒbƒO—p•¶š—ñ
+	std::string m_debugString;	// ãƒ‡ãƒãƒƒã‚°ç”¨æ–‡å­—åˆ—
 #endif // _DEBUG
 };
 
-// std::unordered_map‚ÌƒL[‚Æ‚µ‚Äg‚¤‚½‚ß‚ÌƒnƒbƒVƒ…’è‹`
+// std::unordered_mapã®ã‚­ãƒ¼ã¨ã—ã¦ä½¿ã†ãŸã‚ã®ãƒãƒƒã‚·ãƒ¥å®šç¾©
 namespace std
 {
 	template<>

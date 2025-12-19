@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	IScene.h
- * @brief	‘S‚Ä‚ÌƒV[ƒ“‚Ìe‚Æ‚È‚éƒCƒ“ƒ^[ƒtƒF[ƒX
+ * @brief	å…¨ã¦ã®ã‚·ãƒ¼ãƒ³ã®è¦ªã¨ãªã‚‹ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
  * 
  * @details	
  * 
@@ -8,50 +8,50 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___ISCENE_H___
 #define ___ISCENE_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/Context.h"
 
-// ===== ‘O•ûéŒ¾ =====
+// ===== å‰æ–¹å®£è¨€ =====
 class World;
 
 /**
  * @class	IScene
- * @brief	ƒV[ƒ“‚ÌŠî’êƒNƒ‰ƒX
+ * @brief	ã‚·ãƒ¼ãƒ³ã®åŸºåº•ã‚¯ãƒ©ã‚¹
  */
 class IScene
 {
 public:
 	virtual ~IScene() = default;
 
-	// @brief	‰Šú‰»iƒŠƒ\[ƒX“Ç‚İ‚İ“™j
+	// @brief	åˆæœŸåŒ–ï¼ˆãƒªã‚½ãƒ¼ã‚¹èª­ã¿è¾¼ã¿ç­‰ï¼‰
 	virtual void Initialize() {}
 
-	// @brief	I—¹ˆ—iƒŠƒ\[ƒX‰ğ•ú“™j
+	// @brief	çµ‚äº†å‡¦ç†ï¼ˆãƒªã‚½ãƒ¼ã‚¹è§£æ”¾ç­‰ï¼‰
 	virtual void Finalize() {}
 
-	// @brief	XV
+	// @brief	æ›´æ–°
 	virtual void Update() {}
 
-	// @brief	•`‰æ
+	// @brief	æç”»
 	virtual void Render() {}
 
-	// @brief	ECSƒ[ƒ‹ƒh‚Ìæ“¾
+	// @brief	ECSãƒ¯ãƒ¼ãƒ«ãƒ‰ã®å–å¾—
 	virtual World& GetWorld() = 0;
 
-	// @brief	Contextİ’èiƒGƒfƒBƒ^˜AŒg—pj
+	// @brief	Contextè¨­å®šï¼ˆã‚¨ãƒ‡ã‚£ã‚¿é€£æºç”¨ï¼‰
 	virtual void Setup(Context* context) { m_context = context; }
 
 protected:

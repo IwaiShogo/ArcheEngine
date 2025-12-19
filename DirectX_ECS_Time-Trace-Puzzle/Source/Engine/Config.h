@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Config.h
  * @brief	
  * 
@@ -15,18 +15,18 @@
 
 namespace Config
 {
-	// ‰æ–ÊƒTƒCƒY
+	// ç”»é¢ã‚µã‚¤ã‚º
 	static const int SCREEN_WIDTH = 1280;
 	static const int SCREEN_HEIGHT = 720;
 
-	// ƒtƒŒ[ƒ€ƒŒ[ƒg
-	static const unsigned int FRAME_RATE = 60;	// –Ú•WFPSiƒŠƒtƒŒƒbƒVƒ…ƒŒ[ƒg‚Ì•ªqj
+	// ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆ
+	static const unsigned int FRAME_RATE = 60;	// ç›®æ¨™FPSï¼ˆãƒªãƒ•ãƒ¬ãƒƒã‚·ãƒ¥ãƒ¬ãƒ¼ãƒˆã®åˆ†å­ï¼‰
 
-	// ƒ^ƒCƒgƒ‹
+	// ã‚¿ã‚¤ãƒˆãƒ«
 	static const char* WINDOW_TITLE = "Time Trace Puzzle (DX11 + ECS)";
 
 	// VSync
-	static const bool VSYNC_ENABLED = false;		// ‚’¼“¯Šúitrue: 60fpsŒÅ’èAfalse: –³§ŒÀj
+	static const bool VSYNC_ENABLED = false;		// å‚ç›´åŒæœŸï¼ˆtrue: 60fpså›ºå®šã€false: ç„¡åˆ¶é™ï¼‰
 }
 
 #endif // !___CONFIG_H___

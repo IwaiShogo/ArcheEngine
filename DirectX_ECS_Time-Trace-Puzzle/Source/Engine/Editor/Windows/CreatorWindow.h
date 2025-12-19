@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	CreatorWindow.h
- * @brief	ƒGƒ“ƒeƒBƒeƒBì¬ƒEƒBƒ“ƒhƒE
+ * @brief	ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ä½œæˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___CREATOR_WINDOW_H___
 #define ___CREATOR_WINDOW_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Editor/Tools/ThumbnailGenerator.h"
@@ -29,22 +29,22 @@
 class CreatorWindow : public EditorWindow {
 public:
 	void Draw(World& world, Entity& selected, Context& ctx) override {
-		ImGui::Begin("Asset Browser"); // –¼‘O•ÏX
+		ImGui::Begin("Asset Browser"); // åå‰å¤‰æ›´
 
 		Registry& reg = world.getRegistry();
 
-		// ƒAƒCƒRƒ“‰æ‘œ‚Ìæ“¾ (‚È‚¯‚ê‚Î”’ƒeƒNƒXƒ`ƒƒ)
-		auto iconTex = ResourceManager::Instance().GetTexture("star"); // ¦—vƒ[ƒh
+		// ã‚¢ã‚¤ã‚³ãƒ³ç”»åƒã®å–å¾— (ãªã‘ã‚Œã°ç™½ãƒ†ã‚¯ã‚¹ãƒãƒ£)
+		auto iconTex = ResourceManager::Instance().GetTexture("star"); // â€»è¦ãƒ­ãƒ¼ãƒ‰
 		void* iconID = iconTex ? (void*)iconTex->srv.Get() : nullptr;
 
-		// 1. V‹Kì¬
+		// 1. æ–°è¦ä½œæˆ
 		if (ImGui::Button("Create Empty")) {
 			Entity e = world.create_entity().add<Tag>("New Entity").add<Transform>().id();
 			selected = e;
 		}
 		ImGui::Separator();
 
-		// 2. ƒvƒŒƒnƒuˆê—— (ƒOƒŠƒbƒh•\¦)
+		// 2. ãƒ—ãƒ¬ãƒãƒ–ä¸€è¦§ (ã‚°ãƒªãƒƒãƒ‰è¡¨ç¤º)
 		ImGui::Text("Prefabs:");
 
 		namespace fs = std::filesystem;
@@ -67,7 +67,7 @@ public:
 						std::string filename = entry.path().filename().string();
 						std::string id = "btn_" + filename;
 
-						// ƒTƒ€ƒlƒCƒ‹‚ğæ“¾
+						// ã‚µãƒ ãƒã‚¤ãƒ«ã‚’å–å¾—
 						void* thumbID = ThumbnailGenerator::Instance().GetThumbnailID(filename);
 
 						if (thumbID) {
@@ -84,7 +84,7 @@ public:
 							}
 						}
 
-						// ƒtƒ@ƒCƒ‹–¼ (’†‰›‘µ‚¦•—)
+						// ãƒ•ã‚¡ã‚¤ãƒ«å (ä¸­å¤®æƒãˆé¢¨)
 						//ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (cellSize - ImGui::CalcTextSize(filename.c_str()).x) * 0.5f);
 						ImGui::TextWrapped("%s", filename.c_str());
 					}

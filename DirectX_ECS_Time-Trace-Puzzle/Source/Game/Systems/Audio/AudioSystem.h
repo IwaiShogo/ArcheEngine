@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	AudioSystem.h
- * @brief	‰¹ºÄ¶
+ * @brief	éŸ³å£°å†ç”Ÿ
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___AUDIO_SYSTEM_H___
 #define ___AUDIO_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Audio/AudioManager.h"
@@ -37,7 +37,7 @@ public:
 
 	void Update(Registry& registry) override
 	{
-		// 1. ƒŠƒXƒi[‚ğ’T‚·
+		// 1. ãƒªã‚¹ãƒŠãƒ¼ã‚’æ¢ã™
 		XMFLOAT3 listenerPos = { 0, 0, 0 };
 		bool listenerFound = false;
 
@@ -45,23 +45,23 @@ public:
 			{
 				if (!listenerFound)
 				{
-					// Å‰‚Ì1l‚¾‚¯Ì—p
+					// æœ€åˆã®1äººã ã‘æ¡ç”¨
 					listenerPos = t.position;
 					listenerFound = true;
 				}
 			});
 
-		// •·‚­l‚ª‚¢‚È‚¢ê‡
+		// èãäººãŒã„ãªã„å ´åˆ
 		if (!listenerFound) return;
 
-		// 2. ‰¹Œ¹‚ÌXV
+		// 2. éŸ³æºã®æ›´æ–°
 		registry.view<AudioSource, Transform>().each([&](Entity e, AudioSource& source, Transform& t)
 			{
-				// --- Ä¶§ŒäƒƒWƒbƒN ---
+				// --- å†ç”Ÿåˆ¶å¾¡ãƒ­ã‚¸ãƒƒã‚¯ ---
 				if (source.playOnAwake && !source.isPlaying)
 				{
 					AudioManager::Instance().Play3DSE(source.soundKey, t.position, listenerPos, source.range, source.volume);
-					source.isPlaying = true;	// Ä¶Ï‚İƒtƒ‰ƒO‚Æ‚µ‚Äg‚¤
+					source.isPlaying = true;	// å†ç”Ÿæ¸ˆã¿ãƒ•ãƒ©ã‚°ã¨ã—ã¦ä½¿ã†
 				}
 			});
 	}

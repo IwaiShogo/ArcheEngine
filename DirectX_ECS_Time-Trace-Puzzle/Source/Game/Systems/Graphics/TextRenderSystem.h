@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	TextRenderSystem.h
  * @brief	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___TEXT_RENDER_SYSTEM_H___
 #define ___TEXT_RENDER_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Graphics/Text/TextRenderer.h"
 
@@ -30,28 +30,28 @@ class TextRenderSystem
 public:
 	TextRenderSystem(ID3D11Device* device, ID3D11DeviceContext* context)
 	{
-		// Renderer‚ÌÀ‘Ì‚ğì¬
+		// Rendererã®å®Ÿä½“ã‚’ä½œæˆ
 		m_renderer = std::make_unique<TextRenderer>(device, context);
-		m_context = context;	// RTVæ“¾—p‚É•Û
+		m_context = context;	// RTVå–å¾—ç”¨ã«ä¿æŒ
 	}
 
 	void Update(Registry& registry) override {}
 
 	void Render(Registry& registry, const Context& ctx) override
 	{
-		// 1. Œ»İİ’è‚³‚ê‚Ä‚¢‚é RTV ‚ğæ“¾‚·‚é
+		// 1. ç¾åœ¨è¨­å®šã•ã‚Œã¦ã„ã‚‹ RTV ã‚’å–å¾—ã™ã‚‹
 		ComPtr<ID3D11RenderTargetView> currentRTV;
 		ComPtr<ID3D11DepthStencilView> currentDSV;
 		m_context->OMGetRenderTargets(1, currentRTV.GetAddressOf(), currentDSV.GetAddressOf());
 
 		if (!currentRTV) return;
 
-		// 2. Œ»İ‚Ìƒrƒ…[ƒ|[ƒgi‰æ–ÊƒTƒCƒYj‚ğæ“¾‚·‚é
+		// 2. ç¾åœ¨ã®ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆï¼ˆç”»é¢ã‚µã‚¤ã‚ºï¼‰ã‚’å–å¾—ã™ã‚‹
 		UINT numViewports = 1;
 		D3D11_VIEWPORT vp;
 		m_context->RSGetViewports(&numViewports, &vp);
 
-		// æ“¾‚µ‚½î•ñ‚ğg‚Á‚Ä•`‰æ
+		// å–å¾—ã—ãŸæƒ…å ±ã‚’ä½¿ã£ã¦æç”»
 		m_renderer->Render(registry, currentRTV.Get(), vp.Width, vp.Height);
 	}
 

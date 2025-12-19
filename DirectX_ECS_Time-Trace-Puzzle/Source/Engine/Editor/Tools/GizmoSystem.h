@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	GizmoSystem.h
- * @brief	ƒMƒYƒ‚‚Ì•`‰æƒƒWƒbƒN
+ * @brief	ã‚®ã‚ºãƒ¢ã®æç”»ãƒ­ã‚¸ãƒƒã‚¯
  * 
  * @details	
  * 
@@ -8,13 +8,13 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___GIZMO_SYSTEM_H___
@@ -24,7 +24,7 @@
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Core/Context.h" // Config::SCREEN_WIDTH“™—p
+#include "Engine/Core/Context.h" // Config::SCREEN_WIDTHç­‰ç”¨
 #include "Engine/Config.h"
 
 class GizmoSystem
@@ -32,19 +32,19 @@ class GizmoSystem
 public:
 	static void Draw(Registry& reg, Entity& selected, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj, float x, float y, float width, float height)
 	{
-		// --- ƒMƒYƒ‚ˆ— ---
-		// ‘I‘ğ’†‚ÌEntity‚ª‚ ‚èATransform‚ğ‚Á‚Ä‚¢‚éê‡
+		// --- ã‚®ã‚ºãƒ¢å‡¦ç† ---
+		// é¸æŠä¸­ã®EntityãŒã‚ã‚Šã€Transformã‚’æŒã£ã¦ã„ã‚‹å ´åˆ
 		if (selected != NullEntity && reg.has<Transform>(selected))
 		{
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(x, y, width, height);
 
-			// s—ñ‚ğfloat”z—ñ‚É•ÏŠ· (TransposeŠÜ‚Ş)
+			// è¡Œåˆ—ã‚’floaté…åˆ—ã«å¤‰æ› (Transposeå«ã‚€)
 			float viewM[16], projM[16];
 			MatrixToFloat16(view, viewM);
 			MatrixToFloat16(proj, projM);
 
-			// ‘ÎÛ‚ÌTransform‚ğæ“¾
+			// å¯¾è±¡ã®Transformã‚’å–å¾—
 			Transform& t = reg.get<Transform>(selected);
 
 			// Transform -> Matrix
@@ -72,18 +72,18 @@ public:
 				LogMatrix("Proj Matrix", projM);
 				LogMatrix("World Matrix", worldM);
 
-				// ƒMƒYƒ‚‚Ì—LŒøó‘Ô‚àŠm”F
+				// ã‚®ã‚ºãƒ¢ã®æœ‰åŠ¹çŠ¶æ…‹ã‚‚ç¢ºèª
 				Logger::Log("Gizmo Enabled: " + std::string(ImGuizmo::IsOver() ? "Over" : "Not Over"));
 				Logger::Log("Gizmo Using: " + std::string(ImGuizmo::IsUsing() ? "Using" : "Not Using"));
 			}
 
-			// ‘€ìƒ‚[ƒh
+			// æ“ä½œãƒ¢ãƒ¼ãƒ‰
 			static ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 			if (Input::GetKeyDown('1')) mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 			if (Input::GetKeyDown('2')) mCurrentGizmoOperation = ImGuizmo::ROTATE;
 			if (Input::GetKeyDown('3')) mCurrentGizmoOperation = ImGuizmo::SCALE;
 
-			// ƒMƒYƒ‚•`‰æ‚Æ‘€ì”»’è
+			// ã‚®ã‚ºãƒ¢æç”»ã¨æ“ä½œåˆ¤å®š
 			if (ImGuizmo::Manipulate(viewM, projM, mCurrentGizmoOperation, ImGuizmo::WORLD, worldM)) {
 				Float16ToTransform(worldM, t);
 			}
@@ -92,12 +92,12 @@ public:
 	}
 
 private:
-	// ƒwƒ‹ƒp[: XMMATRIX -> float[16]
+	// ãƒ˜ãƒ«ãƒ‘ãƒ¼: XMMATRIX -> float[16]
 	static void MatrixToFloat16(const DirectX::XMMATRIX& m, float* out) {
 		DirectX::XMStoreFloat4x4((DirectX::XMFLOAT4X4*)out, m);
 	}
 
-	// ƒwƒ‹ƒp[: float[16] -> XMMATRIX, Decompose
+	// ãƒ˜ãƒ«ãƒ‘ãƒ¼: float[16] -> XMMATRIX, Decompose
 	static void Float16ToTransform(const float* in, Transform& t) {
 		DirectX::XMFLOAT4X4 m;
 		memcpy(&m, in, sizeof(float) * 16);
@@ -110,12 +110,12 @@ private:
 		DirectX::XMStoreFloat3(&t.position, trans);
 		DirectX::XMStoreFloat3(&t.scale, scale);
 
-		// ƒNƒH[ƒ^ƒjƒIƒ“‚©‚çƒIƒCƒ‰[Šp‚Ö‚Ì•ÏŠ·‚Í­‚µ•¡G‚Å‚·‚ªA
-		// ŠÈˆÕ“I‚ÉImGuizmo‚Ì‹@”\‚ğg‚Á‚Ä•ª‰ğ‚µ‚Ü‚·
+		// ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‹ã‚‰ã‚ªã‚¤ãƒ©ãƒ¼è§’ã¸ã®å¤‰æ›ã¯å°‘ã—è¤‡é›‘ã§ã™ãŒã€
+		// ç°¡æ˜“çš„ã«ImGuizmoã®æ©Ÿèƒ½ã‚’ä½¿ã£ã¦åˆ†è§£ã—ã¾ã™
 		float translation[3], rotation[3], scale_f[3];
 		ImGuizmo::DecomposeMatrixToComponents(in, translation, rotation, scale_f);
 
-		// ImGuizmo‚Í“x”–@(Degrees)‚Å•Ô‚·‚Ì‚ÅAƒ‰ƒWƒAƒ“‚É–ß‚·
+		// ImGuizmoã¯åº¦æ•°æ³•(Degrees)ã§è¿”ã™ã®ã§ã€ãƒ©ã‚¸ã‚¢ãƒ³ã«æˆ»ã™
 		t.rotation.x = DirectX::XMConvertToRadians(rotation[0]);
 		t.rotation.y = DirectX::XMConvertToRadians(rotation[1]);
 		t.rotation.z = DirectX::XMConvertToRadians(rotation[2]);

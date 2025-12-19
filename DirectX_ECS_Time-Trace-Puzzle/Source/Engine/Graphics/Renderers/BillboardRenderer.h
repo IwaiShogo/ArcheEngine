@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	BillboardRenderer.h
- * @brief	3D‹óŠÔ‚É2D•`‰æ‚ğ‚·‚é
+ * @brief	3Dç©ºé–“ã«2Dæç”»ã‚’ã™ã‚‹
  *
  * @details
  *
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  *
- * @date	2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  *
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  *
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___BILLBOARD_RENDERER_H___
 #define ___BILLBOARD_RENDERER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Core/Texture.h"
 
@@ -32,7 +32,7 @@ public:
 
 	void Begin(const XMMATRIX& view, const XMMATRIX& projection);
 
-	// ’†SÀ•WA•A‚‚³AF‚ğw’è‚µ‚Ä•`‰æ
+	// ä¸­å¿ƒåº§æ¨™ã€å¹…ã€é«˜ã•ã€è‰²ã‚’æŒ‡å®šã—ã¦æç”»
 	void Draw(Texture* texture, const XMFLOAT3& position, float width, float height, const XMFLOAT4& color = { 1,1,1,1 });
 
 private:
@@ -43,10 +43,10 @@ private:
 	ComPtr<ID3D11PixelShader> m_ps;
 	ComPtr<ID3D11InputLayout> m_inputLayout;
 	ComPtr<ID3D11Buffer> m_constantBuffer;
-	ComPtr<ID3D11Buffer> m_vertexBuffer; // lŠpŒ`‚Ì’¸“_—p
+	ComPtr<ID3D11Buffer> m_vertexBuffer; // å››è§’å½¢ã®é ‚ç‚¹ç”¨
 	ComPtr<ID3D11SamplerState> m_samplerState;
 	ComPtr<ID3D11RasterizerState> m_rsBillboard;
-	ComPtr<ID3D11BlendState> m_blendState; // ”¼“§–¾—p
+	ComPtr<ID3D11BlendState> m_blendState; // åŠé€æ˜ç”¨
 
 	struct ConstantBufferData
 	{

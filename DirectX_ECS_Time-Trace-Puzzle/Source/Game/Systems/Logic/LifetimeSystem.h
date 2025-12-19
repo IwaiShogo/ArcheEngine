@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	LifetimeSystem.h
- * @brief	ŠÔ‚ª—ˆ‚½‚çEntity‚ğíœ‚·‚éƒVƒXƒeƒ€
+ * @brief	æ™‚é–“ãŒæ¥ãŸã‚‰Entityã‚’å‰Šé™¤ã™ã‚‹ã‚·ã‚¹ãƒ†ãƒ 
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___LIFETIME_SYSTEM_H___
 #define ___LIFETIME_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Core/Time.h"
@@ -38,7 +38,7 @@ public:
 	{
 		float dt = Time::DeltaTime();
 
-		// íœƒŠƒXƒg
+		// å‰Šé™¤ãƒªã‚¹ãƒˆ
 		std::vector<Entity> toDestroy;
 
 		registry.view<Lifetime>().each([&](Entity e, Lifetime& life)
@@ -50,7 +50,7 @@ public:
 				}
 			});
 
-		// ‚Ü‚Æ‚ß‚Äíœ
+		// ã¾ã¨ã‚ã¦å‰Šé™¤
 		for (Entity e : toDestroy)
 		{
 			registry.destroy(e);

@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Input.cpp
- * @brief	“ü—Í‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+ * @brief	å…¥åŠ›ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,39 +8,39 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/24	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/24	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Time.h"
 
 void Input::Initialize()
 {
-	// •K—v‚È‰Šú‰»‚ª‚ ‚ê‚Î‹Lq
+	// å¿…è¦ãªåˆæœŸåŒ–ãŒã‚ã‚Œã°è¨˜è¿°
 	ZeroMemory(&s_state, sizeof(XINPUT_STATE));
 	ZeroMemory(&s_oldState, sizeof(XINPUT_STATE));
 	s_buttonDuration.fill(0.0f);
-	GetCursorPos(&s_prevMousePos);	//ƒ}ƒEƒXˆÊ’u‚Ì•Û‘¶
+	GetCursorPos(&s_prevMousePos);	//ãƒã‚¦ã‚¹ä½ç½®ã®ä¿å­˜
 }
 
 void Input::Update()
 {
-	// ƒL[ƒ{[ƒhó‘Ô‚ÌXV
+	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰çŠ¶æ…‹ã®æ›´æ–°
 	memcpy(s_oldKeyState, s_keyState, sizeof(s_keyState));
 	GetKeyboardState(s_keyState);
 
-	// 1. Œ»İ‚Ìó‘Ô‚ğ‰ß‹‚É•Û‘¶
+	// 1. ç¾åœ¨ã®çŠ¶æ…‹ã‚’éå»ã«ä¿å­˜
 	s_oldState = s_state;
 
-	// 2. V‚µ‚¢ó‘Ô‚ğæ“¾
+	// 2. æ–°ã—ã„çŠ¶æ…‹ã‚’å–å¾—
 	DWORD result = XInputGetState(0, &s_state);
 	s_isConnected = (result == ERROR_SUCCESS);
 	if (!s_isConnected)
@@ -48,7 +48,7 @@ void Input::Update()
 		ZeroMemory(&s_state, sizeof(XINPUT_STATE));
 	}
 
-	// 3. ƒŠƒs[ƒgƒ^ƒCƒ}[‚ÌXV
+	// 3. ãƒªãƒ”ãƒ¼ãƒˆã‚¿ã‚¤ãƒãƒ¼ã®æ›´æ–°
 	float dt = Time::DeltaTime();
 	for (int i = 0; i < (int)Button::MaxCount; ++i)
 	{
@@ -62,11 +62,11 @@ void Input::Update()
 		}
 	}
 
-	// ƒ}ƒEƒXˆ—
+	// ãƒã‚¦ã‚¹å‡¦ç†
 	POINT currentPos;
 	GetCursorPos(&currentPos);
 
-	// ·•ªŒvZ
+	// å·®åˆ†è¨ˆç®—
 	s_mouseDeltaX = static_cast<float>(currentPos.x - s_prevMousePos.x);
 	s_mouseDeltaY = static_cast<float>(currentPos.y - s_prevMousePos.y);
 
@@ -77,7 +77,7 @@ float Input::GetAxis(Axis axis)
 {
 	float value = 0.0f;
 
-	// 1. ƒL[ƒ{[ƒh“ü—Í
+	// 1. ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰å…¥åŠ›
 	if (axis == Axis::Horizontal)
 	{
 		if (GetKey('D') || GetKey(VK_RIGHT)) value += 1.0f;
@@ -89,13 +89,13 @@ float Input::GetAxis(Axis axis)
 		if (GetKey('S') || GetKey(VK_DOWN))  value -= 1.0f;
 	}
 
-	// 2. ƒRƒ“ƒgƒ[ƒ‰[“ü—Í
+	// 2. ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼å…¥åŠ›
 	if (s_isConnected)
 	{
 		float padValue = 0.0f;
 		float deadzone = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 
-		// ¶ƒXƒeƒBƒbƒN
+		// å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯
 		if (axis == Axis::Horizontal)
 		{
 			padValue = (float)s_state.Gamepad.sThumbLX;
@@ -105,7 +105,7 @@ float Input::GetAxis(Axis axis)
 			padValue = (float)s_state.Gamepad.sThumbLY;
 		}
 
-		// ‰EƒXƒeƒBƒbƒN
+		// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯
 		if (axis == Axis::RightHorizontal)
 		{
 			padValue = (float)s_state.Gamepad.sThumbRX;
@@ -115,9 +115,9 @@ float Input::GetAxis(Axis axis)
 			padValue = (float)s_state.Gamepad.sThumbRY;
 		}
 
-		// ƒfƒbƒhƒ][ƒ“ˆ—
+		// ãƒ‡ãƒƒãƒ‰ã‚¾ãƒ¼ãƒ³å‡¦ç†
 		float deadzoneR = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-		// ¶ƒXƒeƒBƒbƒN‚Æ‰EƒXƒeƒBƒbƒN‚Å•ªŠò
+		// å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã¨å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã§åˆ†å²
 		float currentDeadzone = (axis == Axis::RightHorizontal || axis == Axis::RightVertical) ? deadzoneR : XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 		if (std::abs(padValue) > currentDeadzone)
 		{
@@ -129,7 +129,7 @@ float Input::GetAxis(Axis axis)
 		}
 	}
 
-	// -1.0 ~ 1.0 ‚ÉƒNƒ‰ƒ“ƒv
+	// -1.0 ~ 1.0 ã«ã‚¯ãƒ©ãƒ³ãƒ—
 	if (value > 1.0f) value = 1.0f;
 	if (value < -1.0f) value = -1.0f;
 
@@ -163,42 +163,42 @@ bool Input::GetMouseLeftButton()
 
 bool Input::GetKeyDown(int keyCode)
 {
-	// ”z—ñ”ƒ‚¢QÆ–h~
+	// é…åˆ—è²·ã„å‚ç…§é˜²æ­¢
 	if (keyCode < 0 || keyCode >= 256) return false;
 
-	// ÅãˆÊƒrƒbƒg‚ª1‚È‚ç‰Ÿ‚³‚ê‚Ä‚¢‚é
+	// æœ€ä¸Šä½ãƒ“ãƒƒãƒˆãŒ1ãªã‚‰æŠ¼ã•ã‚Œã¦ã„ã‚‹
 	bool isDown = (s_keyState[keyCode] & 0x80) != 0;
 	bool wasDown = (s_oldKeyState[keyCode] & 0x80) != 0;
 
-	// ¡‰ñ‰Ÿ‚³‚ê‚Ä‚¢‚ÄA‘O‰ñ‰Ÿ‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Îtrue
+	// ä»Šå›æŠ¼ã•ã‚Œã¦ã„ã¦ã€å‰å›æŠ¼ã•ã‚Œã¦ã„ãªã‘ã‚Œã°true
 	return isDown && !wasDown;
 }
 
 // ----------------------------------------------------------------------
-// Šeí”»’è‚ÌÀ‘•
+// å„ç¨®åˆ¤å®šã®å®Ÿè£…
 // ----------------------------------------------------------------------
-// ‰Ÿ‚³‚ê‚Ä‚¢‚é‚©iPressj
+// æŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹ï¼ˆPressï¼‰
 bool Input::GetButton(Button button)
 {
-	// ƒRƒ“ƒgƒ[ƒ‰[
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼
 	if (s_isConnected)
 	{
 		if (s_state.Gamepad.wButtons & GetXInputButtonMask(button)) return true;
 	}
 
-	// ƒL[ƒ{[ƒh
+	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰
 	int key = GetKeyboardKey(button);
 	if (key != 0 && (GetAsyncKeyState(key) & 0x8000)) return true;
 
 	return false;
 }
 
-// ‰Ÿ‚µ‚½uŠÔiTriggerj
+// æŠ¼ã—ãŸç¬é–“ï¼ˆTriggerï¼‰
 bool Input::GetButtonDown(Button button)
 {
 	bool isDown = false;
 
-	// ƒRƒ“ƒgƒ[ƒ‰[: ¡‰ñON Š‚Â ‘O‰ñOFF
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼: ä»Šå›ON ä¸”ã¤ å‰å›OFF
 	if (s_isConnected)
 	{
 		int mask = GetXInputButtonMask(button);
@@ -208,10 +208,10 @@ bool Input::GetButtonDown(Button button)
 		}
 	}
 
-	// ƒL[ƒ{[ƒh: GetButton‚ªtrue ‚©‚Â ‘OƒtƒŒ[ƒ€‚ÌInput::Update“_‚Å‰Ÿ‚³‚ê‚Ä‚¢‚È‚©‚Á‚½‚©
+	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰: GetButtonãŒtrue ã‹ã¤ å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®Input::Updateæ™‚ç‚¹ã§æŠ¼ã•ã‚Œã¦ã„ãªã‹ã£ãŸã‹
 	if (!isDown)
 	{
-		// ƒL[ƒ{[ƒh‚ÌƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN
+		// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã®ã‚­ãƒ¼ãŒæŠ¼ã•ã‚Œã¦ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯
 		int key = GetKeyboardKey(button);
 		if (key != 0 && (GetAsyncKeyState(key) & 0x8000))
 		{
@@ -222,10 +222,10 @@ bool Input::GetButtonDown(Button button)
 	return isDown;
 }
 
-// —£‚µ‚½uŠÔiReleasej
+// é›¢ã—ãŸç¬é–“ï¼ˆReleaseï¼‰
 bool Input::GetButtonUp(Button button)
 {
-	// ƒRƒ“ƒgƒ[ƒ‰[: ¡‰ñOFF ‚©‚Â ‘O‰ñON
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼: ä»Šå›OFF ã‹ã¤ å‰å›ON
 	if (s_isConnected)
 	{
 		int mask = GetXInputButtonMask(button);
@@ -237,23 +237,23 @@ bool Input::GetButtonUp(Button button)
 	return false;
 }
 
-// ƒŠƒs[ƒg”»’èiRepeatj
+// ãƒªãƒ”ãƒ¼ãƒˆåˆ¤å®šï¼ˆRepeatï¼‰
 bool Input::GetButtonRepeat(Button button)
 {
-	// ‰Ÿ‚µ‚½uŠÔ‚È‚çtrue
+	// æŠ¼ã—ãŸç¬é–“ãªã‚‰true
 	if (GetButtonDown(button)) return true;
 
-	// ‰Ÿ‚µ‚Á‚Ï‚È‚µŠÔ
+	// æŠ¼ã—ã£ã±ãªã—æ™‚é–“
 	float t = s_buttonDuration[(int)button];
 
-	// ŠJnŠÔ‚ğ’´‚¦‚Ä‚¢‚é‚©
+	// é–‹å§‹æ™‚é–“ã‚’è¶…ãˆã¦ã„ã‚‹ã‹
 	if (t > REPEAT_START_TIME)
 	{
-		// Œ»İ‚ÌƒtƒŒ[ƒ€‚Åu‹æØ‚èv‚ğ‚Ü‚½‚¢‚¾‚©”»’è
+		// ç¾åœ¨ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§ã€ŒåŒºåˆ‡ã‚Šã€ã‚’ã¾ãŸã„ã ã‹åˆ¤å®š
 		float dt = Time::DeltaTime();
 		float prevT = t - dt;
 
-		// è—]imodj‚Å”»’è‚·‚éŠÈˆÕƒƒWƒbƒN
+		// å‰°ä½™ï¼ˆmodï¼‰ã§åˆ¤å®šã™ã‚‹ç°¡æ˜“ãƒ­ã‚¸ãƒƒã‚¯
 		float checkTime = t - REPEAT_START_TIME;
 		float prevCheckTime = prevT - REPEAT_START_TIME;
 
@@ -267,7 +267,7 @@ bool Input::GetButtonRepeat(Button button)
 }
 
 // ----------------------------------------------------------------------
-// ƒ}ƒbƒsƒ“ƒOƒwƒ‹ƒp[
+// ãƒãƒƒãƒ”ãƒ³ã‚°ãƒ˜ãƒ«ãƒ‘ãƒ¼
 // ----------------------------------------------------------------------
 int Input::GetXInputButtonMask(Button button)
 {

@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	TextRenderer.cpp
  * @brief	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/18	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/18	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Text/TextRenderer.h"
 #include "Engine/Components/Components.h"
@@ -38,65 +38,67 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 {
 	if (!rtv) return;
 
-	// ƒLƒƒƒbƒVƒ…‚ğƒNƒŠƒA
+	// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ã‚¯ãƒªã‚¢
 	m_d2dTargets.clear();
 
-	// 1. D2D RenderTarget‚Ìæ“¾
+	// 1. D2D RenderTargetã®å–å¾—
 	ID2D1RenderTarget* d2dRT = GetD2DRenderTarget(rtv);
 	if (!d2dRT) return;
 
-	// 2. •`‰æŠJn
+	// 2. æç”»é–‹å§‹
 	d2dRT->BeginDraw();
 
-	// Šî€‰ğ‘œ“x
+	// åŸºæº–è§£åƒåº¦
 	float baseWidth = static_cast<float>(Config::SCREEN_WIDTH);
 	float baseHeight = static_cast<float>(Config::SCREEN_HEIGHT);
 	if (baseWidth == 0) baseWidth = 1920.0f;
 	if (baseHeight == 0) baseHeight = 1080.0f;
 
-	// Œ»İ‚Ìƒrƒ…[ƒ|[ƒg‚Æ‚Ì”ä—¦‚ğŒvZ
+	// ç¾åœ¨ã®ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã¨ã®æ¯”ç‡ã‚’è¨ˆç®—
 	float ratioX = viewportWidth / baseWidth;
 	float ratioY = viewportHeight / baseHeight;
 	float uniformScale = (ratioX < ratioY) ? ratioX : ratioY;
 
 	registry.view<TextComponent, Transform2D>().each([&](Entity e, TextComponent& text, Transform2D& trans)
 	{
-		// ƒtƒHƒ“ƒgƒTƒCƒY‚ğŒvZ‚µAƒLƒƒƒbƒVƒ…ƒL[‚ÉŠÜ‚ß‚é
-		// ‚±‚ê‚É‚æ‚èAƒTƒCƒY‚ª•Ï‚í‚é‚½‚Ñ‚É•Ê‚ÌƒtƒHƒ“ƒg‚Æ‚µ‚ÄƒLƒƒƒbƒVƒ…Eæ“¾‚³‚ê‚é‚æ‚¤‚É‚È‚éB
+		// ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚ºã‚’è¨ˆç®—ã—ã€ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚­ãƒ¼ã«å«ã‚ã‚‹
+		// ã“ã‚Œã«ã‚ˆã‚Šã€ã‚µã‚¤ã‚ºãŒå¤‰ã‚ã‚‹ãŸã³ã«åˆ¥ã®ãƒ•ã‚©ãƒ³ãƒˆã¨ã—ã¦ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ»å–å¾—ã•ã‚Œã‚‹ã‚ˆã†ã«ãªã‚‹ã€‚
 		int targetFontSize = (int)text.fontSize;
 		if (targetFontSize < 1) targetFontSize = 1;
 
-		// ƒL[¶¬: ƒtƒHƒ“ƒg–¼ + ƒTƒCƒY + ‘¾š + Î‘Ì
+		// ã‚­ãƒ¼ç”Ÿæˆ: ãƒ•ã‚©ãƒ³ãƒˆå + ã‚µã‚¤ã‚º + å¤ªå­— + æ–œä½“
 		std::string uniqueKeyStr = text.fontKey.c_str();
 		uniqueKeyStr += "_" + std::to_string(targetFontSize);
 		if (text.isBold) uniqueKeyStr += "_B";
 		if (text.isItalic) uniqueKeyStr += "_I";
 		StringId uniqueKey(uniqueKeyStr.c_str());
 
-		// ƒtƒHƒ“ƒg–¼: ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì fontKey ‚ğg‚¤
-		// StringId -> std::string -> std::wstring •ÏŠ·
-		std::string fontNameStr = text.fontKey.c_str();
-		std::wstring fontNameW(fontNameStr.begin(), fontNameStr.end());
-		if (fontNameStr == "Default") fontNameW = L"Meiryo"; // ƒfƒtƒHƒ‹ƒgˆ—
+		// ãƒ•ã‚©ãƒ³ãƒˆå: ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã® fontKey ã‚’ä½¿ã†
+		// StringId -> std::string -> std::wstring å¤‰æ›
+		std::string fontNameStr = text.fontKey;
+		int nameSize = MultiByteToWideChar(CP_UTF8, 0, fontNameStr.c_str(), (int)fontNameStr.size(), NULL, 0);
+		std::wstring fontNameW(nameSize, 0);
+		MultiByteToWideChar(CP_UTF8, 0, fontNameStr.c_str(), (int)fontNameStr.size(), &fontNameW[0], nameSize);
+		if (fontNameStr == "Default") fontNameW = L"Meiryo";
 
 		auto format = FontManager::Instance().GetTextFormat(
 			uniqueKey,
-			fontNameW, // ŒÂ•Ê‚ÌƒtƒHƒ“ƒg–¼
+			fontNameW, // å€‹åˆ¥ã®ãƒ•ã‚©ãƒ³ãƒˆå
 			(float)targetFontSize,
-			text.isBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, // ‘¾š
-			text.isItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL // Î‘Ì
+			text.isBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, // å¤ªå­—
+			text.isItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL // æ–œä½“
 		);
 
 		if (format) {
-			// ”z’uİ’è
+			// é…ç½®è¨­å®š
 			format->SetTextAlignment(text.centerAlign ? DWRITE_TEXT_ALIGNMENT_CENTER : DWRITE_TEXT_ALIGNMENT_LEADING);
 			format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
-			// ƒuƒ‰ƒVFİ’è
+			// ãƒ–ãƒ©ã‚·è‰²è¨­å®š
 			if (!m_brush) d2dRT->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1), &m_brush);
 			m_brush->SetColor(D2D1::ColorF(text.color.x, text.color.y, text.color.z, text.color.w));
 
-			// ‹éŒ`’è‹`
+			// çŸ©å½¢å®šç¾©
 			D2D1_RECT_F layoutRect = D2D1::RectF(
 				trans.calculatedRect.x,
 				trans.calculatedRect.y,
@@ -104,31 +106,33 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 				trans.calculatedRect.w
 			);
 
-			// •¶š—ñ•ÏŠ·
-			std::wstring wText = std::wstring(text.text.begin(), text.text.end());
+			// æ–‡å­—åˆ—å¤‰æ›
+			int size_needed = MultiByteToWideChar(CP_UTF8, 0, text.text.c_str(), (int)text.text.size(), NULL, 0);
+			std::wstring wText(size_needed, 0);
+			MultiByteToWideChar(CP_UTF8, 0, text.text.c_str(), (int)text.text.size(), &wText[0], size_needed);
 
-			// •½sˆÚ“®¬•ª (dx, dy) ‚ğæ‚èo‚µA‰æ–Ê”ä—¦(ratioX, ratioY)‚É‡‚í‚¹‚ÄˆÚ“®
+			// å¹³è¡Œç§»å‹•æˆåˆ† (dx, dy) ã‚’å–ã‚Šå‡ºã—ã€ç”»é¢æ¯”ç‡(ratioX, ratioY)ã«åˆã‚ã›ã¦ç§»å‹•
 			float newX = trans.worldMatrix.dx * ratioX;
 			float newY = trans.worldMatrix.dy * ratioY;
 
-			// 2. ‰ñ“]EƒXƒP[ƒ‹¬•ª (•½sˆÚ“®ˆÈŠO) ‚ğæ‚èo‚·
+			// 2. å›è»¢ãƒ»ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ† (å¹³è¡Œç§»å‹•ä»¥å¤–) ã‚’å–ã‚Šå‡ºã™
 			D2D1::Matrix3x2F localMat = reinterpret_cast<D2D1::Matrix3x2F&>(trans.worldMatrix);
 			localMat.dx = 0;
 			localMat.dy = 0;
 
-			// 3. •¶š©‘Ì‚ÌƒTƒCƒY‚ÍuƒAƒXƒyƒNƒg”äˆÛ (uniformScale)v‚ÅŠg‘åk¬
+			// 3. æ–‡å­—è‡ªä½“ã®ã‚µã‚¤ã‚ºã¯ã€Œã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”ç¶­æŒ (uniformScale)ã€ã§æ‹¡å¤§ç¸®å°
 			D2D1::Matrix3x2F scaleMat = D2D1::Matrix3x2F::Scale(ratioX, ratioY);
 
-			// 4. ‡¬: [Œ³‚Ì‰ñ“]] * [ƒ†ƒjƒtƒH[ƒ€Šg‘å]
+			// 4. åˆæˆ: [å…ƒã®å›è»¢] * [ãƒ¦ãƒ‹ãƒ•ã‚©ãƒ¼ãƒ æ‹¡å¤§]
 			D2D1::Matrix3x2F finalMat = localMat * scaleMat;
 
-			// 5. ÅŒã‚ÉŒvZ‚µ‚½uV‚µ‚¢ˆÊ’uv‚ğƒZƒbƒg
+			// 5. æœ€å¾Œã«è¨ˆç®—ã—ãŸã€Œæ–°ã—ã„ä½ç½®ã€ã‚’ã‚»ãƒƒãƒˆ
 			finalMat.dx = newX;
 			finalMat.dy = newY;
 
 			d2dRT->SetTransform(finalMat);
 
-			// •`‰æ
+			// æç”»
 			d2dRT->DrawText(
 				wText.c_str(),
 				(UINT32)wText.length(),
@@ -139,18 +143,18 @@ void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float
 		}
 	});
 
-	// 4. •`‰æI—¹
+	// 4. æç”»çµ‚äº†
 	d2dRT->EndDraw();
 }
 
 ID2D1RenderTarget* TextRenderer::GetD2DRenderTarget(ID3D11RenderTargetView* rtv)
 {
-	// ƒLƒƒƒbƒVƒ…‚É‚ ‚ê‚Î•Ô‚·
+	// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã«ã‚ã‚Œã°è¿”ã™
 	if (m_d2dTargets.find(rtv) != m_d2dTargets.end()) {
 		return m_d2dTargets[rtv].Get();
 	}
 
-	// ‚È‚¯‚ê‚Îì¬ (DXGI SurfaceŒo—R)
+	// ãªã‘ã‚Œã°ä½œæˆ (DXGI SurfaceçµŒç”±)
 	ComPtr<ID3D11Resource> resource;
 	rtv->GetResource(&resource);
 	if (!resource) return nullptr;
@@ -159,7 +163,7 @@ ID2D1RenderTarget* TextRenderer::GetD2DRenderTarget(ID3D11RenderTargetView* rtv)
 	resource.As(&surface);
 	if (!surface) return nullptr;
 
-	// DXGIƒT[ƒtƒFƒX‚ÌƒvƒƒpƒeƒB
+	// DXGIã‚µãƒ¼ãƒ•ã‚§ã‚¹ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,

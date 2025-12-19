@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SceneGame.cpp
- * @brief	ƒQ[ƒ€ƒV[ƒ“
+ * @brief	ã‚²ãƒ¼ãƒ ã‚·ãƒ¼ãƒ³
  * 
  * @details	
  * 
@@ -8,26 +8,26 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Game/Scenes/SceneGame.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Components/Components.h"
 
-// ƒGƒ“ƒWƒ“‘¤
+// ã‚¨ãƒ³ã‚¸ãƒ³å´
 #include "Engine/Physics/CollisionSystem.h"
 #include "Engine/Physics/PhysicsSystem.h"
 
-// ƒQ[ƒ€‘¤i–¢‚¾ˆÚ“®o—ˆ‚Ä‚¢‚È‚¢j
+// ã‚²ãƒ¼ãƒ å´ï¼ˆæœªã ç§»å‹•å‡ºæ¥ã¦ã„ãªã„ï¼‰
 #include "Game/Systems/Graphics/RenderSystem.h"
 #include "Game/Systems/Logic/InputSystem.h"
 #include "Game/Systems/Graphics/SpriteRenderSystem.h"
@@ -45,27 +45,27 @@
 
 void SceneGame::Initialize()
 {
-	// eƒNƒ‰ƒX‚Ì‰Šú‰»
+	// è¦ªã‚¯ãƒ©ã‚¹ã®åˆæœŸåŒ–
 	//IScene::Initialize();
 	m_world.getRegistry().clear();
 
 	// ------------------------------------------------------------
-	// ƒVƒXƒeƒ€‚Ì“o˜^
+	// ã‚·ã‚¹ãƒ†ãƒ ã®ç™»éŒ²
 	// ------------------------------------------------------------
-	// 1. “ü—Í
+	// 1. å…¥åŠ›
 	auto inputSys = m_world.registerSystem<InputSystem>();
 	inputSys->SetContext(m_context);
-	// 2. ˆÚ“®
+	// 2. ç§»å‹•
 	m_world.registerSystem<PhysicsSystem>();
-	// 3. õ–½ŠÇ—
+	// 3. å¯¿å‘½ç®¡ç†
 	m_world.registerSystem<LifetimeSystem>();
-	// 4. s—ñŒvZ
+	// 4. è¡Œåˆ—è¨ˆç®—
 	m_world.registerSystem<HierarchySystem>();
-	// 5. Õ“Ë”»’è
+	// 5. è¡çªåˆ¤å®š
 	m_world.registerSystem<CollisionSystem>();
 	// UI
 	m_world.registerSystem<UISystem>();
-	// 6. •`‰æ
+	// 6. æç”»
 	if (m_context->spriteRenderer)
 	{
 		m_world.registerSystem<SpriteRenderSystem>(m_context->spriteRenderer);
@@ -84,7 +84,7 @@ void SceneGame::Initialize()
 		m_world.registerSystem<RenderSystem>(m_context->renderer);
 	}
 	m_world.registerSystem<TextRenderSystem>(m_context->device, m_context->context);
-	// 7. ƒI[ƒfƒBƒI
+	// 7. ã‚ªãƒ¼ãƒ‡ã‚£ã‚ª
 	m_world.registerSystem<AudioSystem>();
 #ifdef _DEBUG
 	if (m_context)
@@ -95,21 +95,21 @@ void SceneGame::Initialize()
 #endif // _DEBUG
 
 	// ------------------------------------------------------------
-	// ƒŒƒCƒ„[‚Ìİ’è
+	// ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®è¨­å®š
 	// ------------------------------------------------------------
 	PhysicsConfig::Reset();
 
-	// "Player" ƒŒƒCƒ„[İ’è
+	// "Player" ãƒ¬ã‚¤ãƒ¤ãƒ¼è¨­å®š
 	PhysicsConfig::Configure(Layer::Player)
 		.collidesWith(Layer::Enemy | Layer::Wall | Layer::Item);
 
-	// "Enemy" ƒŒƒCƒ„[İ’è
+	// "Enemy" ãƒ¬ã‚¤ãƒ¤ãƒ¼è¨­å®š
 	PhysicsConfig::Configure(Layer::Enemy)
 		.collidesWith(Layer::Player | Layer::Wall);
 
 
 	// ------------------------------------------------------------
-	// Entity‚Ì¶¬
+	// Entityã®ç”Ÿæˆ
 	// ------------------------------------------------------------
 	// Camera
 	m_world.create_entity()
@@ -140,7 +140,7 @@ void SceneGame::Initialize()
 		.add<Collider>(Collider::CreateBox(10.0f, 1.0f, 10.0f))
 		.add<Rigidbody>(BodyType::Static);
 
-	// UIƒ‹[ƒgiCanvasj
+	// UIãƒ«ãƒ¼ãƒˆï¼ˆCanvasï¼‰
 	Entity canvas = m_world.create_entity()
 		.add<Tag>("Canvas")
 		.add<Transform2D>(0.0f, 0.0f, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT)
@@ -151,10 +151,10 @@ void SceneGame::Initialize()
 		.setParent(canvas)
 		.add<Transform2D>(XMFLOAT2(0.0f, 50.0f), XMFLOAT2(500.0f, 80.0f), XMFLOAT2(0.2f, 0.0f))
 		.add<TextComponent>(
-			"Text",		// ƒeƒLƒXƒg
-			"Reggae One",					// ƒtƒHƒ“ƒgƒL[
-			80.0f,						// ƒtƒHƒ“ƒgƒTƒCƒY
-			XMFLOAT4(1, 0.5f, 0.5f, 1)	// F
+			"Text (ãƒ†ã‚­ã‚¹ãƒˆ)",		// ãƒ†ã‚­ã‚¹ãƒˆ
+			"Oradano-mincho-GSRR",					// ãƒ•ã‚©ãƒ³ãƒˆã‚­ãƒ¼
+			80.0f,						// ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚º
+			XMFLOAT4(1, 0.5f, 0.5f, 1)	// è‰²
 		);
 
 	m_world.create_entity()

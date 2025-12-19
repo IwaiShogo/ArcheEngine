@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	PhysicsEvents.h
- * @brief	Õ“ËƒCƒxƒ“ƒgƒf[ƒ^
+ * @brief	è¡çªã‚¤ãƒ™ãƒ³ãƒˆãƒ‡ãƒ¼ã‚¿
  * 
  * @details	
  * 
@@ -8,18 +8,18 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/15	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/15	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 #ifndef ___PHYSICS_EVENTS_H___
 #define ___PHYSICS_EVENTS_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 
@@ -27,9 +27,9 @@ namespace Physics
 {
 	enum class CollisionState
 	{
-		Enter,	// “–‚½‚Á‚½uŠÔ
-		Stay,	// “–‚½‚è‘±‚¯‚Ä‚¢‚é
-		Exit,	// —£‚ê‚½‚Æ‚«
+		Enter,	// å½“ãŸã£ãŸç¬é–“
+		Stay,	// å½“ãŸã‚Šç¶šã‘ã¦ã„ã‚‹
+		Exit,	// é›¢ã‚ŒãŸã¨ã
 	};
 
 	struct CollisionEvent
@@ -37,11 +37,11 @@ namespace Physics
 		Entity self;
 		Entity other;
 		CollisionState state;
-		DirectX::XMFLOAT3 normal;	// Õ“Ë–@ü
+		DirectX::XMFLOAT3 normal;	// è¡çªæ³•ç·š
 	};
 
-	// ƒtƒŒ[ƒ€‚²‚Æ‚Ì‘SƒCƒxƒ“ƒg‚ğ•Û‚·‚éƒRƒ“ƒeƒi
-	// i‚±‚ê‚ğRegistry‚ÌƒRƒ“ƒeƒLƒXƒg‚âƒVƒ“ƒOƒ‹ƒgƒ“‚Æ‚µ‚Äˆµ‚¤j
+	// ãƒ•ãƒ¬ãƒ¼ãƒ ã”ã¨ã®å…¨ã‚¤ãƒ™ãƒ³ãƒˆã‚’ä¿æŒã™ã‚‹ã‚³ãƒ³ãƒ†ãƒŠ
+	// ï¼ˆã“ã‚Œã‚’Registryã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚„ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã¨ã—ã¦æ‰±ã†ï¼‰
 	struct EventQueue
 	{
 		std::vector<CollisionEvent> events;
@@ -51,7 +51,7 @@ namespace Physics
 		void Add(Entity a, Entity b, CollisionState state, const DirectX::XMFLOAT3& n)
 		{
 			events.push_back({ a, b, state, n });
-			// ‹t•ûŒü‚ÌƒCƒxƒ“ƒg‚à•K—v‚È‚ç“o˜^
+			// é€†æ–¹å‘ã®ã‚¤ãƒ™ãƒ³ãƒˆã‚‚å¿…è¦ãªã‚‰ç™»éŒ²
 			DirectX::XMFLOAT3 invNormal = { -n.x, -n.y, -n.z };
 			events.push_back({ b, a, state, invNormal });
 		}

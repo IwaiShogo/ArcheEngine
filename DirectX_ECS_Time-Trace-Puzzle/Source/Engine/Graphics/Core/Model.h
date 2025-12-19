@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Model.h
- * @brief	3Dƒ‚ƒfƒ‹‚Ìƒf[ƒ^‚ğ•Û‚·‚éƒNƒ‰ƒX
+ * @brief	3Dãƒ¢ãƒ‡ãƒ«ã®ãƒ‡ãƒ¼ã‚¿ã‚’ä¿æŒã™ã‚‹ã‚¯ãƒ©ã‚¹
  *
  * @details
  *
@@ -8,26 +8,26 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  *
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  *
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  *
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___MODEL_H___
 #define ___MODEL_H___
 
- // ===== ƒCƒ“ƒNƒ‹[ƒh =====
+ // ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Core/Texture.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-// ’¸“_ƒf[ƒ^iˆÊ’uA–@üAUVj
+// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ï¼ˆä½ç½®ã€æ³•ç·šã€UVï¼‰
 struct ModelVertex
 {
 	XMFLOAT3 position;
@@ -35,23 +35,23 @@ struct ModelVertex
 	XMFLOAT2 uv;
 };
 
-// 1‚Â‚ÌƒƒbƒVƒ…iƒ‚ƒfƒ‹‚Ì\¬•”•ij
+// 1ã¤ã®ãƒ¡ãƒƒã‚·ãƒ¥ï¼ˆãƒ¢ãƒ‡ãƒ«ã®æ§‹æˆéƒ¨å“ï¼‰
 struct Mesh
 {
 	ComPtr<ID3D11Buffer> vertexBuffer;
 	ComPtr<ID3D11Buffer> indexBuffer;
 	unsigned int indexCount = 0;
 
-	// ƒ}ƒeƒŠƒAƒ‹î•ñ
+	// ãƒãƒ†ãƒªã‚¢ãƒ«æƒ…å ±
 	std::shared_ptr<Texture> texture;
 };
 
-// ƒ‚ƒfƒ‹‘S‘Ìi•¡”‚ÌƒƒbƒVƒ…‚ğ‚Âj
+// ãƒ¢ãƒ‡ãƒ«å…¨ä½“ï¼ˆè¤‡æ•°ã®ãƒ¡ãƒƒã‚·ãƒ¥ã‚’æŒã¤ï¼‰
 class Model
 {
 public:
 	std::vector<Mesh> meshes;
-	std::string filepath;	// ƒfƒoƒbƒO—p
+	std::string filepath;	// ãƒ‡ãƒãƒƒã‚°ç”¨
 };
 
 #endif // !___MODEL_H___

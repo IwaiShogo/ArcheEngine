@@ -1,10 +1,10 @@
-#ifndef ___ENTITY_DEF_H___
+ï»¿#ifndef ___ENTITY_DEF_H___
 #define ___ENTITY_DEF_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 
-// EntityŒ^‚ÆNullEntity’è”‚ğ‚±‚±‚Å’è‹`‚·‚é
+// Entityå‹ã¨NullEntityå®šæ•°ã‚’ã“ã“ã§å®šç¾©ã™ã‚‹
 using Entity = uint32_t;
 constexpr Entity NullEntity = 0xFFFFFFFF;
 

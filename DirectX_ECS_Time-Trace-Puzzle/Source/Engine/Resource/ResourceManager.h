@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ResourceManager.h
- * @brief	ƒŠƒ\[ƒXƒ}ƒl[ƒWƒƒ[
+ * @brief	ãƒªã‚½ãƒ¼ã‚¹ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/25	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/25	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___RESOURCE_MANAGER_H___
 #define ___RESOURCE_MANAGER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/StringId.h"
 #include "Engine/Graphics/Core/Texture.h"
@@ -30,7 +30,7 @@
 class ResourceManager
 {
 public:
-	// ƒŠƒ\[ƒX‚Ìí—Ş’è‹`
+	// ãƒªã‚½ãƒ¼ã‚¹ã®ç¨®é¡å®šç¾©
 	enum class ResourceType
 	{
 		Texture,
@@ -39,61 +39,61 @@ public:
 		Font
 	};
 
-	// ƒVƒ“ƒOƒ‹ƒgƒ“æ“¾
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³å–å¾—
 	static ResourceManager& Instance()
 	{
 		static ResourceManager instance;
 		return instance;
 	}
 
-	// ‰Šú‰»iDevice‚ª•K—vj
+	// åˆæœŸåŒ–ï¼ˆDeviceãŒå¿…è¦ï¼‰
 	void Initialize(ID3D11Device* device);
 
-	// ƒ}ƒjƒtƒFƒXƒgiJSONj‚ğ“Ç‚İ‚ñ‚ÅƒpƒX‚ğ“o˜^
+	// ãƒãƒ‹ãƒ•ã‚§ã‚¹ãƒˆï¼ˆJSONï¼‰ã‚’èª­ã¿è¾¼ã‚“ã§ãƒ‘ã‚¹ã‚’ç™»éŒ²
 	void LoadManifest(const std::string& jsonPath);
 
 	void LoadAll();
 
-	// ƒeƒNƒXƒ`ƒƒ‚ğæ“¾
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’å–å¾—
 	std::shared_ptr<Texture> GetTexture(StringId key);
-	// ƒ‚ƒfƒ‹æ“¾
+	// ãƒ¢ãƒ‡ãƒ«å–å¾—
 	std::shared_ptr<Model> GetModel(StringId key);
-	// ‰¹ºæ“¾
+	// éŸ³å£°å–å¾—
 	std::shared_ptr<Sound> GetSound(StringId key);
 
 
-	// --- ƒGƒfƒBƒ^˜AŒg—p‹@”\ ---
+	// --- ã‚¨ãƒ‡ã‚£ã‚¿é€£æºç”¨æ©Ÿèƒ½ ---
 
-	// ID‚©‚çŒ³‚Ìƒtƒ@ƒCƒ‹ƒpƒX‚ğæ“¾i•\¦—pj
+	// IDã‹ã‚‰å…ƒã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‚’å–å¾—ï¼ˆè¡¨ç¤ºç”¨ï¼‰
 	std::string GetPathByKey(StringId key, ResourceType type);
 
-	// ƒpƒX‚ğƒL[‚Æ‚µ‚Ä“®“I‚É“o˜^
+	// ãƒ‘ã‚¹ã‚’ã‚­ãƒ¼ã¨ã—ã¦å‹•çš„ã«ç™»éŒ²
 	void RegisterResource(StringId key, const std::string& path, ResourceType type);
 
-	// ƒfƒoƒbƒO•`‰æ
+	// ãƒ‡ãƒãƒƒã‚°æç”»
 	void OnInspector();
 
 private:
-	// “à•”ƒ[ƒhŠÖ”iƒpƒXw’èj
+	// å†…éƒ¨ãƒ­ãƒ¼ãƒ‰é–¢æ•°ï¼ˆãƒ‘ã‚¹æŒ‡å®šï¼‰
 	std::shared_ptr<Texture> LoadTextureFromFile(const std::string& filepath);
 	std::shared_ptr<Model> LoadModelFromFile(const std::string& filepath);
 	std::shared_ptr<Sound> LoadWav(const std::string& filepath);
 
-	// Assimp‚Ìƒm[ƒh‚ğÄ‹A“I‚Éˆ—‚·‚éŠÖ”
+	// Assimpã®ãƒãƒ¼ãƒ‰ã‚’å†å¸°çš„ã«å‡¦ç†ã™ã‚‹é–¢æ•°
 	void ProcessNode(aiNode* node, const aiScene* scene, std::shared_ptr<Model> model, const std::string& directory);
 	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory);
 
-	ResourceManager() = default;	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^‰B•Á
+	ResourceManager() = default;	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿éš è”½
 	~ResourceManager() = default;
 
 	ID3D11Device* m_device = nullptr;
 
-	// ƒpƒXŠÇ——piStringId -> FilePathj
+	// ãƒ‘ã‚¹ç®¡ç†ç”¨ï¼ˆStringId -> FilePathï¼‰
 	std::unordered_map<StringId, std::string> m_texturePaths;
 	std::unordered_map<StringId, std::string> m_modelPaths;
 	std::unordered_map<StringId, std::string> m_soundPaths;
 
-	// ƒŠƒ\[ƒX–{‘ÌiStringId -> Resourcej
+	// ãƒªã‚½ãƒ¼ã‚¹æœ¬ä½“ï¼ˆStringId -> Resourceï¼‰
 	std::unordered_map<StringId, std::shared_ptr<Texture>> m_textures;
 	std::unordered_map<StringId, std::shared_ptr<Model>> m_models;
 	std::unordered_map<StringId, std::shared_ptr<Sound>> m_sounds;

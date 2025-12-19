@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Logger.h
- * @brief	ImGuiƒEƒBƒ“ƒhƒE‚É•\¦‚³‚ê‚éƒƒK[ƒNƒ‰ƒX
+ * @brief	ImGuiã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«è¡¨ç¤ºã•ã‚Œã‚‹ãƒ­ã‚¬ãƒ¼ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,24 +8,24 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/25	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/25	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___LOGGER_H___
 #define ___LOGGER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/Core/Time.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 
-// ƒƒO‚Ìí—Ş
+// ãƒ­ã‚°ã®ç¨®é¡
 enum class LogType
 {
 	Info,
@@ -44,7 +44,7 @@ struct LogEntry
 class Logger
 {
 public:
-	// --- ƒƒOo—Í ---
+	// --- ãƒ­ã‚°å‡ºåŠ› ---
 	static void Log(const std::string& message) {
 		AddLog("[Info] " + message, LogType::Info, ImVec4(1, 1, 1, 1));
 	}
@@ -55,7 +55,7 @@ public:
 		AddLog("[Error] " + message, LogType::Error, ImVec4(1, 0.5f, 0.5f, 1));
 	}
 
-	// ƒRƒ}ƒ“ƒhƒnƒ“ƒhƒ‰
+	// ã‚³ãƒãƒ³ãƒ‰ãƒãƒ³ãƒ‰ãƒ©
 	using CommandHandler = std::function<void(const std::vector<std::string>& args)>;
 
 	static void RegisterCommand(const std::string& name, CommandHandler handler)
@@ -63,7 +63,7 @@ public:
 		s_commands[name] = handler;
 	}
 
-	// --- •`‰æ & ƒRƒ}ƒ“ƒhˆ— ---
+	// --- æç”» & ã‚³ãƒãƒ³ãƒ‰å‡¦ç† ---
 	static void Draw(const char* title = "Console") {
 		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
 		if (!ImGui::Begin(title)) {
@@ -71,7 +71,7 @@ public:
 			return;
 		}
 
-		// 1. ƒc[ƒ‹ƒo[ (ƒtƒBƒ‹ƒ^ƒŠƒ“ƒO & ƒNƒŠƒA)
+		// 1. ãƒ„ãƒ¼ãƒ«ãƒãƒ¼ (ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚° & ã‚¯ãƒªã‚¢)
 		if (ImGui::Button("Clear")) s_logs.clear();
 		ImGui::SameLine();
 		ImGui::Checkbox("Info", &s_showInfo); ImGui::SameLine();
@@ -80,8 +80,8 @@ public:
 
 		ImGui::Separator();
 
-		// 2. ƒƒO•\¦ƒGƒŠƒA (ƒXƒNƒ[ƒ‹)
-		// ‰º‚ÉƒRƒ}ƒ“ƒh“ü—Í—“‚ğì‚é‚½‚ßA­‚µ‚‚³‚ğc‚·
+		// 2. ãƒ­ã‚°è¡¨ç¤ºã‚¨ãƒªã‚¢ (ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«)
+		// ä¸‹ã«ã‚³ãƒãƒ³ãƒ‰å…¥åŠ›æ¬„ã‚’ä½œã‚‹ãŸã‚ã€å°‘ã—é«˜ã•ã‚’æ®‹ã™
 		float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -93,7 +93,7 @@ public:
 			ImGui::TextColored(log.color, "%s", log.message.c_str());
 		}
 
-		// ©“®ƒXƒNƒ[ƒ‹
+		// è‡ªå‹•ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«
 		if (s_scrollToBottom || (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())) {
 			ImGui::SetScrollHereY(1.0f);
 			s_scrollToBottom = false;
@@ -102,17 +102,17 @@ public:
 		ImGui::EndChild();
 		ImGui::Separator();
 
-		// 3. ƒRƒ}ƒ“ƒh“ü—ÍƒGƒŠƒA
+		// 3. ã‚³ãƒãƒ³ãƒ‰å…¥åŠ›ã‚¨ãƒªã‚¢
 		bool reclaim_focus = false;
-		ImGui::PushItemWidth(-1); // •‚¢‚Á‚Ï‚¢
+		ImGui::PushItemWidth(-1); // å¹…ã„ã£ã±ã„
 		if (ImGui::InputText("##Input", s_inputBuf, IM_ARRAYSIZE(s_inputBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 			ExecuteCommand(s_inputBuf);
-			s_inputBuf[0] = 0; // “ü—Í—“ƒNƒŠƒA
+			s_inputBuf[0] = 0; // å…¥åŠ›æ¬„ã‚¯ãƒªã‚¢
 			reclaim_focus = true;
 		}
 		ImGui::PopItemWidth();
 
-		// ƒtƒH[ƒJƒX‚ğˆÛi˜A‘±“ü—Í—pj
+		// ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚’ç¶­æŒï¼ˆé€£ç¶šå…¥åŠ›ç”¨ï¼‰
 		if (reclaim_focus) {
 			ImGui::SetKeyboardFocusHere(-1);
 		}
@@ -128,7 +128,7 @@ private:
 		s_scrollToBottom = true;
 	}
 
-	// --- ƒRƒ}ƒ“ƒhÀsƒƒWƒbƒN ---
+	// --- ã‚³ãƒãƒ³ãƒ‰å®Ÿè¡Œãƒ­ã‚¸ãƒƒã‚¯ ---
 	static void ExecuteCommand(const std::string& commandLine) {
 		AddLog("# " + commandLine, LogType::Command, ImVec4(0.7f, 0.7f, 0.7f, 1));
 
@@ -140,7 +140,7 @@ private:
 		std::string arg;
 		while (ss >> arg) args.push_back(arg);
 
-		// “o˜^‚³‚ê‚½ƒRƒ}ƒ“ƒh‚ğ’T‚µ‚ÄÀs
+		// ç™»éŒ²ã•ã‚ŒãŸã‚³ãƒãƒ³ãƒ‰ã‚’æ¢ã—ã¦å®Ÿè¡Œ
 		if (s_commands.count(cmdName)) {
 			s_commands[cmdName](args);
 		}
@@ -155,7 +155,7 @@ private:
 		}
 	}
 
-	// ƒRƒ}ƒ“ƒhƒŠƒXƒg
+	// ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆ
 	inline static std::map<std::string, CommandHandler> s_commands;
 
 private:

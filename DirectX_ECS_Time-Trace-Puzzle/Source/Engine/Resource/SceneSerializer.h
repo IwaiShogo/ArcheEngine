@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SceneSerializer.h
  * @brief	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/17	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/17	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___SCENE_SERIALIZER_H___
 #define ___SCENE_SERIALIZER_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Resource/Serializer.h"
@@ -30,56 +30,56 @@ class SceneSerializer
 {
 public:
 	/**
-	 * @brief ƒV[ƒ“‘S‘Ì‚ğJSONƒtƒ@ƒCƒ‹‚É•Û‘¶
+	 * @brief ã‚·ãƒ¼ãƒ³å…¨ä½“ã‚’JSONãƒ•ã‚¡ã‚¤ãƒ«ã«ä¿å­˜
 	 */
 	static void SaveScene(World& world, const std::string& filepath)
 	{
 		nlohmann::json sceneJson;
-		sceneJson["name"] = "Untitled Scene"; // ƒV[ƒ“–¼i•K—v‚È‚çˆø”‚Å“n‚·j
+		sceneJson["name"] = "Untitled Scene"; // ã‚·ãƒ¼ãƒ³åï¼ˆå¿…è¦ãªã‚‰å¼•æ•°ã§æ¸¡ã™ï¼‰
 
-		// ƒGƒ“ƒeƒBƒeƒB”z—ñ
+		// ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£é…åˆ—
 		sceneJson["entities"] = nlohmann::json::array();
 
 		Registry& reg = world.getRegistry();
 
-		// ¶‚«‚Ä‚¢‚é‘SƒGƒ“ƒeƒBƒeƒB‚ğƒ‹[ƒv
+		// ç”Ÿãã¦ã„ã‚‹å…¨ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ãƒ«ãƒ¼ãƒ—
 		reg.each([&](Entity entity) {
-			// Tag‚ğ‚½‚È‚¢ƒGƒ“ƒeƒBƒeƒB‚Í•Û‘¶‚µ‚È‚¢i“à•”ˆ——p‚È‚Ç‚ÌœŠOj
+			// Tagã‚’æŒãŸãªã„ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã¯ä¿å­˜ã—ãªã„ï¼ˆå†…éƒ¨å‡¦ç†ç”¨ãªã©ã®é™¤å¤–ï¼‰
 			if (!reg.has<Tag>(entity)) return;
 
-			// Serializer‚ÌŠù‘¶ƒƒWƒbƒN‚ğÄ—˜—p‚µ‚½‚¢‚ªA
-			// Serializer::SaveEntity‚Íƒtƒ@ƒCƒ‹‘‚«o‚µ‚Ü‚Å‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ÅA
-			// JSONƒIƒuƒWƒFƒNƒg‚ğ¶¬‚·‚é•”•ª‚¾‚¯Ø‚èo‚·‚Ì‚ªƒxƒXƒgB
-			// š¡‰ñ‚ÍŠÈˆÕ“I‚ÉASerializer‚ÌƒƒWƒbƒN‚ğ‚±‚±‚ÅÄŒ»‚µ‚Ä”z—ñ‚É’Ç‰Á‚µ‚Ü‚·B
+			// Serializerã®æ—¢å­˜ãƒ­ã‚¸ãƒƒã‚¯ã‚’å†åˆ©ç”¨ã—ãŸã„ãŒã€
+			// Serializer::SaveEntityã¯ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—ã¾ã§ã—ã¦ã—ã¾ã†ã®ã§ã€
+			// JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç”Ÿæˆã™ã‚‹éƒ¨åˆ†ã ã‘åˆ‡ã‚Šå‡ºã™ã®ãŒãƒ™ã‚¹ãƒˆã€‚
+			// â˜…ä»Šå›ã¯ç°¡æ˜“çš„ã«ã€Serializerã®ãƒ­ã‚¸ãƒƒã‚¯ã‚’ã“ã“ã§å†ç¾ã—ã¦é…åˆ—ã«è¿½åŠ ã—ã¾ã™ã€‚
 
 			nlohmann::json eJson;
 
-			// Šî–{
+			// åŸºæœ¬
 			SerializeIf<Tag>(reg, entity, eJson, "Tag");
 			SerializeIf<Transform>(reg, entity, eJson, "Transform");
 			SerializeIf<Camera>(reg, entity, eJson, "Camera");
 			SerializeIf<Relationship>(reg, entity, eJson, "Relationship");
 
-			// •`‰æ
+			// æç”»
 			SerializeIf<MeshComponent>(reg, entity, eJson, "MeshComponent");
 			SerializeIf<SpriteComponent>(reg, entity, eJson, "SpriteComponent");
 			SerializeIf<BillboardComponent>(reg, entity, eJson, "BillboardComponent");
 
-			// •¨—EƒƒWƒbƒN
+			// ç‰©ç†ãƒ»ãƒ­ã‚¸ãƒƒã‚¯
 			SerializeIf<Rigidbody>(reg, entity, eJson, "Rigidbody");
 			SerializeIf<Collider>(reg, entity, eJson, "Collider");
 			SerializeIf<PlayerInput>(reg, entity, eJson, "PlayerInput");
 			SerializeIf<Lifetime>(reg, entity, eJson, "Lifetime");
 
-			// ƒI[ƒfƒBƒI
+			// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ª
 			SerializeIf<AudioSource>(reg, entity, eJson, "AudioSource");
 			SerializeIf<AudioListener>(reg, entity, eJson, "AudioListener");
 
-			// ”z—ñ‚É’Ç‰Á
+			// é…åˆ—ã«è¿½åŠ 
 			sceneJson["entities"].push_back(eJson);
 			});
 
-		// ƒtƒ@ƒCƒ‹‘‚«o‚µ
+		// ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—
 		std::ofstream file(filepath);
 		if (file.is_open()) {
 			file << sceneJson.dump(4);
@@ -91,7 +91,7 @@ public:
 	}
 
 	/**
-	 * @brief JSONƒtƒ@ƒCƒ‹‚©‚çƒV[ƒ“‚ğ“Ç‚İ‚İiŒ»İ‚ÌƒV[ƒ“‚É’Ç‰Áj
+	 * @brief JSONãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã‚·ãƒ¼ãƒ³ã‚’èª­ã¿è¾¼ã¿ï¼ˆç¾åœ¨ã®ã‚·ãƒ¼ãƒ³ã«è¿½åŠ ï¼‰
 	 */
 	static void LoadScene(World& world, const std::string& filepath)
 	{
@@ -104,28 +104,28 @@ public:
 		nlohmann::json sceneJson;
 		file >> sceneJson;
 
-		// Œ»İ‚ÌƒGƒ“ƒeƒBƒeƒB‚ğ‚·‚×‚Äíœ
+		// ç¾åœ¨ã®ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ã™ã¹ã¦å‰Šé™¤
 		world.getRegistry().clear();
 
-		// •¨—ƒVƒXƒeƒ€‚Ì“à•”ó‘Ô‚àƒŠƒZƒbƒg‚·‚é
+		// ç‰©ç†ã‚·ã‚¹ãƒ†ãƒ ã®å†…éƒ¨çŠ¶æ…‹ã‚‚ãƒªã‚»ãƒƒãƒˆã™ã‚‹
 		CollisionSystem::Reset();
 
-		// Œ»İ‚ÌƒGƒ“ƒeƒBƒeƒB‚ğ‘S‚ÄíœiƒV[ƒ“‘JˆÚj
-		// ¦ƒ}[ƒWƒ[ƒh‚µ‚½‚¢ê‡‚Í‚±‚±‚ğƒXƒLƒbƒv‚·‚éƒtƒ‰ƒO‚ª•K—v
+		// ç¾åœ¨ã®ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’å…¨ã¦å‰Šé™¤ï¼ˆã‚·ãƒ¼ãƒ³é·ç§»æ™‚ï¼‰
+		// â€»ãƒãƒ¼ã‚¸ãƒ­ãƒ¼ãƒ‰ã—ãŸã„å ´åˆã¯ã“ã“ã‚’ã‚¹ã‚­ãƒƒãƒ—ã™ã‚‹ãƒ•ãƒ©ã‚°ãŒå¿…è¦
 		world.getRegistry().clear();
 
 		if (sceneJson.contains("entities"))
 		{
 			for (auto& eJson : sceneJson["entities"])
 			{
-				// ƒGƒ“ƒeƒBƒeƒB¶¬
+				// ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ç”Ÿæˆ
 				Entity entity = world.create_entity().id();
 				Registry& reg = world.getRegistry();
 
-				// ƒRƒ“ƒ|[ƒlƒ“ƒg•œŒ³
-				// ¦Serializer.h ‚É‚ ‚é DeserializeComponent ‚Í private ‚È‚Ì‚ÅA
-				//	 ‚±‚±‚Å“¯—l‚Ìˆ—‚ğ‘‚­‚©ASerializer‚ğŠg’£‚µ‚Ä public ƒwƒ‹ƒp[‚ğì‚é‚Ì‚ªãY—í‚Å‚·B
-				//	 ¡‰ñ‚Í Serializer.h ‚ğC³‚¹‚¸A‚±‚±‚Å’¼ÚÀ‘•‚µ‚Ü‚·iSerializer.h‚Ì’†g‚Æ“¯‚¶‚±‚Æ‚ğ‚·‚éjB
+				// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆå¾©å…ƒ
+				// â€»Serializer.h ã«ã‚ã‚‹ DeserializeComponent ã¯ private ãªã®ã§ã€
+				//	 ã“ã“ã§åŒæ§˜ã®å‡¦ç†ã‚’æ›¸ãã‹ã€Serializerã‚’æ‹¡å¼µã—ã¦ public ãƒ˜ãƒ«ãƒ‘ãƒ¼ã‚’ä½œã‚‹ã®ãŒç¶ºéº—ã§ã™ã€‚
+				//	 ä»Šå›ã¯ Serializer.h ã‚’ä¿®æ­£ã›ãšã€ã“ã“ã§ç›´æ¥å®Ÿè£…ã—ã¾ã™ï¼ˆSerializer.hã®ä¸­èº«ã¨åŒã˜ã“ã¨ã‚’ã™ã‚‹ï¼‰ã€‚
 
 				// Tag
 				if (eJson.contains("Tag")) {
@@ -153,7 +153,7 @@ public:
 					Relationship c;
 					auto& j = eJson["Relationship"];
 
-					// Serializer::FromJson ‚ğg‚¤‚©A’¼Ú‘‚­
+					// Serializer::FromJson ã‚’ä½¿ã†ã‹ã€ç›´æ¥æ›¸ã
 					if (j.contains("parent")) c.parent = (Entity)j["parent"].get<uint32_t>();
 					if (j.contains("children")) {
 						for (auto& childId : j["children"]) {
@@ -229,7 +229,7 @@ public:
 					reg.emplace<AudioSource>(entity, c);
 				}
 
-				// ‚»‚Ì‘¼ (PlayerInput, Lifetime, AudioListener)
+				// ãã®ä»– (PlayerInput, Lifetime, AudioListener)
 				if (eJson.contains("PlayerInput")) {
 					PlayerInput c; c.speed = eJson["PlayerInput"]["speed"]; c.jumpPower = eJson["PlayerInput"]["jump"];
 					reg.emplace<PlayerInput>(entity, c);
@@ -248,21 +248,21 @@ public:
 	}
 
 private:
-	// •Û‘¶—pƒwƒ‹ƒp[
+	// ä¿å­˜ç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼
 	template<typename T>
 	static void SerializeIf(Registry& reg, Entity e, nlohmann::json& j, const std::string& key) {
 		if (reg.has<T>(e)) {
-			// SerializerƒNƒ‰ƒX‚ÌToJson‚Íprivate‚È‚Ì‚ÅŒÄ‚×‚È‚¢B
-			// –{—ˆ‚ÍSerializer‚ğfriend‚É‚·‚é‚©public‚É‚·‚é‚×‚«‚¾‚ªA
-			// ‚±‚±‚Å‚ÍuSerializer.hv‚ÌÀ‘•‚ğƒRƒs[‚µ‚Äg‚¤Œ`iã‹LSaveSceneQÆj‚ğ‚Æ‚é‚©A
-			// SerializerƒNƒ‰ƒX‚ÉuToJson‚ğŒöŠJ‚·‚év‰üC‚ğ“ü‚ê‚é‚Ì‚ª³‚µ‚¢B
+			// Serializerã‚¯ãƒ©ã‚¹ã®ToJsonã¯privateãªã®ã§å‘¼ã¹ãªã„ã€‚
+			// æœ¬æ¥ã¯Serializerã‚’friendã«ã™ã‚‹ã‹publicã«ã™ã‚‹ã¹ãã ãŒã€
+			// ã“ã“ã§ã¯ã€ŒSerializer.hã€ã®å®Ÿè£…ã‚’ã‚³ãƒ”ãƒ¼ã—ã¦ä½¿ã†å½¢ï¼ˆä¸Šè¨˜SaveSceneå‚ç…§ï¼‰ã‚’ã¨ã‚‹ã‹ã€
+			// Serializerã‚¯ãƒ©ã‚¹ã«ã€ŒToJsonã‚’å…¬é–‹ã™ã‚‹ã€æ”¹ä¿®ã‚’å…¥ã‚Œã‚‹ã®ãŒæ­£ã—ã„ã€‚
 
-			// š¡‰ñ‚ÍŠÈˆÕ“I‚ÉuSerializer::SaveEntityv‚Ì’†g‚ğƒRƒsƒy‚µ‚ÄÀ‘•‚·‚é‘O’ñ‚ÅA
-			// SaveSceneŠÖ”“à‚É’¼Ú ToJson ‚ÌƒƒWƒbƒN‚ğ‘‚­‚©A
-			// SerializerƒNƒ‰ƒX‚ğC³‚µ‚Ä ToJson ‚ğ public static ‚É‚·‚é‚±‚Æ‚ğ„§‚µ‚Ü‚·B
+			// â˜…ä»Šå›ã¯ç°¡æ˜“çš„ã«ã€ŒSerializer::SaveEntityã€ã®ä¸­èº«ã‚’ã‚³ãƒ”ãƒšã—ã¦å®Ÿè£…ã™ã‚‹å‰æã§ã€
+			// SaveSceneé–¢æ•°å†…ã«ç›´æ¥ ToJson ã®ãƒ­ã‚¸ãƒƒã‚¯ã‚’æ›¸ãã‹ã€
+			// Serializerã‚¯ãƒ©ã‚¹ã‚’ä¿®æ­£ã—ã¦ ToJson ã‚’ public static ã«ã™ã‚‹ã“ã¨ã‚’æ¨å¥¨ã—ã¾ã™ã€‚
 
-			// b’è‘[’uFSerializer.h ‚ğC³‚µ‚Ä ToJson ‚ğ public ‚É‚µ‚Ä‚­‚¾‚³‚¢B
-			// ‚»‚ê‚ªˆê”Ô‘‚¢‚Å‚·B
+			// æš«å®šæªç½®ï¼šSerializer.h ã‚’ä¿®æ­£ã—ã¦ ToJson ã‚’ public ã«ã—ã¦ãã ã•ã„ã€‚
+			// ãã‚ŒãŒä¸€ç•ªæ—©ã„ã§ã™ã€‚
 			j[key] = Serializer::ToJson(reg.get<T>(e));
 		}
 	}

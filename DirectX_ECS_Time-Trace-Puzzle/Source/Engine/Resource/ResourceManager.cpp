@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ResourceManager.cpp
- * @brief	ƒŠƒ\[ƒXƒ}ƒl[ƒWƒƒ[
+ * @brief	ãƒªã‚½ãƒ¼ã‚¹ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
  * 
  * @details	
  * 
@@ -8,23 +8,23 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/25	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/25	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Core/Logger.h"
 #include "Engine/Graphics/Text/FontManager.h"
 
-// ƒtƒ@ƒCƒ‹ƒwƒbƒ_\‘¢‘Ì
+// ãƒ•ã‚¡ã‚¤ãƒ«ãƒ˜ãƒƒãƒ€æ§‹é€ ä½“
 struct RIFF_HEADER
 {
 	char chunkId[4];	// "RIFF"
@@ -37,7 +37,7 @@ struct CHUNK_HEADER
 	unsigned int chunkSize;
 };
 
-// ƒƒCƒh•¶š—ñ•ÏŠ·—pƒwƒ‹ƒp[
+// ãƒ¯ã‚¤ãƒ‰æ–‡å­—åˆ—å¤‰æ›ç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼
 std::wstring ToWString(const std::string& str)
 {
 	if (str.empty()) return std::wstring();
@@ -63,16 +63,16 @@ void ResourceManager::LoadManifest(const std::string& jsonPath) {
 		nlohmann::json j;
 		file >> j;
 
-		// "textures" ƒZƒNƒVƒ‡ƒ“‚ğ“Ç‚İ‚Ş
+		// "textures" ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã‚’èª­ã¿è¾¼ã‚€
 		if (j.contains("textures")) {
 			for (auto& element : j["textures"].items()) {
 				std::string key = element.key();
 				std::string path = element.value()["path"];
-				// ƒpƒX‚ğ“o˜^ (std::string -> StringId ‚ÍˆÃ–Ù•ÏŠ·‚³‚ê‚é)
+				// ãƒ‘ã‚¹ã‚’ç™»éŒ² (std::string -> StringId ã¯æš—é»™å¤‰æ›ã•ã‚Œã‚‹)
 				m_texturePaths[key] = path;
 			}
 		}
-		// "models" ƒZƒNƒVƒ‡ƒ“‚ğ“Ç‚İ‚Ş
+		// "models" ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã‚’èª­ã¿è¾¼ã‚€
 		if (j.contains("models")) {
 			for (auto& element : j["models"].items()) {
 				std::string key = element.key();
@@ -80,7 +80,7 @@ void ResourceManager::LoadManifest(const std::string& jsonPath) {
 				m_modelPaths[key] = path;
 			}
 		}
-		// "sounds" ƒZƒNƒVƒ‡ƒ“‚ğ“Ç‚İ‚Ş
+		// "sounds" ã‚»ã‚¯ã‚·ãƒ§ãƒ³ã‚’èª­ã¿è¾¼ã‚€
 		if (j.contains("sounds")) {
 			for (auto& element : j["sounds"].items()) {
 				std::string key = element.key();
@@ -96,37 +96,37 @@ void ResourceManager::LoadManifest(const std::string& jsonPath) {
 
 void ResourceManager::LoadAll()
 {
-	// ƒeƒNƒXƒ`ƒƒ‘Sƒ[ƒh
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£å…¨ãƒ­ãƒ¼ãƒ‰
 	for (auto& pair : m_texturePaths) {
 		LoadTextureFromFile(pair.second);
 	}
-	// ƒ‚ƒfƒ‹‘Sƒ[ƒh
+	// ãƒ¢ãƒ‡ãƒ«å…¨ãƒ­ãƒ¼ãƒ‰
 	for (auto& pair : m_modelPaths) {
 		LoadModelFromFile(pair.second);
 	}
-	// ƒTƒEƒ“ƒh‘Sƒ[ƒh
+	// ã‚µã‚¦ãƒ³ãƒ‰å…¨ãƒ­ãƒ¼ãƒ‰
 	for (auto& pair : m_soundPaths) {
 		LoadWav(pair.second);
 	}
 }
 
-// ƒL[–¼‚©‚çæ“¾ (ˆø”‚ğ StringId ‚É•ÏX)
+// ã‚­ãƒ¼åã‹ã‚‰å–å¾— (å¼•æ•°ã‚’ StringId ã«å¤‰æ›´)
 std::shared_ptr<Texture> ResourceManager::GetTexture(StringId key) {
-	// 1. ƒLƒƒƒbƒVƒ…ƒ`ƒFƒbƒN (StringId‚Å‚‘¬ŒŸõ)
+	// 1. ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒã‚§ãƒƒã‚¯ (StringIdã§é«˜é€Ÿæ¤œç´¢)
 	auto itCache = m_textures.find(key);
 	if (itCache != m_textures.end()) {
 		return itCache->second;
 	}
 
-	// 2. ƒpƒXƒŠƒXƒgƒ`ƒFƒbƒN
+	// 2. ãƒ‘ã‚¹ãƒªã‚¹ãƒˆãƒã‚§ãƒƒã‚¯
 	auto itPath = m_texturePaths.find(key);
 	if (itPath == m_texturePaths.end()) {
-		// –¢“o˜^‚Ìê‡‚Ínullptr
+		// æœªç™»éŒ²ã®å ´åˆã¯nullptr
 		// OutputDebugStringA("Texture Key Not Found\n"); 
 		return nullptr;
 	}
 
-	// 3. ƒ[ƒh‚µ‚ÄƒLƒƒƒbƒVƒ…
+	// 3. ãƒ­ãƒ¼ãƒ‰ã—ã¦ã‚­ãƒ£ãƒƒã‚·ãƒ¥
 	std::string filepath = itPath->second;
 	auto texture = LoadTextureFromFile(filepath);
 	if (texture) {
@@ -181,12 +181,12 @@ std::string ResourceManager::GetPathByKey(StringId key, ResourceType type)
 		auto it = m_soundPaths.find(key);
 		if (it != m_soundPaths.end()) return it->second;
 	}
-	return ""; // Œ©‚Â‚©‚ç‚È‚¢
+	return ""; // è¦‹ã¤ã‹ã‚‰ãªã„
 }
 
 void ResourceManager::RegisterResource(StringId key, const std::string& path, ResourceType type)
 {
-	// Šù‚É“o˜^Ï‚İ‚È‚ç‰½‚à‚µ‚È‚¢iã‘‚«–h~j
+	// æ—¢ã«ç™»éŒ²æ¸ˆã¿ãªã‚‰ä½•ã‚‚ã—ãªã„ï¼ˆä¸Šæ›¸ãé˜²æ­¢ï¼‰
 	if (type == ResourceType::Texture) {
 		if (m_texturePaths.find(key) == m_texturePaths.end()) m_texturePaths[key] = path;
 	}
@@ -198,7 +198,7 @@ void ResourceManager::RegisterResource(StringId key, const std::string& path, Re
 	}
 }
 
-// “à•”ƒ[ƒhŠÖ”
+// å†…éƒ¨ãƒ­ãƒ¼ãƒ‰é–¢æ•°
 std::shared_ptr<Texture> ResourceManager::LoadTextureFromFile(const std::string& filepath) {
 	if (!std::filesystem::exists(filepath)) {
 		OutputDebugStringA(("Texture Not Found: " + filepath + "\n").c_str());
@@ -218,7 +218,7 @@ std::shared_ptr<Texture> ResourceManager::LoadTextureFromFile(const std::string&
 	if (FAILED(hr)) return nullptr;
 
 	auto texture = std::make_shared<Texture>();
-	texture->filepath = filepath; // ‚±‚±‚Å•Û‘¶‚³‚ê‚½ƒpƒX‚ğg‚¢‚Ü‚·
+	texture->filepath = filepath; // ã“ã“ã§ä¿å­˜ã•ã‚ŒãŸãƒ‘ã‚¹ã‚’ä½¿ã„ã¾ã™
 	texture->width = static_cast<int>(image.GetMetadata().width);
 	texture->height = static_cast<int>(image.GetMetadata().height);
 
@@ -244,7 +244,7 @@ std::shared_ptr<Model> ResourceManager::LoadModelFromFile(const std::string& fil
 	}
 
 	auto model = std::make_shared<Model>();
-	model->filepath = filepath; // ‚±‚±‚Å•Û‘¶‚³‚ê‚½ƒpƒX‚ğg‚¢‚Ü‚·
+	model->filepath = filepath; // ã“ã“ã§ä¿å­˜ã•ã‚ŒãŸãƒ‘ã‚¹ã‚’ä½¿ã„ã¾ã™
 
 	std::string directory = std::filesystem::path(filepath).parent_path().string();
 	ProcessNode(scene->mRootNode, scene, model, directory);
@@ -270,7 +270,7 @@ std::shared_ptr<Sound> ResourceManager::LoadWav(const std::string& filepath)
 	}
 
 	auto sound = std::make_shared<Sound>();
-	sound->filepath = filepath; // ‚±‚±‚Å•Û‘¶‚³‚ê‚½ƒpƒX‚ğg‚¢‚Ü‚·
+	sound->filepath = filepath; // ã“ã“ã§ä¿å­˜ã•ã‚ŒãŸãƒ‘ã‚¹ã‚’ä½¿ã„ã¾ã™
 
 	while (!file.eof())
 	{
@@ -395,12 +395,12 @@ Mesh ResourceManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std:
 }
 
 // ------------------------------------------------------------
-// ƒfƒoƒbƒO•\¦ (StringId‘Î‰”Å)
+// ãƒ‡ãƒãƒƒã‚°è¡¨ç¤º (StringIdå¯¾å¿œç‰ˆ)
 // ------------------------------------------------------------
 void ResourceManager::OnInspector() {
 	ImGui::Begin("Resource Monitor");
 
-	// ƒhƒ‰ƒbƒO—pƒwƒ‹ƒp[
+	// ãƒ‰ãƒ©ãƒƒã‚°ç”¨ãƒ˜ãƒ«ãƒ‘ãƒ¼
 	auto SetDragDropSource = [](const std::string& path) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			ImGui::SetDragDropPayload("ASSET_PATH", path.c_str(), path.length() + 1);
@@ -413,7 +413,7 @@ void ResourceManager::OnInspector() {
 	// 1. Textures
 	// ------------------------------------------------------------
 	if (ImGui::CollapsingHeader("Textures", ImGuiTreeNodeFlags_DefaultOpen)) {
-		// ƒpƒX‚²‚Æ‚ÉW–ñ‚µ‚Äd•¡‚ğ”rœ
+		// ãƒ‘ã‚¹ã”ã¨ã«é›†ç´„ã—ã¦é‡è¤‡ã‚’æ’é™¤
 		std::map<std::string, std::vector<StringId>> uniquePaths;
 		for (const auto& pair : m_texturePaths) {
 			uniquePaths[pair.second].push_back(pair.first);
@@ -430,10 +430,10 @@ void ResourceManager::OnInspector() {
 
 			for (const auto& pair : uniquePaths) {
 				const std::string& path = pair.first;
-				// ‚±‚ÌƒpƒX‚É‘Î‰‚·‚éƒŠƒ\[ƒX‚ªƒ[ƒh‚³‚ê‚Ä‚¢‚é‚©Šm”F
-				// LoadTextureFromFile‚Í StringId(path) ‚ğƒL[‚ÉƒLƒƒƒbƒVƒ…‚·‚éd—l‚È‚Ì‚ÅA‚»‚ê‚ğƒ`ƒFƒbƒN
+				// ã“ã®ãƒ‘ã‚¹ã«å¯¾å¿œã™ã‚‹ãƒªã‚½ãƒ¼ã‚¹ãŒãƒ­ãƒ¼ãƒ‰ã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèª
+				// LoadTextureFromFileã¯ StringId(path) ã‚’ã‚­ãƒ¼ã«ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã™ã‚‹ä»•æ§˜ãªã®ã§ã€ãã‚Œã‚’ãƒã‚§ãƒƒã‚¯
 				bool isLoaded = m_textures.find(StringId(path)) != m_textures.end();
-				// ”O‚Ì‚½‚ßAƒGƒCƒŠƒAƒXƒL[‚Å‚Ìƒ[ƒh‚àƒ`ƒFƒbƒN
+				// å¿µã®ãŸã‚ã€ã‚¨ã‚¤ãƒªã‚¢ã‚¹ã‚­ãƒ¼ã§ã®ãƒ­ãƒ¼ãƒ‰ã‚‚ãƒã‚§ãƒƒã‚¯
 				if (!isLoaded) {
 					for (auto k : pair.second) {
 						if (m_textures.find(k) != m_textures.end()) { isLoaded = true; break; }
@@ -455,7 +455,7 @@ void ResourceManager::OnInspector() {
 				// Preview
 				ImGui::TableSetColumnIndex(2);
 				if (isLoaded) {
-					// ƒ[ƒhÏ‚İ‚È‚çƒLƒƒƒbƒVƒ…‚©‚çæ“¾iƒL[‚Í‰½‚Å‚à—Ç‚¢‚ªAStringId(path)‚ªŠmÀj
+					// ãƒ­ãƒ¼ãƒ‰æ¸ˆã¿ãªã‚‰ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‹ã‚‰å–å¾—ï¼ˆã‚­ãƒ¼ã¯ä½•ã§ã‚‚è‰¯ã„ãŒã€StringId(path)ãŒç¢ºå®Ÿï¼‰
 					auto it = m_textures.find(StringId(path));
 					if (it == m_textures.end() && !pair.second.empty()) it = m_textures.find(pair.second[0]);
 
@@ -463,7 +463,7 @@ void ResourceManager::OnInspector() {
 						auto& tex = it->second;
 						if (tex && tex->srv) {
 							ImGui::Image((void*)tex->srv.Get(), ImVec2(32, 32));
-							SetDragDropSource(path); // ‰æ‘œ‚àƒhƒ‰ƒbƒO‰Â”\‚É
+							SetDragDropSource(path); // ç”»åƒã‚‚ãƒ‰ãƒ©ãƒƒã‚°å¯èƒ½ã«
 							if (ImGui::IsItemHovered()) {
 								ImGui::BeginTooltip();
 								ImGui::Image((void*)tex->srv.Get(), ImVec2(256, 256));
@@ -493,7 +493,7 @@ void ResourceManager::OnInspector() {
 				for (auto k : pair.second) { if (m_models.find(k) != m_models.end()) { isLoaded = true; break; } }
 			}
 
-			// ƒcƒŠ[ƒm[ƒh•\¦
+			// ãƒ„ãƒªãƒ¼ãƒãƒ¼ãƒ‰è¡¨ç¤º
 			bool nodeOpen = ImGui::TreeNode(path.c_str());
 			SetDragDropSource(path);
 
@@ -512,7 +512,7 @@ void ResourceManager::OnInspector() {
 					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1), "[Unloaded]");
 					ImGui::SameLine();
 					if (ImGui::SmallButton("Load")) {
-						GetModel(StringId(path)); // ƒpƒXID‚Åƒ[ƒh
+						GetModel(StringId(path)); // ãƒ‘ã‚¹IDã§ãƒ­ãƒ¼ãƒ‰
 					}
 				}
 				ImGui::TreePop();
@@ -549,7 +549,7 @@ void ResourceManager::OnInspector() {
 					ImGui::TextColored(ImVec4(0, 1, 0, 1), "[Loaded]");
 					ImGui::SameLine();
 					if (ImGui::Button(("Play##" + path).c_str())) {
-						// Ä¶‚Í StringId(path) ‚ğg‚¤iAudioManager‘¤‚Å‚±‚ê‚ğƒL[‚ÉŒŸõ‚·‚é‚½‚ßj
+						// å†ç”Ÿæ™‚ã¯ StringId(path) ã‚’ä½¿ã†ï¼ˆAudioManagerå´ã§ã“ã‚Œã‚’ã‚­ãƒ¼ã«æ¤œç´¢ã™ã‚‹ãŸã‚ï¼‰
 						AudioManager::Instance().PlaySE(StringId(path));
 					}
 				}
@@ -582,7 +582,7 @@ void ResourceManager::OnInspector() {
 				ImGui::TableSetColumnIndex(0);
 				ImGui::Text("%s", name.c_str());
 
-				// ƒNƒŠƒbƒvƒ{[ƒh‚ÉƒRƒs[‹@”\
+				// ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ã‚³ãƒ”ãƒ¼æ©Ÿèƒ½
 				ImGui::TableSetColumnIndex(1);
 				std::string btnLabel = "Copy##" + name;
 				if (ImGui::Button(btnLabel.c_str())) {

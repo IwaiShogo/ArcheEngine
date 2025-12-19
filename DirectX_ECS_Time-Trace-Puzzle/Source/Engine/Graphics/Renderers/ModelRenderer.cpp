@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ModelRenderer.cpp
- * @brief	ƒ‚ƒfƒ‹‚ğ•`‰æ‚·‚éƒNƒ‰ƒX
+ * @brief	ãƒ¢ãƒ‡ãƒ«ã‚’æç”»ã™ã‚‹ã‚¯ãƒ©ã‚¹
  * 
  * @details	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
 
@@ -26,11 +26,11 @@ ModelRenderer::ModelRenderer(ID3D11Device* device, ID3D11DeviceContext* context)
 
 void ModelRenderer::Initialize()
 {
-	// 1. ƒVƒF[ƒ_[ƒRƒ“ƒpƒCƒ‹
+	// 1. ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«
 	ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
 	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
 
-	// Standard.hlsl ‚ğ“Ç‚İ‚Ş
+	// Standard.hlsl ã‚’èª­ã¿è¾¼ã‚€
 	HRESULT hr = D3DCompileFromFile(L"Resources/Shaders/Standard.hlsl", nullptr, nullptr, "VS", "vs_5_0", flags, 0, &vsBlob, &errorBlob);
 	if (FAILED(hr)) throw std::runtime_error("Failed to compile Standard VS");
 	m_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &m_vs);
@@ -39,7 +39,7 @@ void ModelRenderer::Initialize()
 	if (FAILED(hr)) throw std::runtime_error("Failed to compile Standard PS");
 	m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &m_ps);
 
-	// 2. “ü—ÍƒŒƒCƒAƒEƒg (Pos, Normal, UV)
+	// 2. å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ (Pos, Normal, UV)
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",	  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -47,14 +47,14 @@ void ModelRenderer::Initialize()
 	};
 	m_device->CreateInputLayout(layout, 3, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &m_inputLayout);
 
-	// 3. ’è”ƒoƒbƒtƒ@
+	// 3. å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(CBData);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	m_device->CreateBuffer(&bd, nullptr, &m_constantBuffer);
 
-	// 4. ƒTƒ“ƒvƒ‰[
+	// 4. ã‚µãƒ³ãƒ—ãƒ©ãƒ¼
 	D3D11_SAMPLER_DESC sd = {};
 	sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -62,9 +62,9 @@ void ModelRenderer::Initialize()
 	sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	m_device->CreateSamplerState(&sd, &m_samplerState);
 
-	// 5. ƒ‰ƒXƒ^ƒ‰ƒCƒU
+	// 5. ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶
 	D3D11_RASTERIZER_DESC rd = {};
-	rd.CullMode = D3D11_CULL_BACK; // — –ÊƒJƒŠƒ“ƒO—LŒø
+	rd.CullMode = D3D11_CULL_BACK; // è£é¢ã‚«ãƒªãƒ³ã‚°æœ‰åŠ¹
 	rd.FillMode = D3D11_FILL_SOLID;
 	rd.DepthClipEnable = TRUE;
 	m_device->CreateRasterizerState(&rd, &m_rsSolid);
@@ -85,7 +85,7 @@ void ModelRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection, cons
 	m_context->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
-	// s—ñ‚Æƒ‰ƒCƒgİ’è
+	// è¡Œåˆ—ã¨ãƒ©ã‚¤ãƒˆè¨­å®š
 	m_cbData.view = XMMatrixTranspose(view);
 	m_cbData.projection = XMMatrixTranspose(projection);
 	m_cbData.lightDir = XMFLOAT4(lightDir.x, lightDir.y, lightDir.z, 0);
@@ -94,14 +94,14 @@ void ModelRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection, cons
 
 void ModelRenderer::Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos, const XMFLOAT3& scale, const XMFLOAT3& rot)
 {
-	// s—ñ‚ğì‚Á‚ÄAã‚ÌŠÖ”‚ÉŠÛ“Š‚°‚·‚é
+	// è¡Œåˆ—ã‚’ä½œã£ã¦ã€ä¸Šã®é–¢æ•°ã«ä¸¸æŠ•ã’ã™ã‚‹
 	XMMATRIX S = XMMatrixScaling(scale.x, scale.y, scale.z);
 	XMMATRIX R = XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
 	XMMATRIX T = XMMatrixTranslation(pos.x, pos.y, pos.z);
 
 	XMMATRIX world = S * R * T;
 
-	// V‚µ‚¢Draw‚ğŒÄ‚Ô
+	// æ–°ã—ã„Drawã‚’å‘¼ã¶
 	Draw(model, world);
 }
 
@@ -109,24 +109,24 @@ void ModelRenderer::Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& 
 {
 	if (!model) return;
 
-	// 1. ’è”ƒoƒbƒtƒ@‚ÌXV
-	// ó‚¯æ‚Á‚½s—ñ‚ğ“]’u‚µ‚ÄƒZƒbƒg
+	// 1. å®šæ•°ãƒãƒƒãƒ•ã‚¡ã®æ›´æ–°
+	// å—ã‘å–ã£ãŸè¡Œåˆ—ã‚’è»¢ç½®ã—ã¦ã‚»ãƒƒãƒˆ
 	m_cbData.world = XMMatrixTranspose(worldMatrix);
-	m_cbData.materialColor = { 1, 1, 1, 1 }; // ƒfƒtƒHƒ‹ƒg”’
+	m_cbData.materialColor = { 1, 1, 1, 1 }; // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆç™½
 
-	// ƒVƒF[ƒ_[‚É‘—M
+	// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã«é€ä¿¡
 	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);
 
-	// 2. ƒƒbƒVƒ…‚²‚Æ‚Ì•`‰æƒ‹[ƒv
+	// 2. ãƒ¡ãƒƒã‚·ãƒ¥ã”ã¨ã®æç”»ãƒ«ãƒ¼ãƒ—
 	for (const auto& mesh : model->meshes)
 	{
-		// ’¸“_ƒoƒbƒtƒ@EƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@ƒZƒbƒg
+		// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ãƒ»ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ã‚»ãƒƒãƒˆ
 		UINT stride = sizeof(ModelVertex);
 		UINT offset = 0;
 		m_context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
 		m_context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-		// ƒeƒNƒXƒ`ƒƒƒZƒbƒg (‚È‚¯‚ê‚Î”’ƒeƒNƒXƒ`ƒƒ)
+		// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚»ãƒƒãƒˆ (ãªã‘ã‚Œã°ç™½ãƒ†ã‚¯ã‚¹ãƒãƒ£)
 		ID3D11ShaderResourceView* srv = nullptr;
 		if (mesh.texture) {
 			srv = mesh.texture->srv.Get();
@@ -136,14 +136,14 @@ void ModelRenderer::Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& 
 		}
 		m_context->PSSetShaderResources(0, 1, &srv);
 
-		// •`‰æÀs
+		// æç”»å®Ÿè¡Œ
 		m_context->DrawIndexed(mesh.indexCount, 0, 0);
 	}
 }
 
 void ModelRenderer::CreateWhiteTexture()
 {
-	// 1x1 ‚Ì”’ƒsƒNƒZƒ‹ƒf[ƒ^ (R,G,B,A = 255,255,255,255)
+	// 1x1 ã®ç™½ãƒ”ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ (R,G,B,A = 255,255,255,255)
 	uint32_t pixel = 0xFFFFFFFF;
 
 	D3D11_SUBRESOURCE_DATA initData = {};

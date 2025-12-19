@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	AudioManager.cpp
- * @brief	ƒI[ƒfƒBƒIƒ}ƒl[ƒWƒƒ[
+ * @brief	ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
  * 
  * @details	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Resource/ResourceManager.h"
@@ -27,24 +27,24 @@ void AudioManager::Initialize()
 {
 	HRESULT hr;
 
-	// 1. COM‰Šú‰» (Šù‚És‚í‚ê‚Ä‚¢‚éê‡‚ÍS_FALSE‚ª•Ô‚é)
+	// 1. COMåˆæœŸåŒ– (æ—¢ã«è¡Œã‚ã‚Œã¦ã„ã‚‹å ´åˆã¯S_FALSEãŒè¿”ã‚‹)
 	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
-	// 2. XAudio2ƒGƒ“ƒWƒ“‚Ìì¬
+	// 2. XAudio2ã‚¨ãƒ³ã‚¸ãƒ³ã®ä½œæˆ
 	hr = XAudio2Create(&m_xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 	if (FAILED(hr)) {
 		OutputDebugStringA("Failed to init XAudio2\n");
 		return;
 	}
 
-	// 3. ƒ}ƒXƒ^[ƒ{ƒCƒXiÅIo—Íj‚Ìì¬
+	// 3. ãƒã‚¹ã‚¿ãƒ¼ãƒœã‚¤ã‚¹ï¼ˆæœ€çµ‚å‡ºåŠ›ï¼‰ã®ä½œæˆ
 	hr = m_xAudio2->CreateMasteringVoice(&m_masterVoice);
 	if (FAILED(hr)) return;
 
-	// 4. ƒTƒuƒ~ƒbƒNƒXiƒOƒ‹[ƒvj‚Ìì¬
-	// SE—p
+	// 4. ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ï¼ˆã‚°ãƒ«ãƒ¼ãƒ—ï¼‰ã®ä½œæˆ
+	// SEç”¨
 	hr = m_xAudio2->CreateSubmixVoice(&m_seSubmix, 1, 44100, 0, 0, 0, 0);
-	// BGM—p
+	// BGMç”¨
 	hr = m_xAudio2->CreateSubmixVoice(&m_bgmSubmix, 1, 44100, 0, 0, 0, 0);
 
 	m_masterVoice->SetVolume(m_masterVolume);
@@ -56,7 +56,7 @@ void AudioManager::Update()
 {
 	float dt = Time::DeltaTime();
 
-	// —š—ğ‚ÌXViŠÔ‚ªŒo‚Á‚½‚çÁ‚·j
+	// å±¥æ­´ã®æ›´æ–°ï¼ˆæ™‚é–“ãŒçµŒã£ãŸã‚‰æ¶ˆã™ï¼‰
 	{
 		auto it = m_soundEvents.begin();
 		while (it != m_soundEvents.end())
@@ -73,14 +73,14 @@ void AudioManager::Update()
 		}
 	}
 
-	// Ä¶‚ªI—¹‚µ‚½SEƒ{ƒCƒX‚ğŒŸo‚µA”jŠü‚·‚é
+	// å†ç”ŸãŒçµ‚äº†ã—ãŸSEãƒœã‚¤ã‚¹ã‚’æ¤œå‡ºã—ã€ç ´æ£„ã™ã‚‹
 	{
 		auto it = m_seVoices.begin();
 		while (it != m_seVoices.end()) {
 			XAUDIO2_VOICE_STATE state;
 			it->voice->GetState(&state);
 
-			// ƒoƒbƒtƒ@‚ğg‚¢Ø‚Á‚½ = Ä¶I—¹
+			// ãƒãƒƒãƒ•ã‚¡ã‚’ä½¿ã„åˆ‡ã£ãŸ = å†ç”Ÿçµ‚äº†
 			if (state.BuffersQueued == 0) {
 				it->voice->DestroyVoice();
 				it = m_seVoices.erase(it);
@@ -113,13 +113,13 @@ void AudioManager::Finalize()
 
 void AudioManager::PlaySE(StringId key, float volume, float pitch)
 {
-	// 1. ƒf[ƒ^æ“¾ (ResourceManagerŒo—R)
+	// 1. ãƒ‡ãƒ¼ã‚¿å–å¾— (ResourceManagerçµŒç”±)
 	 auto sound = ResourceManager::Instance().GetSound(key);
 	 if (!sound) return;
 	
 	IXAudio2SourceVoice* sourceVoice = nullptr;
 
-	// SEƒTƒuƒ~ƒbƒNƒX‚Öo—Í‚·‚é‚æ‚¤‚Éw’è
+	// SEã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã¸å‡ºåŠ›ã™ã‚‹ã‚ˆã†ã«æŒ‡å®š
 	XAUDIO2_SEND_DESCRIPTOR send = { 0, m_seSubmix };
 	XAUDIO2_VOICE_SENDS sendList = { 1, &send };
 
@@ -127,7 +127,7 @@ void AudioManager::PlaySE(StringId key, float volume, float pitch)
 	if (FAILED(hr)) return;
 
 	sourceVoice->SetVolume(volume);
-	sourceVoice->SetFrequencyRatio(pow(2.0f, pitch)); // ƒsƒbƒ`•ÏX
+	sourceVoice->SetFrequencyRatio(pow(2.0f, pitch)); // ãƒ”ãƒƒãƒå¤‰æ›´
 
 	hr = sourceVoice->SubmitSourceBuffer(&sound->xBuffer);
 	if (FAILED(hr)) {
@@ -147,27 +147,27 @@ void AudioManager::Play3DSE(StringId key, const XMFLOAT3& emitterPos, const XMFL
 	float dz = emitterPos.z - listenerPos.z;
 	float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-	if (dist > range) return;	// •·‚±‚¦‚È‚¢
+	if (dist > range) return;	// èã“ãˆãªã„
 
 	float attenuation = 1.0f - (dist / range);
 	PlaySE(key, volume * attenuation);
 
-	// ƒfƒoƒbƒO—p‚ÉˆÊ’u‚ğXV
+	// ãƒ‡ãƒãƒƒã‚°ç”¨ã«ä½ç½®ã‚’æ›´æ–°
 	m_soundEvents.push_back({ key, emitterPos, 1.5f });
 }
 
 void AudioManager::PlayBGM(StringId key, float volume, bool loop)
 {
-	// Šù‚ÉÄ¶’†‚È‚ç~‚ß‚é
+	// æ—¢ã«å†ç”Ÿä¸­ãªã‚‰æ­¢ã‚ã‚‹
 	StopBGM();
 
-	// ƒf[ƒ^æ“¾ (ResourceManagerŒo—R)
+	// ãƒ‡ãƒ¼ã‚¿å–å¾— (ResourceManagerçµŒç”±)
 	 auto sound = ResourceManager::Instance().GetSound(key);
 	 if (!sound) return;
 
-	// ‰¼‚ÌÀ‘•FResourceManager˜AŒg‘O‚Ì‚½‚ßƒRƒƒ“ƒgƒAƒEƒg
+	// ä»®ã®å®Ÿè£…ï¼šResourceManageré€£æºå‰ã®ãŸã‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 	
-	// BGMƒTƒuƒ~ƒbƒNƒX‚Öo—Í
+	// BGMã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã¸å‡ºåŠ›
 	XAUDIO2_SEND_DESCRIPTOR send = { 0, m_bgmSubmix };
 	XAUDIO2_VOICE_SENDS sendList = { 1, &send };
 
@@ -176,7 +176,7 @@ void AudioManager::PlayBGM(StringId key, float volume, bool loop)
 
 	m_currentBgmVoice->SetVolume(volume);
 
-	// ƒ‹[ƒvİ’è
+	// ãƒ«ãƒ¼ãƒ—è¨­å®š
 	XAUDIO2_BUFFER buffer = sound->xBuffer;
 	if (loop) {
 		buffer.LoopCount = XAUDIO2_LOOP_INFINITE;
@@ -212,27 +212,27 @@ void AudioManager::SetBGMVolume(float volume)
 void AudioManager::OnInspector() {
 	ImGui::Begin("Audio Mixer");
 
-	// ƒ}ƒXƒ^[‰¹—Ê
+	// ãƒã‚¹ã‚¿ãƒ¼éŸ³é‡
 	if (ImGui::SliderFloat("Master Volume", &m_masterVolume, 0.0f, 1.0f)) {
 		SetMasterVolume(m_masterVolume);
 	}
 
-	// BGM‰¹—Ê
+	// BGMéŸ³é‡
 	if (ImGui::SliderFloat("BGM Volume", &m_bgmVolume, 0.0f, 1.0f)) {
 		SetBGMVolume(m_bgmVolume);
 	}
 
-	// SE‰¹—Ê
+	// SEéŸ³é‡
 	if (ImGui::SliderFloat("SE Volume", &m_seVolume, 0.0f, 1.0f)) {
 		SetSEVolume(m_seVolume);
 	}
 
 	ImGui::Separator();
 
-	// ƒAƒNƒeƒBƒu‚ÈSE‚Ì”
+	// ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªSEã®æ•°
 	ImGui::Text("Active SE Voices: %d", m_seVoices.size());
 
-	// BGMÄ¶ó‹µ
+	// BGMå†ç”ŸçŠ¶æ³
 	if (m_currentBgmVoice) {
 		ImGui::TextColored(ImVec4(0, 1, 0, 1), "BGM Playing");
 		if (ImGui::Button("Stop BGM")) StopBGM(0.5f);

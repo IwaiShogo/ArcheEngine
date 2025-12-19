@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SpatialHash.h
- * @brief	‹óŠÔ•ªŠ„iSpatial Hashingj‚É‚æ‚éÕ“Ë”»’èÅ“K‰»
+ * @brief	ç©ºé–“åˆ†å‰²ï¼ˆSpatial Hashingï¼‰ã«ã‚ˆã‚‹è¡çªåˆ¤å®šæœ€é©åŒ–
  * 
  * @details	
  * 
@@ -8,18 +8,18 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/12/15	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/12/15	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 #ifndef ___SPATIAL_HASH_H___
 #define ___SPATIAL_HASH_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 
@@ -28,16 +28,16 @@ using namespace DirectX;
 class SpatialHash
 {
 public:
-	// ƒZƒ‹ƒTƒCƒYiƒIƒuƒWƒFƒNƒg‚ÌÅ‘åƒTƒCƒY‚æ‚è­‚µ‘å‚«‚­İ’è‚·‚éj
+	// ã‚»ãƒ«ã‚µã‚¤ã‚ºï¼ˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æœ€å¤§ã‚µã‚¤ã‚ºã‚ˆã‚Šå°‘ã—å¤§ããè¨­å®šã™ã‚‹ï¼‰
 	static constexpr float CELL_SIZE = 64.0f;
 
-	// ƒOƒŠƒbƒh‚ÌƒŠƒZƒbƒg
+	// ã‚°ãƒªãƒƒãƒ‰ã®ãƒªã‚»ãƒƒãƒˆ
 	void Clear()
 	{
 		grid.clear();
 	}
 
-	// ƒIƒuƒWƒFƒNƒg‚Ì“o˜^
+	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ç™»éŒ²
 	void Register(Entity entity, const XMFLOAT3& min, const XMFLOAT3& max)
 	{
 		int startX = (int)std::floor(min.x / CELL_SIZE);
@@ -61,7 +61,7 @@ public:
 		}
 	}
 
-	// Œó•âƒŠƒXƒg‚Ìæ“¾
+	// å€™è£œãƒªã‚¹ãƒˆã®å–å¾—
 	std::vector<Entity> Query(const XMFLOAT3& min, const XMFLOAT3& max)
 	{
 		std::vector<Entity> result;
@@ -90,7 +90,7 @@ public:
 			}
 		}
 
-		// d•¡íœ
+		// é‡è¤‡å‰Šé™¤
 		std::sort(result.begin(), result.end());
 		result.erase(std::unique(result.begin(), result.end()), result.end());
 
@@ -100,11 +100,11 @@ public:
 private:
 	std::unordered_map<int, std::vector<Entity>> grid;
 
-	// À•WƒnƒbƒVƒ…ŠÖ”
-	// ÀÛ‚É‚Í‚à‚Á‚ÆÕ“Ë‚µ‚É‚­‚¢ƒnƒbƒVƒ…‚ª—Ç‚¢‚ªAƒQ[ƒ€—p‚Æ‚È‚ç‚±‚ê‚Å\•ª
+	// åº§æ¨™ãƒãƒƒã‚·ãƒ¥é–¢æ•°
+	// å®Ÿéš›ã«ã¯ã‚‚ã£ã¨è¡çªã—ã«ãã„ãƒãƒƒã‚·ãƒ¥ãŒè‰¯ã„ãŒã€ã‚²ãƒ¼ãƒ ç”¨ã¨ãªã‚‰ã“ã‚Œã§ååˆ†
 	int GetKey(int x, int y, int z) const
 	{
-		// ‘f”‚ğg‚Á‚½ƒnƒbƒVƒ…
+		// ç´ æ•°ã‚’ä½¿ã£ãŸãƒãƒƒã‚·ãƒ¥
 		const int p1 = 73856093;
 		const int p2 = 19349663;
 		const int p3 = 83492791;

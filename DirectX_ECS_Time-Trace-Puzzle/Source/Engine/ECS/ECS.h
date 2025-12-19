@@ -1,33 +1,33 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ECS.h
- * @brief	ECS‚Ì’†Šj‚Æ‚È‚éƒ‰ƒCƒuƒ‰ƒŠ
+ * @brief	ECSã®ä¸­æ ¸ã¨ãªã‚‹ãƒ©ã‚¤ãƒ–ãƒ©ãƒª
  *
  * @details
- * ‹@”\F
- * - SparseSet: ƒf[ƒ^‚Ì–§‚ÈŠÇ—
- * - Signal: ƒCƒxƒ“ƒg’Ê’mi’Ç‰Á/íœ/XVj
- * - Observer: •ÏXŒŸ’miƒŠƒAƒNƒeƒBƒuƒVƒXƒeƒ€—pj
- * - Dispatcher: ƒOƒ[ƒoƒ‹ƒCƒxƒ“ƒgƒoƒX
- * - View Exclude: œŠOƒtƒBƒ‹ƒ^ƒŠƒ“ƒO
- * - Patch: XV’Ê’m‚Ìè“®”­‰Î
+ * æ©Ÿèƒ½ï¼š
+ * - SparseSet: ãƒ‡ãƒ¼ã‚¿ã®å¯†ãªç®¡ç†
+ * - Signal: ã‚¤ãƒ™ãƒ³ãƒˆé€šçŸ¥ï¼ˆè¿½åŠ /å‰Šé™¤/æ›´æ–°ï¼‰
+ * - Observer: å¤‰æ›´æ¤œçŸ¥ï¼ˆãƒªã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚·ã‚¹ãƒ†ãƒ ç”¨ï¼‰
+ * - Dispatcher: ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚¤ãƒ™ãƒ³ãƒˆãƒã‚¹
+ * - View Exclude: é™¤å¤–ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°
+ * - Patch: æ›´æ–°é€šçŸ¥ã®æ‰‹å‹•ç™ºç«
  *
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  *
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  *
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  *
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___ECS_H___
 #define ___ECS_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/Time.h"
 #include "Engine/Core/Context.h"
@@ -36,7 +36,7 @@
 #include "EntityDef.h"
 
 // ------------------------------------------------------------
-// Šî–{’è‹`
+// åŸºæœ¬å®šç¾©
 // ------------------------------------------------------------
 //using Entity = uint32_t;
 //const Entity NullEntity = 0xFFFFFFFF;
@@ -59,7 +59,7 @@ public:
 };
 
 // ------------------------------------------------------------
-// SignaliƒCƒxƒ“ƒg’Ê’mj
+// Signalï¼ˆã‚¤ãƒ™ãƒ³ãƒˆé€šçŸ¥ï¼‰
 // ------------------------------------------------------------
 template<typename... Args>
 class Signal
@@ -90,7 +90,7 @@ private:
 };
 
 // ------------------------------------------------------------
-// PooliƒCƒ“ƒ^[ƒtƒF[ƒX / Šî’êƒNƒ‰ƒXj
+// Poolï¼ˆã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ / åŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
 // ------------------------------------------------------------
 class IPool
 {
@@ -98,23 +98,23 @@ public:
 	virtual ~IPool() = default;
 	virtual void remove(Entity entity) = 0;
 	virtual bool has(Entity entity) const = 0;
-	virtual std::size_t size() const = 0;	// Å“K‰»—p
+	virtual std::size_t size() const = 0;	// æœ€é©åŒ–ç”¨
 
-	// ObserverÚ‘±—pƒCƒ“ƒ^[ƒtƒF[ƒX
-	Signal<Entity> onConstruct;	// ’Ç‰Á
-	Signal<Entity> onDestroy;	// íœ
-	Signal<Entity> onUpdate;	// XV
+	// Observeræ¥ç¶šç”¨ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
+	Signal<Entity> onConstruct;	// è¿½åŠ æ™‚
+	Signal<Entity> onDestroy;	// å‰Šé™¤æ™‚
+	Signal<Entity> onUpdate;	// æ›´æ–°æ™‚
 };
 
 // ------------------------------------------------------------
-// SparseSetiƒRƒ“ƒ|[ƒlƒ“ƒgƒf[ƒ^ŠÇ— / Signal‘Î‰j
+// SparseSetï¼ˆã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãƒ‡ãƒ¼ã‚¿ç®¡ç† / Signalå¯¾å¿œï¼‰
 // ------------------------------------------------------------
 template<typename T>
 class SparseSet
 	: public IPool
 {
 public:
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚ª‘¶İ‚·‚é‚©
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãŒå­˜åœ¨ã™ã‚‹ã‹
 	bool has(Entity entity) const override
 	{
 		return	entity < sparse.size() &&
@@ -127,13 +127,13 @@ public:
 		return dense.size();
 	}
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì\’ziEmplacej
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®æ§‹ç¯‰ï¼ˆEmplaceï¼‰
 	template<typename... Args>
 	T& emplace(Entity entity, Args&&... args)
 	{
 		if (has(entity))
 		{
-			// Šù‚É‘¶İ‚·‚éê‡‚Íã‘‚«•XV’Ê’m
+			// æ—¢ã«å­˜åœ¨ã™ã‚‹å ´åˆã¯ä¸Šæ›¸ãï¼†æ›´æ–°é€šçŸ¥
 			T& ref = data[sparse[entity]];
 			ref = T(std::forward<Args>(args)...);
 			onUpdate.publish(entity);
@@ -149,19 +149,19 @@ public:
 		dense.push_back(entity);
 		data.emplace_back(std::forward<Args>(args)...);
 
-		// ’Ç‰Á’Ê’m
+		// è¿½åŠ é€šçŸ¥
 		onConstruct.publish(entity);
 		return data.back();
 	}
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ìæ“¾
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å–å¾—
 	T& get(Entity entity)
 	{
 		assert(has(entity));
 		return data[sparse[entity]];
 	}
 
-	// ’l‚ğ‘‚«Š·‚¦‚½Œã‚ÉŒÄ‚Ño‚·iObserver‚Ö‚Ì’Ê’m—pj
+	// å€¤ã‚’æ›¸ãæ›ãˆãŸå¾Œã«å‘¼ã³å‡ºã™ï¼ˆObserverã¸ã®é€šçŸ¥ç”¨ï¼‰
 	void patch(Entity entity)
 	{
 		if (has(entity))
@@ -170,37 +170,37 @@ public:
 		}
 	}
 
-	// íœ
+	// å‰Šé™¤
 	void remove(Entity entity) override
 	{
 		if (!has(entity)) return;
 
-		// íœ’Ê’m
+		// å‰Šé™¤é€šçŸ¥
 		onDestroy.publish(entity);
 
 		Entity lastEntity = dense.back();
 		Entity indexToRemove = sparse[entity];
 
-		// ƒf[ƒ^‚ÆEntityID‚ğ––”ö‚Ì‚à‚Ì‚ÆƒXƒƒbƒv
+		// ãƒ‡ãƒ¼ã‚¿ã¨EntityIDã‚’æœ«å°¾ã®ã‚‚ã®ã¨ã‚¹ãƒ¯ãƒƒãƒ—
 		std::swap(dense[indexToRemove], dense.back());
 		std::swap(data[indexToRemove], data.back());
 
-		// Sparse”z—ñ‚ÌƒŠƒ“ƒN‚ğXV
+		// Sparseé…åˆ—ã®ãƒªãƒ³ã‚¯ã‚’æ›´æ–°
 		sparse[lastEntity] = indexToRemove;
 
-		// íœ
+		// å‰Šé™¤
 		dense.pop_back();
 		data.pop_back();
 	}
 
-	// ƒf[ƒ^‚Ö‚Ì’¼ÚƒAƒNƒZƒXiSystem‚Å‚Ìƒ‹[ƒv—pj
+	// ãƒ‡ãƒ¼ã‚¿ã¸ã®ç›´æ¥ã‚¢ã‚¯ã‚»ã‚¹ï¼ˆSystemã§ã®ãƒ«ãƒ¼ãƒ—ç”¨ï¼‰
 	std::vector<T>& getData() { return data; }
 	const std::vector<Entity>& getEntities() const { return dense; }
 
 private:
 	std::vector<Entity> sparse;	// Entity ID -> Dense Index
 	std::vector<Entity> dense;	// Dense Index -> Entity ID
-	std::vector<T> data;		// Component DataiDense”z—ñ‚Æ“¯Šúj
+	std::vector<T> data;		// Component Dataï¼ˆDenseé…åˆ—ã¨åŒæœŸï¼‰
 };
 
 // ------------------------------------------------------------
@@ -209,13 +209,13 @@ private:
 class Registry
 {
 	Entity nextEntity = 1;
-	// Ä—˜—p‰Â”\‚ÈID‚ÌƒŠƒXƒg
+	// å†åˆ©ç”¨å¯èƒ½ãªIDã®ãƒªã‚¹ãƒˆ
 	std::vector<Entity> freeIds;
 	std::vector<std::unique_ptr<IPool>> pools;
 
 public:
 	// -----------------------------------------------------------
-	// ©“®ŒŸ’m—pƒ‰ƒbƒp[
+	// è‡ªå‹•æ¤œçŸ¥ç”¨ãƒ©ãƒƒãƒ‘ãƒ¼
 	// -----------------------------------------------------------
 	template<typename T>
 	struct ScopedComponent
@@ -239,9 +239,9 @@ public:
 	};
 
 	// -----------------------------------------------------------
-	// Šî–{‹@”\
+	// åŸºæœ¬æ©Ÿèƒ½
 	// -----------------------------------------------------------
-	// Œ^T‚É‘Î‰‚·‚éƒv[ƒ‹‚ğæ“¾i–³‚¯‚ê‚Îì¬j
+	// å‹Tã«å¯¾å¿œã™ã‚‹ãƒ—ãƒ¼ãƒ«ã‚’å–å¾—ï¼ˆç„¡ã‘ã‚Œã°ä½œæˆï¼‰
 	template<typename T>
 	SparseSet<T>& getPool()
 	{
@@ -257,7 +257,7 @@ public:
 		return *static_cast<SparseSet<T>*>(pools[componentId].get());
 	}
 
-	// ƒv[ƒ‹‚ª‘¶İ‚·‚é‚©Šm”FiˆÀ‘S‚ÈƒAƒNƒZƒX‚Ìˆ×j
+	// ãƒ—ãƒ¼ãƒ«ãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªï¼ˆå®‰å…¨ãªã‚¢ã‚¯ã‚»ã‚¹ã®ç‚ºï¼‰
 	template<typename T>
 	bool hasPool() const
 	{
@@ -265,7 +265,7 @@ public:
 		return componentId < pools.size() && pools[componentId] != nullptr;
 	}
 
-	// ”Ä—pƒv[ƒ‹æ“¾
+	// æ±ç”¨ãƒ—ãƒ¼ãƒ«å–å¾—
 	IPool* getPoolBase(std::size_t typeId)
 	{
 		if (typeId < pools.size())
@@ -275,44 +275,44 @@ public:
 		return nullptr;
 	}
 
-	// Entityì¬
+	// Entityä½œæˆ
 	Entity create()
 	{
-		// Ä—˜—p‚Å‚«‚éID‚ª‚ ‚ê‚Î‚»‚ê‚ğg‚¤
+		// å†åˆ©ç”¨ã§ãã‚‹IDãŒã‚ã‚Œã°ãã‚Œã‚’ä½¿ã†
 		if (!freeIds.empty())
 		{
 			Entity id = freeIds.back();
 			freeIds.pop_back();
 			return id;
 		}
-		// –³‚¯‚ê‚ÎV‹K”­s
+		// ç„¡ã‘ã‚Œã°æ–°è¦ç™ºè¡Œ
 		return nextEntity++;
 	}
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg’Ç‰Á
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆè¿½åŠ 
 	template<typename T, typename... Args>
 	T& emplace(Entity entity, Args&&... args)
 	{
 		return getPool<T>().emplace(entity, std::forward<Args>(args)...);
 	}
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğ‚Á‚Ä‚¢‚é‚©Šm”F
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’æŒã£ã¦ã„ã‚‹ã‹ç¢ºèª
 	template<typename T>
 	bool has(Entity entity)
 	{
 		return getPool<T>().has(entity);
 	}
 
-	// ƒGƒ“ƒeƒBƒeƒB‚ª—LŒøi‘¶İ‚µ‚Ä‚¢‚éj‚©”»’è
+	// ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ãŒæœ‰åŠ¹ï¼ˆå­˜åœ¨ã—ã¦ã„ã‚‹ï¼‰ã‹åˆ¤å®š
 	bool valid(Entity entity) const
 	{
-		// 1. –³ŒøID‚È‚ç false
+		// 1. ç„¡åŠ¹IDãªã‚‰ false
 		if (entity == NullEntity) return false;
 
-		// 2. ‚Ü‚¾”­s‚³‚ê‚Ä‚¢‚È‚¢ID‚È‚ç false
+		// 2. ã¾ã ç™ºè¡Œã•ã‚Œã¦ã„ãªã„IDãªã‚‰ false
 		if (entity >= nextEntity) return false;
 
-		// 3. íœÏ‚İIDƒŠƒXƒg(freeIds)‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é‚È‚ç false
+		// 3. å‰Šé™¤æ¸ˆã¿IDãƒªã‚¹ãƒˆ(freeIds)ã«å«ã¾ã‚Œã¦ã„ã‚‹ãªã‚‰ false
 		for (Entity id : freeIds)
 		{
 			if (id == entity) return false;
@@ -321,35 +321,35 @@ public:
 		return true;
 	}
 
-	// “Ç‚İæ‚è—p
+	// èª­ã¿å–ã‚Šç”¨
 	template<typename T>
 	const T& get(Entity entity) const
 	{
 		return const_cast<Registry*>(this)->getPool<T>().get(entity);
 	}
 
-	// ‘‚«‚İ—p
+	// æ›¸ãè¾¼ã¿ç”¨
 	template<typename T>
 	T& get(Entity entity)
 	{
 		return getPool<T>().get(entity);
 	}
 
-	// •ÏXŒŸ’m•t‚«‘‚«‚İ—p
+	// å¤‰æ›´æ¤œçŸ¥ä»˜ãæ›¸ãè¾¼ã¿ç”¨
 	template<typename T>
 	ScopedComponent<T> modify(Entity entity)
 	{
 		return ScopedComponent<T>(this, entity, &getPool<T>().get(entity));
 	}
 
-	// •ÏX’Ê’m‚ğè“®‚Å‘—‚é
+	// å¤‰æ›´é€šçŸ¥ã‚’æ‰‹å‹•ã§é€ã‚‹
 	template<typename T>
 	void patch(Entity entity)
 	{
 		getPool<T>().patch(entity);
 	}
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒgíœ
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆå‰Šé™¤
 	template<typename T>
 	void remove(Entity entity)
 	{
@@ -380,15 +380,15 @@ public:
 		nextEntity = 1;
 	}
 
-	// @brief	‘S‚Ä‚Ì—LŒø‚ÈƒGƒ“ƒeƒBƒeƒB‚É‘Î‚µ‚ÄŠÖ”‚ğÀs‚·‚éB
-	// @param	func Às‚·‚éŠÖ” void(Entity)
+	// @brief	å…¨ã¦ã®æœ‰åŠ¹ãªã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã«å¯¾ã—ã¦é–¢æ•°ã‚’å®Ÿè¡Œã™ã‚‹ã€‚
+	// @param	func å®Ÿè¡Œã™ã‚‹é–¢æ•° void(Entity)
 	template<typename Func>
 	void each(Func func)
 	{
-		// 0”Ô‚©‚çŒ»İ”­s‚³‚ê‚Ä‚¢‚éÅ‘åID‚Ü‚Å‘–¸
+		// 0ç•ªã‹ã‚‰ç¾åœ¨ç™ºè¡Œã•ã‚Œã¦ã„ã‚‹æœ€å¤§IDã¾ã§èµ°æŸ»
 		for (Entity i = 0; i < nextEntity; ++i)
 		{
-			// —LŒøiíœ‚³‚ê‚Ä‚¢‚È‚¢j‚È‚çÀs
+			// æœ‰åŠ¹ï¼ˆå‰Šé™¤ã•ã‚Œã¦ã„ãªã„ï¼‰ãªã‚‰å®Ÿè¡Œ
 			if (valid(i))
 			{
 				func(i);
@@ -403,26 +403,26 @@ public:
 	class View
 	{
 		Registry* registry;
-		// •K—v‚Èƒv[ƒ‹‚Ö‚Ìƒ|ƒCƒ“ƒ^iƒ_ƒuƒ‹‚Å•Ûj
+		// å¿…è¦ãªãƒ—ãƒ¼ãƒ«ã¸ã®ãƒã‚¤ãƒ³ã‚¿ï¼ˆãƒ€ãƒ–ãƒ«ã§ä¿æŒï¼‰
 		std::tuple<SparseSet<Components>*...> pools;
-		// œŠO‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒgID‚ÌƒŠƒXƒg
+		// é™¤å¤–ã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆIDã®ãƒªã‚¹ãƒˆ
 		std::vector<std::size_t> excludeTypes;
-		// ƒ‹[ƒv‹ì“®‚Ég‚¤ƒv[ƒ‹‚ÌƒCƒ“ƒfƒbƒNƒXiÅ¬ƒTƒCƒY‚Ìƒv[ƒ‹j
+		// ãƒ«ãƒ¼ãƒ—é§†å‹•ã«ä½¿ã†ãƒ—ãƒ¼ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ï¼ˆæœ€å°ã‚µã‚¤ã‚ºã®ãƒ—ãƒ¼ãƒ«ï¼‰
 		std::size_t bestIndex = 0;
 
 	public:
 		View(Registry* r)
 			: registry(r)
 		{
-			// ‘S‚Ä‚Ìƒv[ƒ‹‚ğæ“¾
+			// å…¨ã¦ã®ãƒ—ãƒ¼ãƒ«ã‚’å–å¾—
 			pools = std::make_tuple(&registry->getPool<Components>()...);
 
-			// Å‚à—v‘f”‚ª­‚È‚¢ƒv[ƒ‹‚ğ’T‚µ‚Ä‹ì“®—p‚É‚·‚éiÅ“K‰»j
+			// æœ€ã‚‚è¦ç´ æ•°ãŒå°‘ãªã„ãƒ—ãƒ¼ãƒ«ã‚’æ¢ã—ã¦é§†å‹•ç”¨ã«ã™ã‚‹ï¼ˆæœ€é©åŒ–ï¼‰
 			std::size_t minsize = SIZE_MAX;
 			findSmallestPool(std::index_sequence_for<Components...>{}, minsize);
 		}
 
-		// œŠOİ’èi.exclude<Static>()j
+		// é™¤å¤–è¨­å®šï¼ˆ.exclude<Static>()ï¼‰
 		template<typename TExclude>
 		View& exclude()
 		{
@@ -430,11 +430,11 @@ public:
 			return *this;
 		}
 
-		// ƒwƒ‹ƒp[FÅ¬ƒv[ƒ‹‚ğ’T‚·
+		// ãƒ˜ãƒ«ãƒ‘ãƒ¼ï¼šæœ€å°ãƒ—ãƒ¼ãƒ«ã‚’æ¢ã™
 		template<std::size_t... Is>
 		void findSmallestPool(std::index_sequence<Is...>, std::size_t& minsize)
 		{
-			// fold expression‚ÅŠeƒv[ƒ‹‚ÌƒTƒCƒY‚ğƒ`ƒFƒbƒN
+			// fold expressionã§å„ãƒ—ãƒ¼ãƒ«ã®ã‚µã‚¤ã‚ºã‚’ãƒã‚§ãƒƒã‚¯
 			((checkSize<Is>(minsize)), ...);
 		}
 
@@ -450,19 +450,19 @@ public:
 		}
 
 		// -----------------------------------------------------------
-		// ƒCƒeƒŒ[ƒ^i”ÍˆÍfor•¶—pj
+		// ã‚¤ãƒ†ãƒ¬ãƒ¼ã‚¿ï¼ˆç¯„å›²foræ–‡ç”¨ï¼‰
 		// -----------------------------------------------------------
 		struct Iterator
 		{
 			View* view;
-			// ‹ì“®—pƒv[ƒ‹‚ÌƒCƒeƒŒ[ƒ^
+			// é§†å‹•ç”¨ãƒ—ãƒ¼ãƒ«ã®ã‚¤ãƒ†ãƒ¬ãƒ¼ã‚¿
 			typename std::vector<Entity>::const_iterator current;
 			typename std::vector<Entity>::const_iterator end;
 
 			Iterator(View* v, typename std::vector<Entity>::const_iterator c, typename std::vector<Entity>::const_iterator e)
 				: view(v), current(c), end(e)
 			{
-				// Å‰‚ª—LŒø‰»ƒ`ƒFƒbƒNA–³Œø‚È‚çi‚ß‚é
+				// æœ€åˆãŒæœ‰åŠ¹åŒ–ãƒã‚§ãƒƒã‚¯ã€ç„¡åŠ¹ãªã‚‰é€²ã‚ã‚‹
 				if(current != end && !view->isValid(*current))
 				{
 					++(*this);
@@ -499,7 +499,7 @@ public:
 			return createEndIterator(bestIndex);
 		}
 
-		// ƒwƒ‹ƒp[FƒCƒ“ƒfƒbƒNƒX‚©‚çƒCƒeƒŒ[ƒ^¶¬
+		// ãƒ˜ãƒ«ãƒ‘ãƒ¼ï¼šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‹ã‚‰ã‚¤ãƒ†ãƒ¬ãƒ¼ã‚¿ç”Ÿæˆ
 		Iterator createIterator(std::size_t index)
 		{
 			const std::vector<Entity>* entities = nullptr;
@@ -521,10 +521,10 @@ public:
 			return Iterator(this, entities->end(), entities->end());
 		}
 
-		// ƒGƒ“ƒeƒBƒeƒB‚ªğŒ‚ğ–‚½‚·‚©ƒ`ƒFƒbƒN
+		// ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ãŒæ¡ä»¶ã‚’æº€ãŸã™ã‹ãƒã‚§ãƒƒã‚¯
 		bool isValid(Entity entity)
 		{
-			// 1. Excludeƒ`ƒFƒbƒN
+			// 1. Excludeãƒã‚§ãƒƒã‚¯
 			for (auto id : excludeTypes)
 			{
 				if(id < registry->pools.size() && registry->pools[id] && registry->pools[id]->has(entity))
@@ -533,7 +533,7 @@ public:
 				}
 			}
 
-			// 2. Othersƒ`ƒFƒbƒN
+			// 2. Othersãƒã‚§ãƒƒã‚¯
 			bool allHas = std::apply([&](auto*... p) {
 				return (p->has(entity) && ...);
 				}, pools);
@@ -542,12 +542,12 @@ public:
 		}
 
 		// -----------------------------------------------------------
-		// eachŠÖ”iƒ‰ƒ€ƒ_Às—pj
+		// eaché–¢æ•°ï¼ˆãƒ©ãƒ ãƒ€å®Ÿè¡Œç”¨ï¼‰
 		// -----------------------------------------------------------
 		template<typename Func>
 		void each(Func func)
 		{
-			// Å“K‰»‚³‚ê‚½ƒ‹[ƒv
+			// æœ€é©åŒ–ã•ã‚ŒãŸãƒ«ãƒ¼ãƒ—
 			const std::vector<Entity>* entities = nullptr;
 			std::size_t i = 0;
 			std::apply([&](auto... p) {
@@ -558,7 +558,7 @@ public:
 			{
 				if (isValid(entity))
 				{
-					// ‘S‚Ä‚Á‚Ä‚¢‚é‚Ì‚ÅŠÖ”Às
+					// å…¨ã¦æŒã£ã¦ã„ã‚‹ã®ã§é–¢æ•°å®Ÿè¡Œ
 					std::apply([&](auto... p) {
 						func(
 							entity,
@@ -566,13 +566,13 @@ public:
 						);
 						}, pools);
 
-					// ©“®’Ê’m
+					// è‡ªå‹•é€šçŸ¥
 					(auto_patch<Components>(entity), ...);
 				}
 			}
 		}
 
-		// “Á’èƒRƒ“ƒ|[ƒlƒ“ƒgæ“¾ƒwƒ‹ƒp[
+		// ç‰¹å®šã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆå–å¾—ãƒ˜ãƒ«ãƒ‘ãƒ¼
 		template<typename T>
 		T& get(Entity entity)
 		{
@@ -580,11 +580,11 @@ public:
 		}
 
 	private:
-		// ©“®ƒpƒbƒ`’Ê’mieach“à‚Åg—pj
+		// è‡ªå‹•ãƒ‘ãƒƒãƒé€šçŸ¥ï¼ˆeachå†…ã§ä½¿ç”¨ï¼‰
 		template<typename T>
 		void auto_patch(Entity e)
 		{
-			// constCü‚³‚ê‚Ä‚¢‚È‚¢Œ^‚Ì‚İ’Ê’m
+			// constä¿®é£¾ã•ã‚Œã¦ã„ãªã„å‹ã®ã¿é€šçŸ¥
 			if constexpr (!std::is_const_v<T>)
 			{
 				registry->getPool<T>().patch(e);
@@ -592,7 +592,7 @@ public:
 		}
 	};
 
-	// ƒrƒ…[‚Ìì¬
+	// ãƒ“ãƒ¥ãƒ¼ã®ä½œæˆ
 	template<typename... Components>
 	View<Components...> view()
 	{
@@ -601,11 +601,11 @@ public:
 };
 
 // ------------------------------------------------------------
-// Observeri•ÏXŒŸ’mj
+// Observerï¼ˆå¤‰æ›´æ¤œçŸ¥ï¼‰
 // ------------------------------------------------------------
 /**
  * @class	Observer
- * @brief	“Á’è‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì•ÏX‚ğŠÄ‹‚µAƒGƒ“ƒeƒBƒeƒB‚ğƒŠƒXƒg‰»‚·‚é
+ * @brief	ç‰¹å®šã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®å¤‰æ›´ã‚’ç›£è¦–ã—ã€ã‚¨ãƒ³ãƒ†ã‚£ãƒ†ã‚£ã‚’ãƒªã‚¹ãƒˆåŒ–ã™ã‚‹
  * @usage
  * Observer observer;
  * observer.connect<Transform>(registry);
@@ -617,7 +617,7 @@ class Observer
 public:
 	Observer() = default;
 
-	// ƒ`ƒF[ƒ“ŠJn
+	// ãƒã‚§ãƒ¼ãƒ³é–‹å§‹
 	Observer& connect(Registry& r)
 	{
 		registry = &r;
@@ -625,7 +625,7 @@ public:
 		return *this;
 	}
 
-	// XVŒŸ’m
+	// æ›´æ–°æ¤œçŸ¥
 	template<typename T>
 	Observer& update()
 	{
@@ -636,7 +636,7 @@ public:
 		return *this;
 	}
 
-	// ¶¬/’Ç‰ÁŒŸ’m
+	// ç”Ÿæˆ/è¿½åŠ æ¤œçŸ¥
 	template<typename T>
 	Observer& group()
 	{
@@ -647,7 +647,7 @@ public:
 		return *this;
 	}
 
-	// ğŒƒtƒBƒ‹ƒ^i.wherej
+	// æ¡ä»¶ãƒ•ã‚£ãƒ«ã‚¿ï¼ˆ.whereï¼‰
 	template<typename... Us>
 	Observer& where()
 	{
@@ -659,19 +659,19 @@ public:
 		return *this;
 	}
 
-	// ƒCƒeƒŒ[ƒ^
+	// ã‚¤ãƒ†ãƒ¬ãƒ¼ã‚¿
 	auto begin() { return dense.begin(); }
 	auto end() { return dense.end(); }
 
-	// ƒ‰ƒ€ƒ_®‚Åƒ‹[ƒvˆ—i.eachj
-	// ˆø”: [](Entity e, Component&... c)
+	// ãƒ©ãƒ ãƒ€å¼ã§ãƒ«ãƒ¼ãƒ—å‡¦ç†ï¼ˆ.eachï¼‰
+	// å¼•æ•°: [](Entity e, Component&... c)
 	template<typename Func>
 	void each(Func func)
 	{
 		for (auto e : dense) func(e);
 	}
 
-	// ƒŠƒZƒbƒg
+	// ãƒªã‚»ãƒƒãƒˆ
 	void clear()
 	{
 		for(auto e : dense)
@@ -687,18 +687,18 @@ public:
 	std::size_t size() const { return dense.size(); }
 
 private:
-	// ƒgƒŠƒK[‹¤’Êˆ—
+	// ãƒˆãƒªã‚¬ãƒ¼æ™‚å…±é€šå‡¦ç†
 	void on_trigger(Entity e)
 	{
 		if (!registry) return;
 
-		// ƒtƒBƒ‹ƒ^ƒ`ƒFƒbƒNi.wherej
+		// ãƒ•ã‚£ãƒ«ã‚¿ãƒã‚§ãƒƒã‚¯ï¼ˆ.whereï¼‰
 		for (auto& f : filters)
 		{
 			if(!f(*registry, e)) return;
 		}
 
-		// d•¡“o˜^–h~
+		// é‡è¤‡ç™»éŒ²é˜²æ­¢
 		if (sparse.size() <= e) sparse.resize(e + 1, NullEntity);
 		if (sparse[e] != NullEntity) return;
 
@@ -713,7 +713,7 @@ private:
 };
 
 // ------------------------------------------------------------
-// DispatcheriƒOƒ[ƒoƒ‹ƒCƒxƒ“ƒgƒoƒXj
+// Dispatcherï¼ˆã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚¤ãƒ™ãƒ³ãƒˆãƒã‚¹ï¼‰
 // ------------------------------------------------------------
 class Dispatcher
 {
@@ -734,11 +734,11 @@ public:
 
 
 // ------------------------------------------------------------
-// EntityHandleiƒ`ƒF[ƒ“ƒƒ\ƒbƒh—pj
+// EntityHandleï¼ˆãƒã‚§ãƒ¼ãƒ³ãƒ¡ã‚½ãƒƒãƒ‰ç”¨ï¼‰
 // ------------------------------------------------------------
 /**
  * @class	EntityHandle
- * @brief	ˆê‹C‚ÉComponent‚ğ’Ç‰Á‚·‚é‚½‚ß‚Ìƒwƒ‹ƒp[
+ * @brief	ä¸€æ°—ã«Componentã‚’è¿½åŠ ã™ã‚‹ãŸã‚ã®ãƒ˜ãƒ«ãƒ‘ãƒ¼
  */
 class EntityHandle
 {
@@ -749,7 +749,7 @@ public:
 	EntityHandle(Registry* r, Entity e)
 		: registry(r), entity(e) {}
 
-	// .add<Transform>(...) ‚Ì‚æ‚¤‚ÉŒq‚°‚Ä‘‚¯‚é
+	// .add<Transform>(...) ã®ã‚ˆã†ã«ç¹‹ã’ã¦æ›¸ã‘ã‚‹
 	template<typename T, typename... Args>
 	EntityHandle& add(Args&&... args)
 	{
@@ -757,10 +757,10 @@ public:
 		return *this;
 	}
 
-	// e‚ğİ’è‚·‚éƒƒ\ƒbƒh
+	// è¦ªã‚’è¨­å®šã™ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
 	EntityHandle& setParent(Entity parentId)
 	{
-		// 1. ©•ª‚ÉRelationship‚ğ’Ç‰Á
+		// 1. è‡ªåˆ†ã«Relationshipã‚’è¿½åŠ 
 		if (!registry->has<Relationship>(entity))
 		{
 			registry->emplace<Relationship>(entity);
@@ -768,17 +768,17 @@ public:
 		auto& myRel = registry->get<Relationship>(entity);
 		myRel.parent = parentId;
 
-		// 2. e‚ÌRelationship‚ğæ“¾
+		// 2. è¦ªã®Relationshipã‚’å–å¾—
 		if (!registry->has<Relationship>(parentId))
 		{
 			registry->emplace<Relationship>(parentId);
 		}
 		auto& parentRel = registry->get<Relationship>(parentId);
 
-		// 3. e‚ÌqƒŠƒXƒg‚É©•ª‚ğ’Ç‰Á
+		// 3. è¦ªã®å­ãƒªã‚¹ãƒˆã«è‡ªåˆ†ã‚’è¿½åŠ 
 		parentRel.children.push_back(entity);
 
-		return *this;	// ƒ`ƒF[ƒ“o—ˆ‚é‚æ‚¤‚É©•ª‚ğ•Ô‚·
+		return *this;	// ãƒã‚§ãƒ¼ãƒ³å‡ºæ¥ã‚‹ã‚ˆã†ã«è‡ªåˆ†ã‚’è¿”ã™
 	}
 
 	template<typename T>
@@ -799,14 +799,14 @@ public:
 		return registry->has<T>(entity);
 	}
 
-	// ƒRƒ“ƒ|[ƒlƒ“ƒg‚ğXV‚µ‚½‚±‚Æ‚ğ’Ê’m
+	// ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’æ›´æ–°ã—ãŸã“ã¨ã‚’é€šçŸ¥
 	template<typename T>
 	void patch()
 	{
 		registry->patch<T>(entity);
 	}
 
-	// ID‚ğæ“¾‚µ‚ÄI—¹
+	// IDã‚’å–å¾—ã—ã¦çµ‚äº†
 	Entity id() const { return entity; }
 };
 
@@ -820,9 +820,9 @@ public:
 	virtual void Update(Registry& registry) {}
 	virtual void Render(Registry& registry, const Context& context) {}
 
-	// ƒVƒXƒeƒ€–¼iƒfƒoƒbƒO—pj
+	// ã‚·ã‚¹ãƒ†ãƒ åï¼ˆãƒ‡ãƒãƒƒã‚°ç”¨ï¼‰
 	std::string m_systemName = "System";
-	// ˆ—ŠÔiƒfƒoƒbƒO, msj
+	// å‡¦ç†æ™‚é–“ï¼ˆãƒ‡ãƒãƒƒã‚°, msï¼‰
 	double m_lastExecutionTime = 0.0;
 };
 
@@ -832,13 +832,13 @@ class World
 	std::vector<std::unique_ptr<ISystem>> systems;
 
 public:
-	// Entityì¬‚ğŠJn‚·‚éiƒrƒ‹ƒ_[‚ğ•Ô‚·j
+	// Entityä½œæˆã‚’é–‹å§‹ã™ã‚‹ï¼ˆãƒ“ãƒ«ãƒ€ãƒ¼ã‚’è¿”ã™ï¼‰
 	EntityHandle create_entity()
 	{
 		return EntityHandle(&registry, registry.create());
 	}
 
-	// ƒVƒXƒeƒ€‚Ì“o˜^
+	// ã‚·ã‚¹ãƒ†ãƒ ã®ç™»éŒ²
 	template<typename T, typename... Args>
 	T* registerSystem(Args&&... args)
 	{
@@ -848,24 +848,24 @@ public:
 		return ptr;
 	}
 
-	// ‘SƒVƒXƒeƒ€‚ÌUpdate‚ğÀs
+	// å…¨ã‚·ã‚¹ãƒ†ãƒ ã®Updateã‚’å®Ÿè¡Œ
 	void Tick()
 	{
 		for (auto& sys : systems)
 		{
-			// Œv‘ªŠJn
+			// è¨ˆæ¸¬é–‹å§‹
 			auto start = std::chrono::high_resolution_clock::now();
 
 			sys->Update(registry);
 
-			// Œv‘ªI—¹
+			// è¨ˆæ¸¬çµ‚äº†
 			auto end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double, std::milli> ms = end - start;
 			sys->m_lastExecutionTime = ms.count();
 		}
 	}
 
-	// ‘SƒVƒXƒeƒ€‚ÌRender‚ğÀs
+	// å…¨ã‚·ã‚¹ãƒ†ãƒ ã®Renderã‚’å®Ÿè¡Œ
 	void Render(const Context& context)
 	{
 		for (auto& sys : systems)
@@ -874,11 +874,11 @@ public:
 		}
 	}
 
-	// ƒfƒoƒbƒO—p‚ÉƒVƒXƒeƒ€ƒŠƒXƒg‚ğæ“¾
+	// ãƒ‡ãƒãƒƒã‚°ç”¨ã«ã‚·ã‚¹ãƒ†ãƒ ãƒªã‚¹ãƒˆã‚’å–å¾—
 	const std::vector<std::unique_ptr<ISystem>>& getSystems() const { return systems; }
 
 	
-	// Registry‚Ö‚Ì’¼ÚƒAƒNƒZƒX‚ª•K—v‚Èê‡
+	// Registryã¸ã®ç›´æ¥ã‚¢ã‚¯ã‚»ã‚¹ãŒå¿…è¦ãªå ´åˆ
 	Registry& getRegistry() { return registry; }
 	const Registry& getRegistry() const { return registry; }
 };

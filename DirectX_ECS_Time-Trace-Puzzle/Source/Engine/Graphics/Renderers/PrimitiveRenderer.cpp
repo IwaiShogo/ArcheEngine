@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	PrimitiveRenderer.cpp
- * @brief	” ‚ğ•`‰æ‚·‚é‚½‚ß‚ÌŠÈˆÕƒNƒ‰ƒX‚ÌÀ‘•
+ * @brief	ç®±ã‚’æç”»ã™ã‚‹ãŸã‚ã®ç°¡æ˜“ã‚¯ãƒ©ã‚¹ã®å®Ÿè£…
  * 
  * @details	
  * 
@@ -8,20 +8,20 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/PrimitiveRenderer.h"
 
-// —§•û‘Ì‚Ì’¸“_ƒf[ƒ^
+// ç«‹æ–¹ä½“ã®é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿
 struct Vertex
 {
 	XMFLOAT3 position;
@@ -35,7 +35,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device, ID3D11DeviceContext* 
 
 void PrimitiveRenderer::Initialize()
 {
-	// 1. ƒVƒF[ƒ_[ƒRƒ“ƒpƒCƒ‹
+	// 1. ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«
 	ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
 	UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
 
@@ -57,14 +57,14 @@ void PrimitiveRenderer::Initialize()
 	}
 	m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &m_ps);
 
-	// 2. “ü—ÍƒŒƒCƒAƒEƒg
+	// 2. å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	m_device->CreateInputLayout(layout, 1, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &m_inputLayout);
 
 	// ============================================================
-	// ƒ{ƒbƒNƒX‚ÌƒƒbƒVƒ…¶¬
+	// ãƒœãƒƒã‚¯ã‚¹ã®ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	// ============================================================
 	float hs = 0.5f;
 	Vertex vertices[] = {
@@ -81,20 +81,20 @@ void PrimitiveRenderer::Initialize()
 	initData.pSysMem = vertices;
 	m_device->CreateBuffer(&bd, &initData, &m_vertexBuffer);
 
-	// 4. ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@iƒƒCƒ„[ƒtƒŒ[ƒ€—p LineListj
-	// —§•û‘Ì‚Í6–ÊA1–Ê“–‚½‚èOŠpŒ`2–‡AŒv12–‡‚ÌOŠpŒ` = 36ƒCƒ“ƒfƒbƒNƒX
+	// 4. ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡ï¼ˆãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ç”¨ LineListï¼‰
+	// ç«‹æ–¹ä½“ã¯6é¢ã€1é¢å½“ãŸã‚Šä¸‰è§’å½¢2æšã€è¨ˆ12æšã®ä¸‰è§’å½¢ = 36ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 	uint16_t indices[] = {
-		// è‘OiZ-j
+		// æ‰‹å‰ï¼ˆZ-ï¼‰
 		0, 1, 2,   0, 2, 3,
-		// ‰œiZ+j
+		// å¥¥ï¼ˆZ+ï¼‰
 		4, 6, 5,   4, 7, 6,
-		// ãiY+j
+		// ä¸Šï¼ˆY+ï¼‰
 		1, 5, 6,   1, 6, 2,
-		// ‰ºiY-j
+		// ä¸‹ï¼ˆY-ï¼‰
 		0, 3, 7,   0, 7, 4,
-		// ¶iX-j
+		// å·¦ï¼ˆX-ï¼‰
 		0, 4, 5,   0, 5, 1,
-		// ‰EiX+j
+		// å³ï¼ˆX+ï¼‰
 		3, 2, 6,   3, 6, 7,
 	};
 	bd.ByteWidth = sizeof(indices);
@@ -102,12 +102,12 @@ void PrimitiveRenderer::Initialize()
 	initData.pSysMem = indices;
 	m_device->CreateBuffer(&bd, &initData, &m_indexBuffer);
 
-	// 5. ’è”ƒoƒbƒtƒ@
+	// 5. å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	bd.ByteWidth = sizeof(ConstantBufferData);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	m_device->CreateBuffer(&bd, nullptr, &m_constantBuffer);
 
-	// ü•`‰æ—p‚Ì“®“I’¸“_ƒoƒbƒtƒ@
+	// ç·šæç”»ç”¨ã®å‹•çš„é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
 	bd = {};
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.ByteWidth = sizeof(Vertex) * 2;
@@ -116,15 +116,15 @@ void PrimitiveRenderer::Initialize()
 	m_device->CreateBuffer(&bd, nullptr, &m_lineVertexBuffer);
 
 	// ============================================================
-	// ‹…‘Ì‚ÌƒƒbƒVƒ…¶¬
+	// çƒä½“ã®ãƒ¡ãƒƒã‚·ãƒ¥ç”Ÿæˆ
 	// ============================================================
 	std::vector<Vertex> sphereVertices;
 	std::vector<uint16_t> sphereIndices;
 
-	int div = 16; // •ªŠ„” (‘‚â‚·‚ÆŠŠ‚ç‚©‚É‚È‚è‚Ü‚·‚ªd‚­‚È‚è‚Ü‚·)
-	float radius = 0.5f; // ’¼Œa1.0‚Ì’PˆÊ‹…‚ğì‚é
+	int div = 16; // åˆ†å‰²æ•° (å¢—ã‚„ã™ã¨æ»‘ã‚‰ã‹ã«ãªã‚Šã¾ã™ãŒé‡ããªã‚Šã¾ã™)
+	float radius = 0.5f; // ç›´å¾„1.0ã®å˜ä½çƒã‚’ä½œã‚‹
 
-	// ’¸“_¶¬
+	// é ‚ç‚¹ç”Ÿæˆ
 	for (int y = 0; y <= div; ++y) {
 		float v = (float)y / div;
 		float pitch = (v - 0.5f) * XM_PI;
@@ -143,7 +143,7 @@ void PrimitiveRenderer::Initialize()
 		}
 	}
 
-	// ƒCƒ“ƒfƒbƒNƒX¶¬
+	// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ç”Ÿæˆ
 	for (int y = 0; y < div; ++y) {
 		for (int x = 0; x < div; ++x) {
 			int i0 = y * (div + 1) + x;
@@ -151,12 +151,12 @@ void PrimitiveRenderer::Initialize()
 			int i2 = (y + 1) * (div + 1) + x;
 			int i3 = i2 + 1;
 
-			// OŠpŒ`1 (¶ã -> ‰Eã -> ¶‰º)
+			// ä¸‰è§’å½¢1 (å·¦ä¸Š -> å³ä¸Š -> å·¦ä¸‹)
 			sphereIndices.push_back(i0);
 			sphereIndices.push_back(i1);
 			sphereIndices.push_back(i2);
 
-			// OŠpŒ`2 (¶‰º -> ‰Eã -> ‰E‰º)
+			// ä¸‰è§’å½¢2 (å·¦ä¸‹ -> å³ä¸Š -> å³ä¸‹)
 			sphereIndices.push_back(i2);
 			sphereIndices.push_back(i1);
 			sphereIndices.push_back(i3);
@@ -164,7 +164,7 @@ void PrimitiveRenderer::Initialize()
 	}
 	m_sphereIndexCount = (UINT)sphereIndices.size();
 
-	// ƒoƒbƒtƒ@ì¬
+	// ãƒãƒƒãƒ•ã‚¡ä½œæˆ
 	bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -178,37 +178,37 @@ void PrimitiveRenderer::Initialize()
 	initData.pSysMem = sphereIndices.data();
 	m_device->CreateBuffer(&bd, &initData, &m_sphereIB);
 
-	// ƒJƒvƒZƒ‹A‰~’Œ‚Ìì¬
+	// ã‚«ãƒ—ã‚»ãƒ«ã€å††æŸ±ã®ä½œæˆ
 	//CreateCapsuleMesh();
 	CreateCylinderMesh();
 
-	// [“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒgì¬
+	// æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆä½œæˆ
 	D3D11_DEPTH_STENCIL_DESC dsd = {};
-	dsd.DepthEnable = TRUE;								// [“xƒeƒXƒg‚ğs‚¤
-	dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;	// [“xƒoƒbƒtƒ@‚É‘‚«‚Ş
-	dsd.DepthFunc = D3D11_COMPARISON_LESS;				// è‘O‚É‚ ‚é‚à‚Ì‚ğ•`‰æ‚·‚é
+	dsd.DepthEnable = TRUE;								// æ·±åº¦ãƒ†ã‚¹ãƒˆã‚’è¡Œã†
+	dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;	// æ·±åº¦ãƒãƒƒãƒ•ã‚¡ã«æ›¸ãè¾¼ã‚€
+	dsd.DepthFunc = D3D11_COMPARISON_LESS;				// æ‰‹å‰ã«ã‚ã‚‹ã‚‚ã®ã‚’æç”»ã™ã‚‹
 
 	hr = m_device->CreateDepthStencilState(&dsd, &m_depthState);
 	if (FAILED(hr)) throw std::runtime_error("Failed to create Primitive DepthState");
 
-	// ƒ‰ƒXƒ^ƒ‰ƒCƒUƒXƒe[ƒgì¬
+	// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ã‚¹ãƒ†ãƒ¼ãƒˆä½œæˆ
 	D3D11_RASTERIZER_DESC rd = {};
-	rd.CullMode = D3D11_CULL_NONE;	// —¼–Ê•`‰æ
+	rd.CullMode = D3D11_CULL_NONE;	// ä¸¡é¢æç”»
 	rd.FrontCounterClockwise = FALSE;
 	rd.DepthClipEnable = TRUE;
 
-	// ƒƒCƒ„[ƒtƒŒ[ƒ€—p
+	// ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ç”¨
 	rd.FillMode = D3D11_FILL_WIREFRAME;
 	m_device->CreateRasterizerState(&rd, &m_rsWireframe);
 
-	// ƒ\ƒŠƒbƒh—p
+	// ã‚½ãƒªãƒƒãƒ‰ç”¨
 	rd.FillMode = D3D11_FILL_SOLID;
 	m_device->CreateRasterizerState(&rd, &m_rsSolid);
 }
 
 void PrimitiveRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection)
 {
-	// ‹¤’Êİ’è
+	// å…±é€šè¨­å®š
 	m_context->IASetInputLayout(m_inputLayout.Get());
 	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -224,37 +224,37 @@ void PrimitiveRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection)
 	m_context->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	m_context->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 
-	// ƒrƒ…[EƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ğ•Û‘¶
+	// ãƒ“ãƒ¥ãƒ¼ãƒ»ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’ä¿å­˜
 	m_cbData.view = XMMatrixTranspose(view);
 	m_cbData.projection = XMMatrixTranspose(projection);
 }
 
-// ƒ{ƒbƒNƒX
+// ãƒœãƒƒã‚¯ã‚¹
 void PrimitiveRenderer::DrawBox(const XMFLOAT3& position, const XMFLOAT3& size, const XMFLOAT4& rotation, const XMFLOAT4& color)
 {
-	// 1. ƒpƒCƒvƒ‰ƒCƒ“İ’è (ƒXƒe[ƒg˜R‚ê‚ğ–h‚®‚½‚ß–ˆ‰ñƒZƒbƒg‚·‚é)
+	// 1. ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³è¨­å®š (ã‚¹ãƒ†ãƒ¼ãƒˆæ¼ã‚Œã‚’é˜²ããŸã‚æ¯å›ã‚»ãƒƒãƒˆã™ã‚‹)
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	m_context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
 	m_context->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-	m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // ƒƒCƒ„[ƒtƒŒ[ƒ€
+	m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ 
 
-	// 2. ’è”ƒoƒbƒtƒ@XV
+	// 2. å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
 	XMVECTOR q = XMLoadFloat4(&rotation);
 	XMMATRIX world = XMMatrixScaling(size.x, size.y, size.z) * XMMatrixRotationQuaternion(q) * XMMatrixTranslation(position.x, position.y, position.z);
 	m_cbData.world = XMMatrixTranspose(world);
 	m_cbData.color = color;
 	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);
 
-	// 3. •`‰æ
+	// 3. æç”»
 	m_context->DrawIndexed(36, 0, 0);
 }
 
-// ‹…‘Ì
+// çƒä½“
 void PrimitiveRenderer::DrawSphere(const XMFLOAT3& position, float radius, const XMFLOAT4& color)
 {
-	// ƒ[ƒ‹ƒhs—ñ (”¼Œa‚É‡‚í‚¹‚ÄƒXƒP[ƒŠƒ“ƒO)
-	// ’PˆÊ‹…(”¼Œa0.5)‚ğì‚Á‚½‚Ì‚ÅAradius * 2 ”{‚·‚é
+	// ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ— (åŠå¾„ã«åˆã‚ã›ã¦ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚°)
+	// å˜ä½çƒ(åŠå¾„0.5)ã‚’ä½œã£ãŸã®ã§ã€radius * 2 å€ã™ã‚‹
 	float scale = radius * 2.0f;
 	XMMATRIX world = XMMatrixScaling(scale, scale, scale) * XMMatrixTranslation(position.x, position.y, position.z);
 
@@ -271,39 +271,39 @@ void PrimitiveRenderer::DrawSphere(const XMFLOAT3& position, float radius, const
 	m_context->DrawIndexed(m_sphereIndexCount, 0, 0);
 }
 
-// ƒJƒvƒZƒ‹
+// ã‚«ãƒ—ã‚»ãƒ«
 void PrimitiveRenderer::DrawCapsule(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color)
 {
-	// ƒJƒvƒZƒ‹‚Íu‰~’Œv{uã‰º‚Ì”¼‹…v‚Å\¬‚³‚ê‚é
-	// height ‚Í‘S‘Ì‚Ì‚‚³B‰~’Œ•”•ª‚Ì‚‚³‚Í height - 2*radius
+	// ã‚«ãƒ—ã‚»ãƒ«ã¯ã€Œå††æŸ±ã€ï¼‹ã€Œä¸Šä¸‹ã®åŠçƒã€ã§æ§‹æˆã•ã‚Œã‚‹
+	// height ã¯å…¨ä½“ã®é«˜ã•ã€‚å††æŸ±éƒ¨åˆ†ã®é«˜ã•ã¯ height - 2*radius
 	float cylinderH = std::max(0.0f, height - 2.0f * radius);
 
 	XMVECTOR posV = XMLoadFloat3(&position);
 	XMVECTOR rotQ = XMLoadFloat4(&rotation);
 
-	// Y²Œü‚«‚Ìƒ[ƒJƒ‹À•WŒn‚Ål‚¦‚é
+	// Yè»¸å‘ãã®ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ç³»ã§è€ƒãˆã‚‹
 	XMVECTOR up = XMVector3Rotate(XMVectorSet(0, 1, 0, 0), rotQ);
 
-	// 1. ’†‰›‚Ì‰~’Œ•”•ª
+	// 1. ä¸­å¤®ã®å††æŸ±éƒ¨åˆ†
 	if (cylinderH > 0.0f) {
 		DrawCylinder(position, radius, cylinderH, rotation, color);
 	}
 
-	// 2. ã‚Ì”¼‹… (‹…‘Ì‚ğ•`‰æ‚µ‚Ä‘ã—p)
+	// 2. ä¸Šã®åŠçƒ (çƒä½“ã‚’æç”»ã—ã¦ä»£ç”¨)
 	XMVECTOR topPos = posV + up * (cylinderH * 0.5f);
 	XMFLOAT3 topPosF; XMStoreFloat3(&topPosF, topPos);
 	DrawSphere(topPosF, radius, color);
 
-	// 3. ‰º‚Ì”¼‹…
+	// 3. ä¸‹ã®åŠçƒ
 	XMVECTOR bottomPos = posV - up * (cylinderH * 0.5f);
 	XMFLOAT3 bottomPosF; XMStoreFloat3(&bottomPosF, bottomPos);
 	DrawSphere(bottomPosF, radius, color);
 }
 
-// ‰~’Œ
+// å††æŸ±
 void PrimitiveRenderer::DrawCylinder(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color)
 {
-	// ”¼Œa‚Æ‚‚³‚ÅƒXƒP[ƒŠƒ“ƒO (Šî–{ƒƒbƒVƒ…‚Í”¼Œa1, ‚‚³1)
+	// åŠå¾„ã¨é«˜ã•ã§ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚° (åŸºæœ¬ãƒ¡ãƒƒã‚·ãƒ¥ã¯åŠå¾„1, é«˜ã•1)
 	XMVECTOR q = XMLoadFloat4(&rotation);
 	XMMATRIX world = XMMatrixScaling(radius, height, radius) * XMMatrixRotationQuaternion(q) * XMMatrixTranslation(position.x, position.y, position.z);
 	m_cbData.world = XMMatrixTranspose(world);
@@ -320,12 +320,12 @@ void PrimitiveRenderer::DrawCylinder(const XMFLOAT3& position, float radius, flo
 
 void PrimitiveRenderer::DrawLine(const XMFLOAT3& p1, const XMFLOAT3& p2, const XMFLOAT4& color)
 {
-	// 1. ’è”ƒoƒbƒtƒ@XViƒ[ƒ‹ƒhs—ñ‚Í’PˆÊs—ñ‚É‚·‚éj
+	// 1. å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°ï¼ˆãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã¯å˜ä½è¡Œåˆ—ã«ã™ã‚‹ï¼‰
 	m_cbData.world = XMMatrixIdentity();
 	m_cbData.color = color;
 	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);
 
-	// 2. “®“I’¸“_ƒoƒbƒtƒ@‚Ì‘‚«Š·‚¦
+	// 2. å‹•çš„é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®æ›¸ãæ›ãˆ
 	D3D11_MAPPED_SUBRESOURCE ms;
 	if (SUCCEEDED(m_context->Map(m_lineVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms)))
 	{
@@ -335,26 +335,26 @@ void PrimitiveRenderer::DrawLine(const XMFLOAT3& p1, const XMFLOAT3& p2, const X
 		m_context->Unmap(m_lineVertexBuffer.Get(), 0);
 	}
 
-	// 3. ƒpƒCƒvƒ‰ƒCƒ“İ’è•ÏX
+	// 3. ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³è¨­å®šå¤‰æ›´
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	m_context->IASetVertexBuffers(0, 1, m_lineVertexBuffer.GetAddressOf(), &stride, &offset);
 	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	// 4.•`‰æ
+	// 4.æç”»
 	m_context->Draw(2, 0);
 
-	// 5. ƒoƒbƒtƒ@‚ğBox—p‚Ì‚à‚Ì‚É–ß‚µ‚Ä‚¨‚­
+	// 5. ãƒãƒƒãƒ•ã‚¡ã‚’Boxç”¨ã®ã‚‚ã®ã«æˆ»ã—ã¦ãŠã
 	m_context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
 	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void PrimitiveRenderer::DrawArrow(const XMFLOAT3& start, const XMFLOAT3& end, const XMFLOAT4& color)
 {
-	// 1. ²‚Ìü‚ğ‘‚­
+	// 1. è»¸ã®ç·šã‚’æ›¸ã
 	DrawLine(start, end, color);
 
-	// 2. æ’[‚É¬‚³‚È” ‚ğ‘‚­
+	// 2. å…ˆç«¯ã«å°ã•ãªç®±ã‚’æ›¸ã
 	float boxSize = 0.2f;
 	DrawBox(end, XMFLOAT3(boxSize, boxSize, boxSize), XMFLOAT4(0, 0, 0, 0), color);
 }
@@ -373,32 +373,32 @@ void PrimitiveRenderer::SetFillMode(bool wireframe)
 
 void PrimitiveRenderer::DrawGrid(float spacing, int lines)
 {
-	// ƒOƒŠƒbƒh‚Íí‚ÉƒƒCƒ„[ƒtƒŒ[ƒ€‚Å‘‚­
+	// ã‚°ãƒªãƒƒãƒ‰ã¯å¸¸ã«ãƒ¯ã‚¤ãƒ¤ãƒ¼ãƒ•ãƒ¬ãƒ¼ãƒ ã§æ›¸ã
 	m_context->RSSetState(m_rsWireframe.Get());
 
 	float size = static_cast<float>(lines) * spacing;
 	XMFLOAT4 color = { 0.5f, 0.5f, 0.5f, 1.0f };
 	
-	// X²‚É•½s‚Èü
+	// Xè»¸ã«å¹³è¡Œãªç·š
 	for (int i = -lines; i <= lines; ++i)
 	{
 		float pos = static_cast<float>(i) * spacing;
 
-		// ‰¡ü
+		// æ¨ªç·š
 		DrawLine(XMFLOAT3(-size, 0, pos), XMFLOAT3(size, 0, pos), color);
-		// cü
+		// ç¸¦ç·š
 		DrawLine(XMFLOAT3(pos, 0, -size), XMFLOAT3(pos, 0, size), color);
 	}
 }
 
-// À•W²•`‰æ
+// åº§æ¨™è»¸æç”»
 void PrimitiveRenderer::DrawAxis(float length)
 {
-	// X²iÔj
+	// Xè»¸ï¼ˆèµ¤ï¼‰
 	DrawLine(XMFLOAT3(0, 0, 0), XMFLOAT3(length, 0, 0), XMFLOAT4(1, 0, 0, 1));
-	// Y²i—Îj
+	// Yè»¸ï¼ˆç·‘ï¼‰
 	DrawLine(XMFLOAT3(0, 0, 0), XMFLOAT3(0, length, 0), XMFLOAT4(0, 1, 0, 1));
-	// Z²iÂj
+	// Zè»¸ï¼ˆé’ï¼‰
 	DrawLine(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, length), XMFLOAT4(0, 0, 1, 1));
 }
 
@@ -423,55 +423,55 @@ void PrimitiveRenderer::CreateCylinderMesh()
 {
 	std::vector<Vertex> vertices;
 	std::vector<uint16_t> indices;
-	int slices = 16; // ‰~‚Ì•ªŠ„”
+	int slices = 16; // å††ã®åˆ†å‰²æ•°
 
-	// --- ’¸“_¶¬ ---
-	// ã–Ê‚Ì’†S (Index 0)
+	// --- é ‚ç‚¹ç”Ÿæˆ ---
+	// ä¸Šé¢ã®ä¸­å¿ƒ (Index 0)
 	vertices.push_back({ {0, 0.5f, 0} });
-	// ã–Ê‚Ì‰~ü (Index 1 ~ slices)
+	// ä¸Šé¢ã®å††å‘¨ (Index 1 ~ slices)
 	for (int i = 0; i <= slices; ++i) {
 		float theta = (float)i / slices * XM_2PI;
 		vertices.push_back({ {cosf(theta), 0.5f, sinf(theta)} });
 	}
-	// ‰º–Ê‚Ì’†S (Index slices+2)
+	// ä¸‹é¢ã®ä¸­å¿ƒ (Index slices+2)
 	int bottomCenterIndex = (int)vertices.size();
 	vertices.push_back({ {0, -0.5f, 0} });
-	// ‰º–Ê‚Ì‰~ü
+	// ä¸‹é¢ã®å††å‘¨
 	for (int i = 0; i <= slices; ++i) {
 		float theta = (float)i / slices * XM_2PI;
 		vertices.push_back({ {cosf(theta), -0.5f, sinf(theta)} });
 	}
 
-	// --- ƒCƒ“ƒfƒbƒNƒX¶¬ ---
-	// ã–Ê‚ÌŠW (Triangle Fan -> List)
+	// --- ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ç”Ÿæˆ ---
+	// ä¸Šé¢ã®è“‹ (Triangle Fan -> List)
 	for (int i = 1; i <= slices; ++i) {
 		indices.push_back(0);
 		indices.push_back(i + 1);
 		indices.push_back(i);
 	}
-	// ‰º–Ê‚ÌŠW
+	// ä¸‹é¢ã®è“‹
 	int bottomStart = bottomCenterIndex + 1;
 	for (int i = 0; i < slices; ++i) {
 		indices.push_back(bottomCenterIndex);
 		indices.push_back(bottomStart + i);
 		indices.push_back(bottomStart + i + 1);
 	}
-	// ‘¤–Ê (Quad -> 2 Triangles)
+	// å´é¢ (Quad -> 2 Triangles)
 	for (int i = 1; i <= slices; ++i) {
 		int top1 = i;
 		int top2 = i + 1;
 		int bot1 = bottomStart + (i - 1);
 		int bot2 = bottomStart + i;
 
-		// ƒgƒ‰ƒCƒAƒ“ƒOƒ‹1
+		// ãƒˆãƒ©ã‚¤ã‚¢ãƒ³ã‚°ãƒ«1
 		indices.push_back(top1); indices.push_back(bot1); indices.push_back(top2);
-		// ƒgƒ‰ƒCƒAƒ“ƒOƒ‹2
+		// ãƒˆãƒ©ã‚¤ã‚¢ãƒ³ã‚°ãƒ«2
 		indices.push_back(top2); indices.push_back(bot1); indices.push_back(bot2);
 	}
 
 	m_cylinderIndexCount = (UINT)indices.size();
 
-	// ƒoƒbƒtƒ@ì¬ (’èŒ^•¶‚È‚Ì‚ÅÈ—ª‰Â‚Å‚·‚ª”O‚Ì‚½‚ß)
+	// ãƒãƒƒãƒ•ã‚¡ä½œæˆ (å®šå‹æ–‡ãªã®ã§çœç•¥å¯ã§ã™ãŒå¿µã®ãŸã‚)
 	D3D11_BUFFER_DESC vbd = {};
 	vbd.Usage = D3D11_USAGE_DEFAULT;
 	vbd.ByteWidth = sizeof(Vertex) * (UINT)vertices.size();
@@ -491,31 +491,31 @@ void PrimitiveRenderer::CreateCapsuleMesh()
 	std::vector<Vertex> vertices;
 	std::vector<uint16_t> indices;
 
-	int slices = 16; // ‰~ü•ªŠ„
-	int stacks = 16; // c•ªŠ„
+	int slices = 16; // å††å‘¨åˆ†å‰²
+	int stacks = 16; // ç¸¦åˆ†å‰²
 	float radius = 0.5f;
-	float height = 1.0f; // ‘S‚ (cylinderHeight + 2*radius)
-	float cylinderHeight = 0.5f; // ‰~’Œ•”•ª
+	float height = 1.0f; // å…¨é«˜ (cylinderHeight + 2*radius)
+	float cylinderHeight = 0.5f; // å††æŸ±éƒ¨åˆ†
 
-	// ’¸“_¶¬
+	// é ‚ç‚¹ç”Ÿæˆ
 	for (int j = 0; j <= stacks; ++j) {
 		float v = (float)j / stacks;
 		float phi = v * XM_PI; // 0 to PI
 
-		// YÀ•W‚ÌŒvZ (”¼‹…‚ğã‰º‚Éˆø‚«—£‚·)
+		// Yåº§æ¨™ã®è¨ˆç®— (åŠçƒã‚’ä¸Šä¸‹ã«å¼•ãé›¢ã™)
 		float y = -cosf(phi) * radius;
 
-		// ‰º”¼‹…
+		// ä¸‹åŠçƒ
 		if (j < stacks / 2) {
 			y -= cylinderHeight * 0.5f;
 		}
-		// ã”¼‹…
+		// ä¸ŠåŠçƒ
 		else if (j > stacks / 2) {
 			y += cylinderHeight * 0.5f;
 		}
-		// ^‚ñ’†‚ÌƒŠƒ“ƒO‚Íd•¡‚³‚¹‚é‚©AƒXƒLƒbƒv‚µ‚ÄŒq‚®
+		// çœŸã‚“ä¸­ã®ãƒªãƒ³ã‚°ã¯é‡è¤‡ã•ã›ã‚‹ã‹ã€ã‚¹ã‚­ãƒƒãƒ—ã—ã¦ç¹‹ã
 
-		float r = sinf(phi) * radius; // ‚»‚Ì‚‚³‚Å‚Ì”¼Œa
+		float r = sinf(phi) * radius; // ãã®é«˜ã•ã§ã®åŠå¾„
 
 		for (int i = 0; i <= slices; ++i) {
 			float u = (float)i / slices;
@@ -527,7 +527,7 @@ void PrimitiveRenderer::CreateCapsuleMesh()
 		}
 	}
 
-	// ƒCƒ“ƒfƒbƒNƒX¶¬ (Gridó‚Éƒgƒ‰ƒCƒAƒ“ƒOƒ‹‚ğ“\‚é)
+	// ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ç”Ÿæˆ (GridçŠ¶ã«ãƒˆãƒ©ã‚¤ã‚¢ãƒ³ã‚°ãƒ«ã‚’è²¼ã‚‹)
 	int ringVertexCount = slices + 1;
 	for (int j = 0; j < stacks; ++j) {
 		for (int i = 0; i < slices; ++i) {
@@ -543,7 +543,7 @@ void PrimitiveRenderer::CreateCapsuleMesh()
 
 	m_capsuleIndexCount = (UINT)indices.size();
 
-	// ƒoƒbƒtƒ@ì¬ (È—ª: Cylinder‚Æ“¯‚¶è‡‚Å m_capsuleVB/IB ‚ğì¬)
+	// ãƒãƒƒãƒ•ã‚¡ä½œæˆ (çœç•¥: Cylinderã¨åŒã˜æ‰‹é †ã§ m_capsuleVB/IB ã‚’ä½œæˆ)
 	D3D11_BUFFER_DESC vbd = {};
 	vbd.Usage = D3D11_USAGE_DEFAULT;
 	vbd.ByteWidth = sizeof(Vertex) * (UINT)vertices.size();

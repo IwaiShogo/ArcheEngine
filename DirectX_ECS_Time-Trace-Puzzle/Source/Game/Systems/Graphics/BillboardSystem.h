@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	BillboardSystem.h
  * @brief	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/27	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/27	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___BILLBOARD_SYSTEM_H___
 #define ___BILLBOARD_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Graphics/Renderers/BillboardRenderer.h"
@@ -38,7 +38,7 @@ public:
 	{
 		if (!m_renderer) return;
 
-		// ƒJƒƒ‰ŒvZ (RenderSystem“™‚Æ“¯‚¶ƒƒWƒbƒNB‹¤’Ê‰»„§)
+		// ã‚«ãƒ¡ãƒ©è¨ˆç®— (RenderSystemç­‰ã¨åŒã˜ãƒ­ã‚¸ãƒƒã‚¯ã€‚å…±é€šåŒ–æ¨å¥¨)
 		XMMATRIX viewMatrix = XMMatrixIdentity();
 		XMMATRIX projMatrix = XMMatrixIdentity();
 		bool cameraFound = false;
@@ -55,7 +55,7 @@ public:
 			});
 		if (!cameraFound) return;
 
-		// •`‰æŠJn
+		// æç”»é–‹å§‹
 		m_renderer->Begin(viewMatrix, projMatrix);
 
 		registry.view<Transform, BillboardComponent>().each([&](Entity e, Transform& t, BillboardComponent& b)
@@ -63,7 +63,7 @@ public:
 				auto tex = ResourceManager::Instance().GetTexture(b.textureKey);
 				if (tex)
 				{
-					// Transform‚ÌƒXƒP[ƒ‹‚à‰Á–¡‚·‚éê‡:
+					// Transformã®ã‚¹ã‚±ãƒ¼ãƒ«ã‚‚åŠ å‘³ã™ã‚‹å ´åˆ:
 					float w = b.size.x * t.scale.x;
 					float h = b.size.y * t.scale.y;
 

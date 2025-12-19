@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	CollisionSystem.h
- * @brief	Õ“ËŒŸo
+ * @brief	è¡çªæ¤œå‡º
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/24	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/24	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___COLLISION_SYSTEM_H___
 #define ___COLLISION_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
@@ -28,13 +28,13 @@
 
 /**
  * @namespace	Physics
- * @brief		Œ`óƒf[ƒ^‚Ì’è‹`iƒ[ƒ‹ƒh‹óŠÔ—pj
+ * @brief		å½¢çŠ¶ãƒ‡ãƒ¼ã‚¿ã®å®šç¾©ï¼ˆãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ç”¨ï¼‰
  */
 namespace Physics
 {
 	/**
 	 * @struct	Sphere
-	 * @brief	‹…
+	 * @brief	çƒ
 	 */
 	struct Sphere
 	{
@@ -44,34 +44,34 @@ namespace Physics
 
 	/**
 	 * @struct	OBB
-	 * @brief	” 
+	 * @brief	ç®±
 	 */
 	struct OBB
 	{
 		XMFLOAT3 center;
-		XMFLOAT3 extents;	// Še²‚Ìu”¼Œavi• / 2, ‚‚³ / 2, ‰œs / 2j
-		XMFLOAT3 axes[3];	// ƒ[ƒJƒ‹² (‰E, ã, ‘O) - ‰ñ“]s—ñ‚©‚çæ“¾
+		XMFLOAT3 extents;	// å„è»¸ã®ã€ŒåŠå¾„ã€ï¼ˆå¹… / 2, é«˜ã• / 2, å¥¥è¡Œ / 2ï¼‰
+		XMFLOAT3 axes[3];	// ãƒ­ãƒ¼ã‚«ãƒ«è»¸ (å³, ä¸Š, å‰) - å›è»¢è¡Œåˆ—ã‹ã‚‰å–å¾—
 	};
 
 	/**
 	 * @struct	Capsule
-	 * @brief	ƒJƒvƒZƒ‹
+	 * @brief	ã‚«ãƒ—ã‚»ãƒ«
 	 */
 	struct Capsule
 	{
-		XMFLOAT3 start;	// ü•ª‚Ìn“_
-		XMFLOAT3 end;	// ü•ª‚ÌI“_
+		XMFLOAT3 start;	// ç·šåˆ†ã®å§‹ç‚¹
+		XMFLOAT3 end;	// ç·šåˆ†ã®çµ‚ç‚¹
 		float radius;	
 	};
 
 	/**
 	 * @struct	Cylinder
-	 * @brief	‰~’Œ
+	 * @brief	å††æŸ±
 	 */
 	struct Cylinder
 	{
 		XMFLOAT3 center;
-		XMFLOAT3 axis;		// ²‚ÌŒü‚«i³‹K‰»Ï‚İj
+		XMFLOAT3 axis;		// è»¸ã®å‘ãï¼ˆæ­£è¦åŒ–æ¸ˆã¿ï¼‰
 		float height;
 		float radius;
 	};
@@ -83,7 +83,7 @@ class CollisionSystem
 public:
 	CollisionSystem() { m_systemName = "Collision System"; }
 
-	// ‰Šú‰»iObserver‚ÌÚ‘±‚È‚Çj
+	// åˆæœŸåŒ–ï¼ˆObserverã®æ¥ç¶šãªã©ï¼‰
 	void Initialize(Registry& registry);
 
 	void Update(Registry& registry) override;
@@ -93,18 +93,18 @@ public:
 	static void Reset();
 
 private:
-	// --- “à•”ˆ— ---
+	// --- å†…éƒ¨å‡¦ç† ---
 	void UpdateWorldCollider(Registry& registry, Entity e, const Transform& t, const Collider& c, WorldCollider& wc);
 
-	// --- ”»’èŠÖ”ŒQi‰ñ“]‘Î‰j ---
-	// ‹… vs ...
+	// --- åˆ¤å®šé–¢æ•°ç¾¤ï¼ˆå›è»¢å¯¾å¿œï¼‰ ---
+	// çƒ vs ...
 	bool CheckSphereSphere(const Physics::Sphere& a, const Physics::Sphere& b, Physics::Contact& outContact);
 	bool CheckSphereOBB(const Physics::Sphere& s, const Physics::OBB& b, Physics::Contact& outContact);
 	bool CheckSphereCapsule(const Physics::Sphere& s, const Physics::Capsule& c, Physics::Contact& outContact);
 	bool CheckSphereCylinder(const Physics::Sphere& s, const Physics::Cylinder& c, Physics::Contact& outContact);
 
 
-	// OOBi” jvs ...
+	// OOBï¼ˆç®±ï¼‰vs ...
 	bool CheckOBBOBB(const Physics::OBB& a, const Physics::OBB& b, Physics::Contact& outContact);
 	bool CheckOBBCapsule(const Physics::OBB& box, const Physics::Capsule& cap, Physics::Contact& outContact);
 	bool CheckOBBCylinder(const Physics::OBB& box, const Physics::Cylinder& cyl, Physics::Contact& outContact);
@@ -115,7 +115,7 @@ private:
 	bool CheckCylinderCylinder(const Physics::Cylinder& a, const Physics::Cylinder& b, Physics::Contact& outContact);
 
 private:
-	// •ÏXŒŸ’m—p
+	// å¤‰æ›´æ¤œçŸ¥ç”¨
 	static Observer m_observer;
 	static bool m_isInitialized;
 };

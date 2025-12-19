@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	RenderSystem.h
- * @brief	•`‰æˆ—
+ * @brief	æç”»å‡¦ç†
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___RENDER_SYSTEM_H___
 #define ___RENDER_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Graphics/Renderers/PrimitiveRenderer.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
@@ -38,9 +38,9 @@ public:
 
 	void Render(Registry& registry, const Context& context) override;
 
-	// 3DÀ•W -> 2DƒXƒNƒŠ[ƒ“À•W‚Ö‚Ì•ÏŠ·
-	// –ß‚è’l: ƒXƒNƒŠ[ƒ“À•W (x, y)Bz‚Í[“x(0-1)B
-	// ‰æ–ÊŠO‚È‚ç false ‚ğ•Ô‚·‚æ‚¤‚È”»’è‚à‰Â”\‚Å‚·‚ª¡‰ñ‚ÍÀ•W‚Ì‚İŒvZB
+	// 3Dåº§æ¨™ -> 2Dã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã¸ã®å¤‰æ›
+	// æˆ»ã‚Šå€¤: ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ (x, y)ã€‚zã¯æ·±åº¦(0-1)ã€‚
+	// ç”»é¢å¤–ãªã‚‰ false ã‚’è¿”ã™ã‚ˆã†ãªåˆ¤å®šã‚‚å¯èƒ½ã§ã™ãŒä»Šå›ã¯åº§æ¨™ã®ã¿è¨ˆç®—ã€‚
 	static DirectX::XMFLOAT3 WorldToScreen(
 		const DirectX::XMFLOAT3& worldPos,
 		const DirectX::XMMATRIX& view,
@@ -49,7 +49,7 @@ public:
 	{
 		XMVECTOR vWorld = XMLoadFloat3(&worldPos);
 
-		// À•W•ÏŠ· (World -> View -> Clip)
+		// åº§æ¨™å¤‰æ› (World -> View -> Clip)
 		XMVECTOR vClip = XMVector3TransformCoord(vWorld, view);
 		vClip = XMVector3TransformCoord(vClip, proj);
 
@@ -58,7 +58,7 @@ public:
 
 		// NDC (-1~1) -> Screen (0~W, 0~H)
 		float screenX = (clip.x + 1.0f) * 0.5f * screenW;
-		float screenY = (1.0f - clip.y) * 0.5f * screenH; // Y‚Í”½“]
+		float screenY = (1.0f - clip.y) * 0.5f * screenH; // Yã¯åè»¢
 
 		return XMFLOAT3(screenX, screenY, clip.z);
 	}

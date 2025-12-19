@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	SpriteRenderer.cpp
- * @brief	2Dê—p‚ÌƒŒƒ“ƒ_ƒ‰[ƒNƒ‰ƒX‚ÌÀ‘•
+ * @brief	2Då°‚ç”¨ã®ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã‚¯ãƒ©ã‚¹ã®å®Ÿè£…
  * 
  * @details	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date   2025/11/25	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date   2025/11/25	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Graphics/Renderers/SpriteRenderer.h"
 #include "Engine/Config.h"
@@ -31,7 +31,7 @@ SpriteRenderer::SpriteRenderer(ID3D11Device* device, ID3D11DeviceContext* contex
 	: m_device(device), m_context(context) {}
 
 void SpriteRenderer::Initialize() {
-	// 1. ƒVƒF[ƒ_[ƒRƒ“ƒpƒCƒ‹ (ƒpƒX‚É’ˆÓ)
+	// 1. ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚³ãƒ³ãƒ‘ã‚¤ãƒ« (ãƒ‘ã‚¹ã«æ³¨æ„)
 	ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
 	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
 
@@ -43,15 +43,15 @@ void SpriteRenderer::Initialize() {
 	if (FAILED(hr)) throw std::runtime_error("Failed to compile Sprite PS");
 	m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &m_ps);
 
-	// 2. “ü—ÍƒŒƒCƒAƒEƒg (Pos + UV)
+	// 2. å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ (Pos + UV)
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,	  0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	m_device->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &m_inputLayout);
 
-	// 3. ’¸“_ƒoƒbƒtƒ@ (“®“I‚É‘‚«Š·‚¦‚é‚Ì‚ÅDYNAMIC)
-	// lŠpŒ` (TriangleStrip‚È‚ç4’¸“_‚ÅÏ‚Ş)
+	// 3. é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ (å‹•çš„ã«æ›¸ãæ›ãˆã‚‹ã®ã§DYNAMIC)
+	// å››è§’å½¢ (TriangleStripãªã‚‰4é ‚ç‚¹ã§æ¸ˆã‚€)
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.ByteWidth = sizeof(Vertex2D) * 4;
@@ -59,14 +59,14 @@ void SpriteRenderer::Initialize() {
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	m_device->CreateBuffer(&bd, nullptr, &m_vertexBuffer);
 
-	// 4. ’è”ƒoƒbƒtƒ@
+	// 4. å®šæ•°ãƒãƒƒãƒ•ã‚¡
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(ConstantBufferData);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
 	m_device->CreateBuffer(&bd, nullptr, &m_constantBuffer);
 
-	// 5. ƒuƒŒƒ“ƒhƒXƒe[ƒg (“§‰ß—LŒø)
+	// 5. ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆ (é€éæœ‰åŠ¹)
 	D3D11_BLEND_DESC blendDesc = {};
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
 	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -78,7 +78,7 @@ void SpriteRenderer::Initialize() {
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	m_device->CreateBlendState(&blendDesc, &m_blendState);
 
-	// 6. ƒTƒ“ƒvƒ‰[ (ƒŠƒjƒA•âŠÔ)
+	// 6. ã‚µãƒ³ãƒ—ãƒ©ãƒ¼ (ãƒªãƒ‹ã‚¢è£œé–“)
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -86,14 +86,14 @@ void SpriteRenderer::Initialize() {
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	m_device->CreateSamplerState(&samplerDesc, &m_samplerState);
 
-	// 7. ƒ‰ƒXƒ^ƒ‰ƒCƒU[
+	// 7. ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼
 	D3D11_RASTERIZER_DESC rd = {};
 	rd.CullMode = D3D11_CULL_NONE;
 	rd.FillMode = D3D11_FILL_SOLID;
 	rd.DepthClipEnable = FALSE;
 	m_device->CreateRasterizerState(&rd, &m_rs2D);
 
-	// [“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒg
+	// æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ã‚¹ãƒ†ãƒ¼ãƒˆ
 	D3D11_DEPTH_STENCIL_DESC dsd = {};
 	dsd.DepthEnable = FALSE;
 	dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -104,9 +104,9 @@ void SpriteRenderer::Initialize() {
 }
 
 void SpriteRenderer::Begin() {
-	// 2D—p‚ÌƒpƒCƒvƒ‰ƒCƒ“İ’è
+	// 2Dç”¨ã®ãƒ‘ã‚¤ãƒ—ãƒ©ã‚¤ãƒ³è¨­å®š
 	m_context->IASetInputLayout(m_inputLayout.Get());
-	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); // ƒXƒgƒŠƒbƒv
+	m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); // ã‚¹ãƒˆãƒªãƒƒãƒ—
 
 	UINT stride = sizeof(Vertex2D);
 	UINT offset = 0;
@@ -118,15 +118,15 @@ void SpriteRenderer::Begin() {
 	m_context->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	m_context->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 
-	// ƒTƒ“ƒvƒ‰[ƒZƒbƒg
+	// ã‚µãƒ³ãƒ—ãƒ©ãƒ¼ã‚»ãƒƒãƒˆ
 	m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
-	// ƒuƒŒƒ“ƒhƒXƒe[ƒgƒZƒbƒg
+	// ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆã‚»ãƒƒãƒˆ
 	float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	m_context->OMSetBlendState(m_blendState.Get(), blendFactor, 0xffffffff);
 
-	// 2D³Ë‰es—ñ (¶ã0,0 ` ‰E‰ºW,H)
-	// Z”ÍˆÍ‚Í 0.0`1.0
+	// 2Dæ­£å°„å½±è¡Œåˆ— (å·¦ä¸Š0,0 ï½ å³ä¸‹W,H)
+	// Zç¯„å›²ã¯ 0.0ï½1.0
 	float w = static_cast<float>(Config::SCREEN_WIDTH);
 	float h = static_cast<float>(Config::SCREEN_HEIGHT);
 	m_cbData.projection = XMMatrixTranspose(XMMatrixOrthographicOffCenterLH(0, w, h, 0, 0.0f, 1.0f));
@@ -143,26 +143,26 @@ void SpriteRenderer::Draw(Texture* texture, float x, float y, const XMFLOAT4& co
 void SpriteRenderer::Draw(Texture* texture, float x, float y, float w, float h, const XMFLOAT4& color) {
 	if (!texture) return;
 
-	// ’¸“_ƒf[ƒ^‚ÌXV (4’¸“_)
+	// é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿ã®æ›´æ–° (4é ‚ç‚¹)
 	D3D11_MAPPED_SUBRESOURCE ms;
 	if (SUCCEEDED(m_context->Map(m_vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms))) {
 		Vertex2D* v = (Vertex2D*)ms.pData;
-		// TriangleStrip‚Ì‡˜: ¶ã -> ‰Eã -> ¶‰º -> ‰E‰º
-		v[0] = { XMFLOAT3(x,	 y,		0), XMFLOAT2(0, 0) }; // ¶ã
-		v[1] = { XMFLOAT3(x + w, y,		0), XMFLOAT2(1, 0) }; // ‰Eã
-		v[2] = { XMFLOAT3(x,	 y + h, 0), XMFLOAT2(0, 1) }; // ¶‰º
-		v[3] = { XMFLOAT3(x + w, y + h, 0), XMFLOAT2(1, 1) }; // ‰E‰º
+		// TriangleStripã®é †åº: å·¦ä¸Š -> å³ä¸Š -> å·¦ä¸‹ -> å³ä¸‹
+		v[0] = { XMFLOAT3(x,	 y,		0), XMFLOAT2(0, 0) }; // å·¦ä¸Š
+		v[1] = { XMFLOAT3(x + w, y,		0), XMFLOAT2(1, 0) }; // å³ä¸Š
+		v[2] = { XMFLOAT3(x,	 y + h, 0), XMFLOAT2(0, 1) }; // å·¦ä¸‹
+		v[3] = { XMFLOAT3(x + w, y + h, 0), XMFLOAT2(1, 1) }; // å³ä¸‹
 		m_context->Unmap(m_vertexBuffer.Get(), 0);
 	}
 
-	// ƒeƒNƒXƒ`ƒƒƒZƒbƒg
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚»ãƒƒãƒˆ
 	m_context->PSSetShaderResources(0, 1, texture->srv.GetAddressOf());
 
-	// ’è”ƒoƒbƒtƒ@XV
-	m_cbData.world = XMMatrixIdentity(); // ’¸“_À•W‚ÅˆÊ’u‚ğŒˆ‚ß‚½‚Ì‚Åƒ[ƒ‹ƒh‚Í’PˆÊs—ñ
+	// å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
+	m_cbData.world = XMMatrixIdentity(); // é ‚ç‚¹åº§æ¨™ã§ä½ç½®ã‚’æ±ºã‚ãŸã®ã§ãƒ¯ãƒ¼ãƒ«ãƒ‰ã¯å˜ä½è¡Œåˆ—
 	m_cbData.color = color;
 	m_context->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_cbData, 0, 0);
 
-	// •`‰æ
+	// æç”»
 	m_context->Draw(4, 0);
 }

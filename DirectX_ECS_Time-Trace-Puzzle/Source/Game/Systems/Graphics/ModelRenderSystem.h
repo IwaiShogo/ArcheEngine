@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	ModelRenderSystem.h
- * @brief	ModelRenderer‚ğg‚Á‚Ä•`‰æ‚ğs‚¤ƒVƒXƒeƒ€
+ * @brief	ModelRendererã‚’ä½¿ã£ã¦æç”»ã‚’è¡Œã†ã‚·ã‚¹ãƒ†ãƒ 
  * 
  * @details	
  * 
@@ -8,19 +8,19 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/26	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/26	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
 #ifndef ___MODEL_RENDER_SYSTEM_H___
 #define ___MODEL_RENDER_SYSTEM_H___
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/ECS/ECS.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Graphics/Renderers/ModelRenderer.h"
@@ -40,7 +40,7 @@ public:
 	{
 		if (!m_renderer) return;
 
-		// 1. ƒJƒƒ‰î•ñ‚Ìæ“¾
+		// 1. ã‚«ãƒ¡ãƒ©æƒ…å ±ã®å–å¾—
 		XMMATRIX viewMatrix = XMMatrixIdentity();
 		XMMATRIX projMatrix = XMMatrixIdentity();
 		XMFLOAT3 lightDir = { 0.5f, -1.0f, 0.5f };
@@ -61,26 +61,26 @@ public:
 
 		if (!cameraFound) return;
 
-		// 2. •`‰æŠJn
+		// 2. æç”»é–‹å§‹
 		m_renderer->Begin(viewMatrix, projMatrix, lightDir);
 
-		// 3. MeshComponent‚ÆTransform‚ğ‚ÂEntity‚ğ•`‰æ
+		// 3. MeshComponentã¨Transformã‚’æŒã¤Entityã‚’æç”»
 		registry.view<MeshComponent, Transform>().each([&](Entity e, MeshComponent& m, Transform& t)
 			{
 				auto model = ResourceManager::Instance().GetModel(m.modelKey);
 				if (model)
 				{
-					// ŒvZÏ‚İ‚Ì GetWorldMatrix() ‚ğæ“¾
+					// è¨ˆç®—æ¸ˆã¿ã® GetWorldMatrix() ã‚’å–å¾—
 					XMMATRIX world = t.GetWorldMatrix();
 
-					// ƒ‚ƒfƒ‹ŒÅ—L‚ÌƒXƒP[ƒ‹•â³ * Transform‚ÌƒXƒP[ƒ‹
+					// ãƒ¢ãƒ‡ãƒ«å›ºæœ‰ã®ã‚¹ã‚±ãƒ¼ãƒ«è£œæ­£ * Transformã®ã‚¹ã‚±ãƒ¼ãƒ«
 					if (m.scaleOffset.x != 1.0f || m.scaleOffset.y != 1.0f || m.scaleOffset.z != 1.0f)
 					{
 						XMMATRIX preScale = XMMatrixScaling(m.scaleOffset.x, m.scaleOffset.y, m.scaleOffset.z);
 						world = preScale * world;
 					}
 
-					// •`‰æ
+					// æç”»
 					m_renderer->Draw(model, world);
 				}
 			});

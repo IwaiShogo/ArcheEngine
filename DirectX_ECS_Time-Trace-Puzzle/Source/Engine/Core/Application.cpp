@@ -1,4 +1,4 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	Application.cpp
  * @brief	
  * 
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  * 
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›ä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  * 
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  * 
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
-// ===== ƒCƒ“ƒNƒ‹[ƒh =====
+// ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Config.h"
@@ -39,19 +39,19 @@ Application::Application(HWND hwnd)
 Application::~Application()
 {
 #ifdef _DEBUG
-	// ImGui I—¹ˆ—
+	// ImGui çµ‚äº†å‡¦ç†
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 #endif // _DEBUG
 
-	// ƒI[ƒfƒBƒI
+	// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ª
 	AudioManager::Instance().Finalize();
 }
 
 void Application::Initialize()
 {
-	// 1. ƒXƒƒbƒvƒ`ƒF[ƒ“‚Ìİ’è
+	// 1. ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã®è¨­å®š
 	DXGI_SWAP_CHAIN_DESC scd = {};
 	scd.BufferCount = 1;
 	scd.BufferDesc.Width = Config::SCREEN_WIDTH;
@@ -65,14 +65,14 @@ void Application::Initialize()
 	scd.SampleDesc.Quality = 0;
 	scd.Windowed = TRUE;
 
-	// ƒtƒ‰ƒOİ’è
+	// ãƒ•ãƒ©ã‚°è¨­å®š
 	UINT creationFlags = 0;
 #ifdef _DEBUG
 	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif // _DEBUG
 	creationFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
-	// 2. ƒfƒoƒCƒX‚ÆƒXƒƒbƒvƒ`ƒF[ƒ“‚Ìì¬
+	// 2. ãƒ‡ãƒã‚¤ã‚¹ã¨ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã®ä½œæˆ
 	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
 	D3D_FEATURE_LEVEL featureLevel;
 
@@ -96,7 +96,7 @@ void Application::Initialize()
 		throw std::runtime_error("Failed to create D3D11 device");
 	}
 
-	// 3. ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[iRTVj‚Ìì¬
+	// 3. ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ï¼ˆRTVï¼‰ã®ä½œæˆ
 	ComPtr<ID3D11Texture2D> backBuffer;
 	hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
 	if (FAILED(hr))
@@ -110,7 +110,7 @@ void Application::Initialize()
 		throw std::runtime_error("Failed to create RTV");
 	}
 
-	// 4. [“xƒoƒbƒtƒ@iZ-Bufferj‚Ìì¬
+	// 4. æ·±åº¦ãƒãƒƒãƒ•ã‚¡ï¼ˆZ-Bufferï¼‰ã®ä½œæˆ
 	D3D11_TEXTURE2D_DESC depthBufferDesc = {};
 	depthBufferDesc.Width = Config::SCREEN_WIDTH;
 	depthBufferDesc.Height = Config::SCREEN_HEIGHT;
@@ -124,7 +124,7 @@ void Application::Initialize()
 	depthBufferDesc.CPUAccessFlags = 0;
 	depthBufferDesc.MiscFlags = 0;
 
-	// ƒeƒNƒXƒ`ƒƒì¬
+	// ãƒ†ã‚¯ã‚¹ãƒãƒ£ä½œæˆ
 	ComPtr<ID3D11Texture2D> depthStencilBuffer;
 	hr = m_device->CreateTexture2D(&depthBufferDesc, nullptr, &depthStencilBuffer);
 	if (FAILED(hr))
@@ -132,17 +132,17 @@ void Application::Initialize()
 		throw std::runtime_error("Failed to create Depth Stencil Buffer");
 	}
 
-	// ƒrƒ…[ì¬
+	// ãƒ“ãƒ¥ãƒ¼ä½œæˆ
 	hr = m_device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, &m_depthStencilView);
 	if (FAILED(hr))
 	{
 		throw std::runtime_error("Failed to create Depth Stencil View");
 	}
 
-	// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ğƒZƒbƒg
+	// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’ã‚»ãƒƒãƒˆ
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 
-	// ƒrƒ…[ƒ|[ƒgİ’è
+	// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆè¨­å®š
 	D3D11_VIEWPORT vp = {};
 	vp.Width = static_cast<float>(Config::SCREEN_WIDTH);
 	vp.Height = static_cast<float>(Config::SCREEN_HEIGHT);
@@ -152,12 +152,14 @@ void Application::Initialize()
 	vp.TopLeftY = 0;
 	m_context->RSSetViewports(1, &vp);
 
-	// ŠÔŠÇ—‚Ì‰Šú‰»
+	// æ™‚é–“ç®¡ç†ã®åˆæœŸåŒ–
 	Time::Initialize();
 	Time::SetFrameRate(Config::FRAME_RATE);
 
-	// “ü—Í
+	// å…¥åŠ›
 	Input::Initialize();
+
+	FontManager::Instance().Initialize();
 
 #ifdef _DEBUG
 	// --- ImGui ---
@@ -165,12 +167,12 @@ void Application::Initialize()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-	// ƒhƒbƒLƒ“ƒO‚Æƒ}ƒ‹ƒ`ƒrƒ…[ƒ|[ƒg‚ğ—LŒø‰»
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	// ƒL[ƒ{[ƒh‘€ì—LŒø
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		// ƒEƒBƒ“ƒhƒEƒhƒbƒLƒ“ƒO—LŒø
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// •ÊƒEƒBƒ“ƒhƒE‰»‚ğ—LŒø
+	// ãƒ‰ãƒƒã‚­ãƒ³ã‚°ã¨ãƒãƒ«ãƒãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚’æœ‰åŠ¹åŒ–
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰æ“ä½œæœ‰åŠ¹
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ‰ãƒƒã‚­ãƒ³ã‚°æœ‰åŠ¹
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// åˆ¥ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦åŒ–ã‚’æœ‰åŠ¹
 
-	// ƒXƒ^ƒCƒ‹’²®
+	// ã‚¹ã‚¿ã‚¤ãƒ«èª¿æ•´
 	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 
@@ -180,38 +182,38 @@ void Application::Initialize()
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 	
-	// Win32 / DX11 ƒoƒCƒ“ƒfƒBƒ“ƒO‚Ì‰Šú‰»
+	// Win32 / DX11 ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã®åˆæœŸåŒ–
 	ImGui_ImplWin32_Init(m_hwnd);
 	ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
 
-	// ƒGƒfƒBƒ^—p‚Ì‰æ–ÊƒTƒCƒY‚Å‰Šú‰»
+	// ã‚¨ãƒ‡ã‚£ã‚¿ç”¨ã®ç”»é¢ã‚µã‚¤ã‚ºã§åˆæœŸåŒ–
 	m_sceneRT = std::make_unique<RenderTarget>(m_device.Get(), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
 	m_gameRT = std::make_unique<RenderTarget>(m_device.Get(), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
 #endif // _DEBUG
 
-	// ƒ}ƒl[ƒWƒƒ[
+	// ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
 	ResourceManager::Instance().Initialize(m_device.Get());
-	AudioManager::Instance().Initialize();	// ƒI[ƒfƒBƒI‰Šú‰»
+	AudioManager::Instance().Initialize();	// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªåˆæœŸåŒ–
 	ResourceManager::Instance().LoadManifest("Resources/resources.json");
 	ResourceManager::Instance().LoadAll();
 
-	// 3D•`‰æì¬
+	// 3Dæç”»ä½œæˆ
 	m_primitiveRenderer = std::make_unique<PrimitiveRenderer>(m_device.Get(), m_context.Get());
 	m_primitiveRenderer->Initialize();
 
-	// 2D•`‰æì¬
+	// 2Dæç”»ä½œæˆ
 	m_spriteRenderer = std::make_unique<SpriteRenderer>(m_device.Get(), m_context.Get());
 	m_spriteRenderer->Initialize();
 
-	// ƒ‚ƒfƒ‹•`‰æì¬
+	// ãƒ¢ãƒ‡ãƒ«æç”»ä½œæˆ
 	m_modelRenderer = std::make_unique<ModelRenderer>(m_device.Get(), m_context.Get());
 	m_modelRenderer->Initialize();
 
-	// ƒrƒ‹ƒ{[ƒhƒŒƒ“ƒ_ƒ‰[ì¬
+	// ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ä½œæˆ
 	m_billboardRenderer = std::make_unique<BillboardRenderer>(m_device.Get(), m_context.Get());
 	m_billboardRenderer->Initialize();
 
-	// ƒeƒLƒXƒgƒŒƒ“ƒ_ƒ‰[
+	// ãƒ†ã‚­ã‚¹ãƒˆãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼
 	m_textRenderer = std::make_unique<TextRenderer>(m_device.Get(), m_context.Get());
 	
 	Context context;
@@ -222,12 +224,12 @@ void Application::Initialize()
 	context.device = m_device.Get();
 	context.context = m_context.Get();
 
-	// ƒTƒ€ƒlƒCƒ‹¶¬Ší‚Ì‰Šú‰»
+	// ã‚µãƒ ãƒã‚¤ãƒ«ç”Ÿæˆå™¨ã®åˆæœŸåŒ–
 	ThumbnailGenerator::Instance().Initialize(m_device.Get(), m_context.Get(), m_modelRenderer.get());
-	// ‘SƒvƒŒƒtƒ@ƒu‚ÌƒTƒ€ƒlƒCƒ‹‚ğì‚é
+	// å…¨ãƒ—ãƒ¬ãƒ•ã‚¡ãƒ–ã®ã‚µãƒ ãƒã‚¤ãƒ«ã‚’ä½œã‚‹
 	ThumbnailGenerator::Instance().GenerateAll("Resources/Prefabs");
 
-	// ƒV[ƒ“ƒ}ƒl[ƒWƒƒ
+	// ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£
 	m_sceneManager.SetContext(context);
 	m_appContext = context;
 	m_sceneManager.SetContext(m_appContext);
@@ -236,15 +238,15 @@ void Application::Initialize()
 
 void Application::Update()
 {
-	// –ˆƒtƒŒ[ƒ€ŠÔ‚ğXV
+	// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ æ™‚é–“ã‚’æ›´æ–°
 	Time::Update();
 
-	// “ü—Í
+	// å…¥åŠ›
 	Input::Update();
-	// ƒI[ƒfƒBƒI
+	// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ª
 	AudioManager::Instance().Update();
 
-	// ƒV[ƒ“XV
+	// ã‚·ãƒ¼ãƒ³æ›´æ–°
 	m_sceneManager.SetContext(m_appContext);
 	m_sceneManager.Update();
 }
@@ -257,7 +259,7 @@ void Application::Render()
 	// ====================================================
 
 	// ----------------------------------------------------
-	// 1. ImGui ƒtƒŒ[ƒ€ŠJn (ˆê”ÔÅ‰I)
+	// 1. ImGui ãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹ (ä¸€ç•ªæœ€åˆï¼)
 	// ----------------------------------------------------
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -287,36 +289,36 @@ void Application::Render()
 	}
 
 	// ----------------------------------------------------
-	// 2. Scene View (RT) ‚Ö‚Ì•`‰æ
+	// 2. Scene View (RT) ã¸ã®æç”»
 	// ----------------------------------------------------
 	m_sceneRT->Activate(m_context.Get(), m_depthStencilView.Get());
 	m_sceneRT->Clear(m_context.Get(), 0.2f, 0.2f, 0.2f, 1.0f);
 	m_context->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	// ƒGƒfƒBƒ^—p‚Ìİ’èi‘S‚ÄONj
+	// ã‚¨ãƒ‡ã‚£ã‚¿ç”¨ã®è¨­å®šï¼ˆå…¨ã¦ONï¼‰
 	{
-		Context sceneCtx = m_appContext;	// ƒRƒs[ì¬
+		Context sceneCtx = m_appContext;	// ã‚³ãƒ”ãƒ¼ä½œæˆ
 		sceneCtx.debug.useDebugCamera = true;
 		sceneCtx.debug.showGrid = true;
 		sceneCtx.debug.showAxis = true;
 		sceneCtx.debug.showColliders = true;
 		sceneCtx.debug.showSoundLocation = true;
 
-		// ƒV[ƒ“ƒ}ƒl[ƒWƒƒ‚Éˆê“I‚ÉƒZƒbƒg‚µ‚Ä•`‰æ
+		// ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£ã«ä¸€æ™‚çš„ã«ã‚»ãƒƒãƒˆã—ã¦æç”»
 		m_sceneManager.SetContext(sceneCtx);
 		m_sceneManager.Render();
 	}
 
 	// ----------------------------------------------------
-	// 3. Game View (RT) ‚Ö‚Ì•`‰æ
+	// 3. Game View (RT) ã¸ã®æç”»
 	// ----------------------------------------------------
 	m_gameRT->Activate(m_context.Get(), m_depthStencilView.Get());
 	m_gameRT->Clear(m_context.Get(), 0.0f, 0.0f, 0.0f, 1.0f);
 	m_context->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	// ƒQ[ƒ€—p‚Ìİ’èiƒfƒoƒbƒOŒn‚ğ‘S‚Ä‹­§OFFj
+	// ã‚²ãƒ¼ãƒ ç”¨ã®è¨­å®šï¼ˆãƒ‡ãƒãƒƒã‚°ç³»ã‚’å…¨ã¦å¼·åˆ¶OFFï¼‰
 	{
-		Context gameCtx = m_appContext;	// ƒRƒs[ì¬
+		Context gameCtx = m_appContext;	// ã‚³ãƒ”ãƒ¼ä½œæˆ
 		gameCtx.debug.useDebugCamera = false;
 		gameCtx.debug.showGrid = false;
 		gameCtx.debug.showAxis = false;
@@ -324,33 +326,33 @@ void Application::Render()
 		gameCtx.debug.showSoundLocation = false;
 		gameCtx.debug.wireframeMode = false;
 
-		// ƒV[ƒ“ƒ}ƒl[ƒWƒƒ‚ÉƒZƒbƒg‚µ‚Ä•`‰æ
+		// ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£ã«ã‚»ãƒƒãƒˆã—ã¦æç”»
 		m_sceneManager.SetContext(gameCtx);
 		m_sceneManager.Render();
 	}
 
-	// İ’è‚ğŒ³‚É–ß‚·iEditor•\¦—pj
+	// è¨­å®šã‚’å…ƒã«æˆ»ã™ï¼ˆEditorè¡¨ç¤ºç”¨ï¼‰
 	m_sceneManager.SetContext(m_appContext);
 
 	// ----------------------------------------------------
-	// 4. ƒoƒbƒNƒoƒbƒtƒ@‚É–ß‚µ‚Ä ImGui •`‰æ
+	// 4. ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã«æˆ»ã—ã¦ ImGui æç”»
 	// ----------------------------------------------------
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
 
-	// Scene Window (RT‰æ‘œ‚ğ•\¦)
+	// Scene Window (RTç”»åƒã‚’è¡¨ç¤º)
 	ImGui::Begin("Scene");
 	{
-		// ¡‚ÌƒEƒBƒ“ƒhƒEƒTƒCƒY‚ğæ“¾
+		// ä»Šã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºã‚’å–å¾—
 		ImVec2 size = ImGui::GetContentRegionAvail();
 		m_sceneWindowSize = size;
 
-		// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒg‚ÌƒŠƒTƒCƒY‚Æ•`‰æ
+		// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ãƒªã‚µã‚¤ã‚ºã¨æç”»
 		ImGui::Image(m_sceneRT->GetID(), size);
 
-		// ‰æ‘œ‚Ì¶À•W‚ğæ“¾
+		// ç”»åƒã®å·¦åº§æ¨™ã‚’å–å¾—
 		ImVec2 imageMin = ImGui::GetItemRectMin();
 
-		// ƒJƒƒ‰s—ñ‚Ìs—ñ
+		// ã‚«ãƒ¡ãƒ©è¡Œåˆ—ã®è¡Œåˆ—
 		XMMATRIX view = XMMatrixIdentity();
 		XMMATRIX proj = XMMatrixIdentity();
 		bool cameraFound = false;
@@ -364,7 +366,7 @@ void Application::Render()
 				XMVECTOR look = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rot);
 				XMVECTOR up = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rot);
 
-				// ƒMƒYƒ‚—p‚É RH (‰EèŒn) ‚ÅŒvZI
+				// ã‚®ã‚ºãƒ¢ç”¨ã« RH (å³æ‰‹ç³») ã§è¨ˆç®—ï¼
 				view = XMMatrixLookToLH(eye, look, up);
 				proj = XMMatrixPerspectiveFovLH(cam.fov, cam.aspect, cam.nearZ, cam.farZ);
 
@@ -379,32 +381,32 @@ void Application::Render()
 
 		if (!ImGuizmo::IsUsing() && ImGui::IsItemClicked(ImGuiMouseButton_Left) && m_sceneManager.GetContext().debug.enableMousePicking)
 		{
-			// 1. ƒ}ƒEƒX‚Ì‘Š‘ÎÀ•W‚ğŒvZ (‰æ‘œ¶ã‚©‚ç‚ÌˆÊ’u)
-			ImVec2 mousePos = ImGui::GetMousePos();		 // ƒ}ƒEƒX‚Ìâ‘ÎÀ•W
-			ImVec2 imageMin = ImGui::GetItemRectMin();	 // ‰æ‘œ‚Ì¶ãâ‘ÎÀ•W
+			// 1. ãƒã‚¦ã‚¹ã®ç›¸å¯¾åº§æ¨™ã‚’è¨ˆç®— (ç”»åƒå·¦ä¸Šã‹ã‚‰ã®ä½ç½®)
+			ImVec2 mousePos = ImGui::GetMousePos();		 // ãƒã‚¦ã‚¹ã®çµ¶å¯¾åº§æ¨™
+			ImVec2 imageMin = ImGui::GetItemRectMin();	 // ç”»åƒã®å·¦ä¸Šçµ¶å¯¾åº§æ¨™
 
 			float x = mousePos.x - imageMin.x;
 			float y = mousePos.y - imageMin.y;
 
-			// 2. NDCÀ•W (-1.0 ~ 1.0) ‚É•ÏŠ·
-			// Y²‚Í‰ºŒü‚«‚ªƒvƒ‰ƒX‚È‚Ì‚ÅA3D‹óŠÔ(ãŒü‚«ƒvƒ‰ƒX)‚É‡‚í‚¹‚Ä”½“]
+			// 2. NDCåº§æ¨™ (-1.0 ~ 1.0) ã«å¤‰æ›
+			// Yè»¸ã¯ä¸‹å‘ããŒãƒ—ãƒ©ã‚¹ãªã®ã§ã€3Dç©ºé–“(ä¸Šå‘ããƒ—ãƒ©ã‚¹)ã«åˆã‚ã›ã¦åè»¢
 			float ndcX = (x / size.x) * 2.0f - 1.0f;
 			float ndcY = ((y / size.y) * 2.0f - 1.0f) * -1.0f;
 			
-			// 3. ƒJƒƒ‰s—ñ‚Ìæ“¾ (MainCamera‚ğ’T‚·)
+			// 3. ã‚«ãƒ¡ãƒ©è¡Œåˆ—ã®å–å¾— (MainCameraã‚’æ¢ã™)
 			XMMATRIX view = XMMatrixIdentity();
 			XMMATRIX proj = XMMatrixIdentity();
 			XMVECTOR camPos = XMVectorZero();
 			bool cameraFound = false;
 
-			// ŠÈˆÕ“I‚ÉƒƒCƒ“ƒJƒƒ‰‚ğ’T‚· (ƒfƒoƒbƒOƒJƒƒ‰‘Î‰‚ÍŒã‚Ù‚Ç)
-			// ¦ƒV[ƒ“ƒ}ƒl[ƒWƒƒŒo—R‚ÅWorld‚ÉƒAƒNƒZƒX
+			// ç°¡æ˜“çš„ã«ãƒ¡ã‚¤ãƒ³ã‚«ãƒ¡ãƒ©ã‚’æ¢ã™ (ãƒ‡ãƒãƒƒã‚°ã‚«ãƒ¡ãƒ©å¯¾å¿œã¯å¾Œã»ã©)
+			// â€»ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£çµŒç”±ã§Worldã«ã‚¢ã‚¯ã‚»ã‚¹
 			World& world = m_sceneManager.GetWorld();
 			world.getRegistry().view<Tag, Camera, Transform>().each([&](Entity e, Tag& tag, Camera& cam, Transform& t) {
 				if (!cameraFound && strcmp(tag.name.c_str(), "MainCamera") == 0) {
 					camPos = XMLoadFloat3(&t.position);
 
-					// s—ñŒvZ (RenderSystem‚Æ“¯‚¶ƒƒWƒbƒN)
+					// è¡Œåˆ—è¨ˆç®— (RenderSystemã¨åŒã˜ãƒ­ã‚¸ãƒƒã‚¯)
 					XMMATRIX rot = XMMatrixRotationRollPitchYaw(t.rotation.x, t.rotation.y, 0.0f);
 					XMVECTOR look = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rot);
 					XMVECTOR up = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rot);
@@ -416,12 +418,12 @@ void Application::Render()
 				});
 
 			if (cameraFound) {
-				// 4. ƒŒƒC‚Ìì¬ (Unproject)
-				// ƒXƒNƒŠ[ƒ“À•W(ndcX, ndcY) ‚©‚ç ƒ[ƒ‹ƒh‹óŠÔ‚Ö
+				// 4. ãƒ¬ã‚¤ã®ä½œæˆ (Unproject)
+				// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™(ndcX, ndcY) ã‹ã‚‰ ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã¸
 				XMVECTOR rayOrigin = camPos;
 				XMVECTOR rayTarget = XMVector3Unproject(
 					XMVectorSet(x, y, 1.0f, 0.0f), // Z=1 (Far)
-					0, 0, size.x, size.y, 0.0f, 1.0f, // Viewport‚Í‰æ‘œ‚ÌƒTƒCƒY
+					0, 0, size.x, size.y, 0.0f, 1.0f, // Viewportã¯ç”»åƒã®ã‚µã‚¤ã‚º
 					proj, view, XMMatrixIdentity()
 				);
 				XMVECTOR rayDir = XMVector3Normalize(rayTarget - rayOrigin);
@@ -430,17 +432,17 @@ void Application::Render()
 				XMStoreFloat3(&origin, rayOrigin);
 				XMStoreFloat3(&dir, rayDir);
 
-				// 5. ƒŒƒCƒLƒƒƒXƒgÀs
+				// 5. ãƒ¬ã‚¤ã‚­ãƒ£ã‚¹ãƒˆå®Ÿè¡Œ
 				float dist;
 				Entity hit = CollisionSystem::Raycast(world.getRegistry(), origin, dir, dist);
 
-				// 6. ‘I‘ğó‘Ô‚ÌXV (Editor‚Ìƒƒ“ƒo‚ğXV‚µ‚½‚¢)
-				// Editor‚Éu‘I‘ğ‚·‚éŠÖ”v‚ğ’Ç‰Á‚·‚é‚©Apublicƒƒ“ƒo‚É‚·‚é•K—v‚ª‚ ‚è‚Ü‚·‚ªA
-				// ‚±‚±‚Å‚Í Editor::Instance().SelectEntity(hit) ‚Ì‚æ‚¤‚ÈŠÖ”‚ğì‚é‚Ì‚ªƒxƒXƒg‚Å‚·B
-				// ŠÈˆÕ“I‚É Editor::Draw ‚Ìˆø”‚Å“n‚µ‚Ä‚¢‚é‚È‚ç‚»‚±‚ÅXV‚Å‚«‚Ü‚·‚ªA
-				// Editor::Draw ‚Í‚±‚±‚æ‚èŒã‚ÅŒÄ‚Î‚ê‚é‚½‚ßAEditor‘¤‚ÉƒZƒbƒ^[‚ğì‚è‚Ü‚µ‚å‚¤B
+				// 6. é¸æŠçŠ¶æ…‹ã®æ›´æ–° (Editorã®ãƒ¡ãƒ³ãƒã‚’æ›´æ–°ã—ãŸã„)
+				// Editorã«ã€Œé¸æŠã™ã‚‹é–¢æ•°ã€ã‚’è¿½åŠ ã™ã‚‹ã‹ã€publicãƒ¡ãƒ³ãƒã«ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ãŒã€
+				// ã“ã“ã§ã¯ Editor::Instance().SelectEntity(hit) ã®ã‚ˆã†ãªé–¢æ•°ã‚’ä½œã‚‹ã®ãŒãƒ™ã‚¹ãƒˆã§ã™ã€‚
+				// ç°¡æ˜“çš„ã« Editor::Draw ã®å¼•æ•°ã§æ¸¡ã—ã¦ã„ã‚‹ãªã‚‰ãã“ã§æ›´æ–°ã§ãã¾ã™ãŒã€
+				// Editor::Draw ã¯ã“ã“ã‚ˆã‚Šå¾Œã§å‘¼ã°ã‚Œã‚‹ãŸã‚ã€Editorå´ã«ã‚»ãƒƒã‚¿ãƒ¼ã‚’ä½œã‚Šã¾ã—ã‚‡ã†ã€‚
 
-				Editor::Instance().SetSelectedEntity(hit); // š‚±‚ê‚ğì¬‚µ‚Ä‚­‚¾‚³‚¢
+				Editor::Instance().SetSelectedEntity(hit); // â˜…ã“ã‚Œã‚’ä½œæˆã—ã¦ãã ã•ã„
 				if (hit != NullEntity) Logger::Log("Selected: " + std::to_string(hit));
 			}
 		}
@@ -448,7 +450,7 @@ void Application::Render()
 	ImGui::End();
 
 	// Game Window
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // —]”’‚È‚µ
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // ä½™ç™½ãªã—
 	ImGui::Begin("Game");
 	{
 		ImVec2 size = ImGui::GetContentRegionAvail();
@@ -458,10 +460,10 @@ void Application::Render()
 	ImGui::End();
 	ImGui::PopStyleVar();
 
-	// ‚»‚Ì‘¼‚ÌƒEƒBƒ“ƒhƒE (Inspector, Hierarchy...)
+	// ãã®ä»–ã®ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ (Inspector, Hierarchy...)
 	Editor::Instance().Draw(m_sceneManager.GetWorld(), m_appContext);
 
-	// •`‰æI—¹
+	// æç”»çµ‚äº†
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -472,7 +474,7 @@ void Application::Render()
 		ImGui::RenderPlatformWindowsDefault();
 	}
 
-	// ƒrƒ…[ƒ|[ƒg•œ‹A
+	// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆå¾©å¸°
 	D3D11_VIEWPORT vp = {};
 	vp.Width = static_cast<float>(Config::SCREEN_WIDTH);
 	vp.Height = static_cast<float>(Config::SCREEN_HEIGHT);
@@ -487,7 +489,7 @@ void Application::Render()
 	// Release Mode (Game Only)
 	// ====================================================
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-	// ... (ƒrƒ…[ƒ|[ƒgİ’è) ...
+	// ... (ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆè¨­å®š) ...
 	D3D11_VIEWPORT vp = {};
 	vp.Width = static_cast<float>(Config::SCREEN_WIDTH);
 	vp.Height = static_cast<float>(Config::SCREEN_HEIGHT);
@@ -501,7 +503,7 @@ void Application::Render()
 	m_context->ClearRenderTargetView(m_renderTargetView.Get(), color);
 	m_context->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	// ‹­§“I‚ÉƒQ[ƒ€İ’è
+	// å¼·åˆ¶çš„ã«ã‚²ãƒ¼ãƒ è¨­å®š
 	m_sceneManager.GetContext().debug.useDebugCamera = false;
 	m_sceneManager.Render();
 
@@ -518,11 +520,11 @@ void Application::Render()
 
 void Application::Run()
 {
-	// 1. XV‚Æ•`‰æ
+	// 1. æ›´æ–°ã¨æç”»
 	Update();
 	Render();
 
-	// 2. ƒtƒŒ[ƒ€ƒŒ[ƒg’²®i‘Ò‹@j
-	// TimeƒNƒ‰ƒX‚ª©“®‚Åc‚è‚ÌŠÔ‚ğŒvZ‚µ‚Ä‘Ò‚Á‚Ä‚­‚ê‚Ü‚·
+	// 2. ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆèª¿æ•´ï¼ˆå¾…æ©Ÿï¼‰
+	// Timeã‚¯ãƒ©ã‚¹ãŒè‡ªå‹•ã§æ®‹ã‚Šã®æ™‚é–“ã‚’è¨ˆç®—ã—ã¦å¾…ã£ã¦ãã‚Œã¾ã™
 	Time::WaitFrame();
 }

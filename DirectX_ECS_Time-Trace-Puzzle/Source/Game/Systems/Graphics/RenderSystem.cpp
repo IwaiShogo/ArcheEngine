@@ -1,6 +1,6 @@
-/*****************************************************************//**
+ï»¿/*****************************************************************//**
  * @file	RenderSystem.h
- * @brief	•`‰æˆ—
+ * @brief	æç”»å‡¦ç†
  *
  * @details
  *
@@ -8,16 +8,16 @@
  * @author	Iwai Shogo
  * ------------------------------------------------------------
  *
- * @date	2025/11/23	‰‰ñì¬“ú
- * 			ì‹Æ“à—eF	- ’Ç‰ÁF
+ * @date	2025/11/23	åˆå›žä½œæˆæ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- è¿½åŠ ï¼š
  *
- * @update	2025/xx/xx	ÅIXV“ú
- * 			ì‹Æ“à—eF	- XXF
+ * @update	2025/xx/xx	æœ€çµ‚æ›´æ–°æ—¥
+ * 			ä½œæ¥­å†…å®¹ï¼š	- XXï¼š
  *
- * @note	iÈ—ª‰Âj
+ * @note	ï¼ˆçœç•¥å¯ï¼‰
  *********************************************************************/
 
- // ===== ƒCƒ“ƒNƒ‹[ƒh =====
+ // ===== ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ =====
 #include "Engine/pch.h"
 #define NOMINMAX
 #include "Game/Systems/Graphics/RenderSystem.h"
@@ -32,10 +32,10 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 	if (!m_renderer) return;
 
 	// ------------------------------------------------------------
-	// 1. ƒƒCƒ“‚Ì•`‰æ
+	// 1. ãƒ¡ã‚¤ãƒ³ã®æç”»
 	// ------------------------------------------------------------
 
-	// 1. ƒJƒƒ‰’Tõ
+	// 1. ã‚«ãƒ¡ãƒ©æŽ¢ç´¢
 	XMMATRIX viewMatrix = XMMatrixIdentity();
 	XMMATRIX projMatrix = XMMatrixIdentity();
 	static XMFLOAT3 savedRotation = { 0, 0, 0 };
@@ -48,15 +48,15 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 		savedRotation = trans.rotation;
 
 		XMVECTOR eye = XMLoadFloat3(&trans.position);
-		// ‰ñ“]s—ñ‚ðì¬ (Pitch: XŽ²‰ñ“], Yaw: YŽ²‰ñ“])
-		// Transform.rotation.x ‚ð Pitch(ã‰º)Ay ‚ð Yaw(¶‰E) ‚Æ‚µ‚ÄŽg‚¢‚Ü‚·
+		// å›žè»¢è¡Œåˆ—ã‚’ä½œæˆ (Pitch: Xè»¸å›žè»¢, Yaw: Yè»¸å›žè»¢)
+		// Transform.rotation.x ã‚’ Pitch(ä¸Šä¸‹)ã€y ã‚’ Yaw(å·¦å³) ã¨ã—ã¦ä½¿ã„ã¾ã™
 		XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(trans.rotation.x, trans.rotation.y, 0.0f);
-		// ‘O•ûƒxƒNƒgƒ‹ (0, 0, 1) ‚ð‰ñ“]‚³‚¹‚é
+		// å‰æ–¹ãƒ™ã‚¯ãƒˆãƒ« (0, 0, 1) ã‚’å›žè»¢ã•ã›ã‚‹
 		XMVECTOR lookDir = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rotationMatrix);
-		// ã•ûŒüƒxƒNƒgƒ‹ (0, 1, 0) ‚ð‰ñ“]‚³‚¹‚é
+		// ä¸Šæ–¹å‘ãƒ™ã‚¯ãƒˆãƒ« (0, 1, 0) ã‚’å›žè»¢ã•ã›ã‚‹
 		XMVECTOR upDir = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rotationMatrix);
 
-		// LookToLH: ˆÊ’uAŒü‚«Aã‚Åƒrƒ…[s—ñ‚ðì‚é
+		// LookToLH: ä½ç½®ã€å‘ãã€ä¸Šã§ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã‚’ä½œã‚‹
 		viewMatrix = XMMatrixLookToLH(eye, lookDir, upDir);
 		projMatrix = XMMatrixPerspectiveFovLH(cam.fov, cam.aspect, cam.nearZ, cam.farZ);
 		cameraFound = true;
@@ -64,14 +64,14 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 
 	if (!cameraFound) return;
 
-	// ƒƒCƒ“ƒV[ƒ“•`‰æŠJŽn
+	// ãƒ¡ã‚¤ãƒ³ã‚·ãƒ¼ãƒ³æç”»é–‹å§‹
 	m_renderer->Begin(viewMatrix, projMatrix);
 
-	// ƒOƒŠƒbƒh‚ÆŽ²‚Ì•`‰æiColliderÝ’è‚ÉŠÖ‚í‚ç‚¸o‚·j
+	// ã‚°ãƒªãƒƒãƒ‰ã¨è»¸ã®æç”»ï¼ˆColliderè¨­å®šã«é–¢ã‚ã‚‰ãšå‡ºã™ï¼‰
 	if (context.debug.showGrid) m_renderer->DrawGrid();
 	if (context.debug.showAxis) m_renderer->DrawAxis();
 
-	// 3. ƒIƒuƒWƒFƒNƒg•`‰æ
+	// 3. ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæç”»
 	if (context.debug.showColliders)
 	{
 		m_renderer->SetFillMode(context.debug.wireframeMode);
@@ -86,7 +86,7 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 					if (name == "Enemy") color = { 1.0f, 0.0f, 0.0f, 1.0f };
 				}
 
-				// ƒ[ƒ‹ƒhÀ•WŒvŽZ
+				// ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™è¨ˆç®—
 				XMVECTOR scale, rot, pos;
 				XMMatrixDecompose(&scale, &rot, &pos, t.GetWorldMatrix());
 
@@ -96,13 +96,13 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 				XMFLOAT4 gRot;
 				XMStoreFloat4(&gRot, rot);
 				
-				// ƒIƒtƒZƒbƒg‰^—p
+				// ã‚ªãƒ•ã‚»ãƒƒãƒˆé‹ç”¨
 				XMVECTOR offsetVec = XMLoadFloat3(&c.offset);
 				XMVECTOR centerVec = XMVector3Transform(offsetVec, t.GetWorldMatrix());
 				XMFLOAT3 center;
 				XMStoreFloat3(&center, centerVec);
 
-				// ƒ^ƒCƒv•Ê•`‰æ
+				// ã‚¿ã‚¤ãƒ—åˆ¥æç”»
 				if (c.type == ColliderType::Box)
 				{
 					XMFLOAT3 size = { c.boxSize.x * gScale.x, c.boxSize.y * gScale.y, c.boxSize.z * gScale.z };
@@ -110,12 +110,12 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 				}
 				else if (c.type == ColliderType::Sphere)
 				{
-					// ƒXƒP[ƒ‹‚ÌÅ‘å’l‚ð”¼Œa‚É“K—p
+					// ã‚¹ã‚±ãƒ¼ãƒ«ã®æœ€å¤§å€¤ã‚’åŠå¾„ã«é©ç”¨
 					float maxScale = std::max({ gScale.x, gScale.y, gScale.z });
 					m_renderer->DrawSphere(center, c.sphere.radius * maxScale, color);
 				}
 				else if (c.type == ColliderType::Capsule) {
-					// ”¼Œa: ƒXƒP[ƒ‹‚ÌXZÅ‘å’l, ‚‚³: YƒXƒP[ƒ‹
+					// åŠå¾„: ã‚¹ã‚±ãƒ¼ãƒ«ã®XZæœ€å¤§å€¤, é«˜ã•: Yã‚¹ã‚±ãƒ¼ãƒ«
 					float maxScaleXZ = std::max(gScale.x, gScale.z);
 					m_renderer->DrawCapsule(center, c.capsule.radius * maxScaleXZ, c.capsule.height * gScale.y, gRot, color);
 				}
@@ -127,28 +127,28 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 	}
 
 	// -------------------------------------------------------
-	// ‰¹Œ¹‚Ì‰ÂŽ‹‰» (Billboard”Å)
+	// éŸ³æºã®å¯è¦–åŒ– (Billboardç‰ˆ)
 	// -------------------------------------------------------
 	if (context.debug.showSoundLocation && context.billboardRenderer) {
 
-		// ƒrƒ‹ƒ{[ƒh•`‰æŠJŽn (ƒJƒƒ‰s—ñ‚ð“n‚·)
+		// ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰æç”»é–‹å§‹ (ã‚«ãƒ¡ãƒ©è¡Œåˆ—ã‚’æ¸¡ã™)
 		context.billboardRenderer->Begin(viewMatrix, projMatrix);
 
-		// ƒAƒCƒRƒ“‰æ‘œ‚ðŽæ“¾ (assets.json ‚Ü‚½‚Í LoadTexture ‚ÅŽw’è‚µ‚½ƒL[)
-		// ¦‚Æ‚è‚ ‚¦‚¸ "player" ‚©A—pˆÓ‚µ‚½ "icon_sound" ‚ðŽw’è
+		// ã‚¢ã‚¤ã‚³ãƒ³ç”»åƒã‚’å–å¾— (assets.json ã¾ãŸã¯ LoadTexture ã§æŒ‡å®šã—ãŸã‚­ãƒ¼)
+		// â€»ã¨ã‚Šã‚ãˆãš "player" ã‹ã€ç”¨æ„ã—ãŸ "icon_sound" ã‚’æŒ‡å®š
 		auto iconTex = ResourceManager::Instance().GetTexture("star");
 
-		// ‰æ‘œ‚ª‚È‚¯‚ê‚Î "player" ‚È‚Ç‚Å‘ã—p
+		// ç”»åƒãŒãªã‘ã‚Œã° "player" ãªã©ã§ä»£ç”¨
 		if (!iconTex) iconTex = ResourceManager::Instance().GetTexture("star");
 
 		if (iconTex) {
-			// ‹L˜^‚³‚ê‚Ä‚¢‚é‰¹ƒCƒxƒ“ƒg‚ðƒ‹[ƒv
+			// è¨˜éŒ²ã•ã‚Œã¦ã„ã‚‹éŸ³ã‚¤ãƒ™ãƒ³ãƒˆã‚’ãƒ«ãƒ¼ãƒ—
 			for (const auto& evt : AudioManager::Instance().GetSoundEvents()) {
 
-				// ƒrƒ‹ƒ{[ƒh‚ð•`‰æ
-				// ˆÊ’u: evt.position
-				// ƒTƒCƒY: 1.0f x 1.0f (3D‹óŠÔ‚Å‚Ì1ƒ[ƒgƒ‹Žl•û)
-				// F: Ô‚Á‚Û‚­‚µ‚Ä–Ú—§‚½‚¹‚é
+				// ãƒ“ãƒ«ãƒœãƒ¼ãƒ‰ã‚’æç”»
+				// ä½ç½®: evt.position
+				// ã‚µã‚¤ã‚º: 1.0f x 1.0f (3Dç©ºé–“ã§ã®1ãƒ¡ãƒ¼ãƒˆãƒ«å››æ–¹)
+				// è‰²: èµ¤ã£ã½ãã—ã¦ç›®ç«‹ãŸã›ã‚‹
 				context.billboardRenderer->Draw(
 					iconTex.get(),
 					evt.position,
@@ -158,24 +158,24 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 			}
 		}
 
-		// ƒXƒe[ƒg‚ÌŒãŽn––i[“x‘‚«ž‚Ý‚È‚Ç‚ðŒ³‚É–ß‚·•K—v‚ª‚ ‚éê‡j
-		// BillboardRenderer‚Í”¼“§–¾(Blend)‚ðŽg‚¤‚Ì‚ÅAÅŒã‚ÉBlendState‚ðØ‚é‚ÆˆÀ‘S‚Å‚·
+		// ã‚¹ãƒ†ãƒ¼ãƒˆã®å¾Œå§‹æœ«ï¼ˆæ·±åº¦æ›¸ãè¾¼ã¿ãªã©ã‚’å…ƒã«æˆ»ã™å¿…è¦ãŒã‚ã‚‹å ´åˆï¼‰
+		// BillboardRendererã¯åŠé€æ˜Ž(Blend)ã‚’ä½¿ã†ã®ã§ã€æœ€å¾Œã«BlendStateã‚’åˆ‡ã‚‹ã¨å®‰å…¨ã§ã™
 		m_renderer->GetDeviceContext()->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 	}
 
 	// ------------------------------------------------------------
-	// 2. ƒV[ƒ“ƒMƒYƒ‚‚Ì•`‰æ
+	// 2. ã‚·ãƒ¼ãƒ³ã‚®ã‚ºãƒ¢ã®æç”»
 	// ------------------------------------------------------------
 	if (context.debug.showAxis)
 	{
-		// A. Œ»Ý‚Ìƒrƒ…[ƒ|[ƒg‚ð•Û‘¶
+		// A. ç¾åœ¨ã®ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚’ä¿å­˜
 		UINT numViewports = 1;
 		D3D11_VIEWPORT oldViewport;
 		m_renderer->GetDeviceContext()->RSGetViewports(&numViewports, &oldViewport);
 
-		// B. ‰Eã—p‚ÌV‚µ‚¢ƒrƒ…[ƒ|[ƒg‚ðì¬
-		float gizmoSize = 100.0f;	// 100x100ƒsƒNƒZƒ‹
-		float padding = 20.0f;		// ‰æ–Ê’[‚©‚ç‚ÌŒ„ŠÔ
+		// B. å³ä¸Šç”¨ã®æ–°ã—ã„ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚’ä½œæˆ
+		float gizmoSize = 100.0f;	// 100x100ãƒ”ã‚¯ã‚»ãƒ«
+		float padding = 20.0f;		// ç”»é¢ç«¯ã‹ã‚‰ã®éš™é–“
 
 		D3D11_VIEWPORT gizmoViewport = {};
 		gizmoViewport.Width = gizmoSize;
@@ -183,44 +183,44 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 		gizmoViewport.MinDepth = 0.0f;
 		gizmoViewport.MaxDepth = 1.0f;
 
-		// Config::SCREEN_WIDTH ‚Å‚Í‚È‚­AŒ»Ý‚Ìƒrƒ…[ƒ|[ƒgioldViewportj‚Ì•‚ðŽg‚¤I
-		// ‚±‚ê‚É‚æ‚èASceneƒrƒ…[‚ÌƒTƒCƒY‚ª•Ï‚í‚Á‚Ä‚àA‚»‚Ì’†‚Ì‰Eã‚É³‚µ‚­•\Ž¦‚³‚ê‚Ü‚·
+		// Config::SCREEN_WIDTH ã§ã¯ãªãã€ç¾åœ¨ã®ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆï¼ˆoldViewportï¼‰ã®å¹…ã‚’ä½¿ã†ï¼
+		// ã“ã‚Œã«ã‚ˆã‚Šã€Sceneãƒ“ãƒ¥ãƒ¼ã®ã‚µã‚¤ã‚ºãŒå¤‰ã‚ã£ã¦ã‚‚ã€ãã®ä¸­ã®å³ä¸Šã«æ­£ã—ãè¡¨ç¤ºã•ã‚Œã¾ã™
 		gizmoViewport.TopLeftX = oldViewport.Width - gizmoSize - padding;
 		gizmoViewport.TopLeftY = padding;
 
-		// ƒrƒ…[ƒ|[ƒg“K—p
+		// ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆé©ç”¨
 		m_renderer->GetDeviceContext()->RSSetViewports(1, &gizmoViewport);
 
-		// C.ƒMƒYƒ‚—p‚Ìƒrƒ…[s—ñ
+		// C.ã‚®ã‚ºãƒ¢ç”¨ã®ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—
 		XMMATRIX gizmoRotMatrix = XMMatrixRotationRollPitchYaw(savedRotation.x, savedRotation.y, 0.0f);
 
-		// 2. ƒMƒYƒ‚ƒJƒƒ‰‚ÌˆÊ’uŒvŽZ
+		// 2. ã‚®ã‚ºãƒ¢ã‚«ãƒ¡ãƒ©ã®ä½ç½®è¨ˆç®—
 		XMVECTOR offset = XMVector3TransformCoord(XMVectorSet(0, 0, -5.0f, 0), gizmoRotMatrix);
 		XMVECTOR gizmoEye = offset;
 		XMVECTOR gizmoTarget = XMVectorSet(0, 0, 0, 0);
 
-		// ã•ûŒü‚à‰ñ“]‚³‚¹‚é
+		// ä¸Šæ–¹å‘ã‚‚å›žè»¢ã•ã›ã‚‹
 		XMVECTOR gizmoUp = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), gizmoRotMatrix);
 		XMMATRIX gizmoView = XMMatrixLookAtLH(gizmoEye, gizmoTarget, gizmoUp);
 		XMMATRIX gizmoProj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1.0f, 0.1f, 100.0f);
 
-		// D. ƒMƒYƒ‚•`‰æŠJŽn
+		// D. ã‚®ã‚ºãƒ¢æç”»é–‹å§‹
 		m_renderer->Begin(gizmoView, gizmoProj);
 		m_renderer->SetFillMode(false);
 
-		// Ž²‚Ì•`‰æ (X:Ô, Y:—Î, Z:Â)
+		// è»¸ã®æç”» (X:èµ¤, Y:ç·‘, Z:é’)
 		float len = 1.5f;
-		// XŽ²
+		// Xè»¸
 		m_renderer->DrawArrow(XMFLOAT3(0, 0, 0), XMFLOAT3(len, 0, 0), XMFLOAT4(1, 0, 0, 1));
-		// YŽ²
+		// Yè»¸
 		m_renderer->DrawArrow(XMFLOAT3(0, 0, 0), XMFLOAT3(0, len, 0), XMFLOAT4(0, 1, 0, 1));
-		// ZŽ²
+		// Zè»¸
 		m_renderer->DrawArrow(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, len), XMFLOAT4(0, 0, 1, 1));
 
-		// ’†‰›‚Ìƒ{ƒbƒNƒXiƒsƒ{ƒbƒgj
+		// ä¸­å¤®ã®ãƒœãƒƒã‚¯ã‚¹ï¼ˆãƒ”ãƒœãƒƒãƒˆï¼‰
 		m_renderer->DrawBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0.7f, 0.7f, 0.7f), XMFLOAT4(0, 0, 0, 0), XMFLOAT4(0.8f, 0.8f, 0.8f, 1));
 
-		// E. ƒrƒ…[ƒ|[ƒg‚ðŒ³‚É–ß‚·
+		// E. ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚’å…ƒã«æˆ»ã™
 		m_renderer->SetFillMode(true);
 		m_renderer->GetDeviceContext()->RSSetViewports(1, &oldViewport);
 	}
