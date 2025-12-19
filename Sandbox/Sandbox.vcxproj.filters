@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{3fa6bee2-5f9e-4bc7-bae4-4d13fc4455f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game">
+      <UniqueIdentifier>{74c1fc52-de8b-4cfa-82a7-b84885965d77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game\Scenes">
+      <UniqueIdentifier>{70dd3f55-4caa-4544-b774-cf3b159dbd58}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Scenes\SceneGame.cpp">
+      <Filter>Source\Game\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Scenes\SceneTitle.cpp">
+      <Filter>Source\Game\Scenes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\main.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Scenes\SceneGame.h">
+      <Filter>Source\Game\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Scenes\SceneTitle.h">
+      <Filter>Source\Game\Scenes</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
