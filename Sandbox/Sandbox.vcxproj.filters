@@ -2,35 +2,43 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source">
-      <UniqueIdentifier>{3fa6bee2-5f9e-4bc7-bae4-4d13fc4455f6}</UniqueIdentifier>
+      <UniqueIdentifier>{616a3bb7-7ebd-47f2-8123-e54cc817b437}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Game">
-      <UniqueIdentifier>{74c1fc52-de8b-4cfa-82a7-b84885965d77}</UniqueIdentifier>
+    <Filter Include="Source\Scenes">
+      <UniqueIdentifier>{a9906fb0-1f9e-4a25-a220-4b9cb947f8b3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Game\Scenes">
-      <UniqueIdentifier>{70dd3f55-4caa-4544-b774-cf3b159dbd58}</UniqueIdentifier>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{0b45401b-d595-4e8b-a50f-c5a6f909e217}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\main.cpp">
+    <ClCompile Include="..\Source\Sandbox\main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Scenes\SceneGame.cpp">
-      <Filter>Source\Game\Scenes</Filter>
+    <ClCompile Include="..\Source\Sandbox\Scenes\SceneGame.cpp">
+      <Filter>Source\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\Scenes\SceneTitle.cpp">
-      <Filter>Source\Game\Scenes</Filter>
+    <ClCompile Include="..\Source\Sandbox\Scenes\SceneTitle.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\pch.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\main.h">
+    <ClInclude Include="..\Source\Sandbox\main.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Scenes\SceneGame.h">
-      <Filter>Source\Game\Scenes</Filter>
+    <ClInclude Include="..\Source\Sandbox\Scenes\SceneGame.h">
+      <Filter>Source\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\Scenes\SceneTitle.h">
-      <Filter>Source\Game\Scenes</Filter>
+    <ClInclude Include="..\Source\Sandbox\Scenes\SceneTitle.h">
+      <Filter>Source\Scenes</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Game\resources.json">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
 </Project>

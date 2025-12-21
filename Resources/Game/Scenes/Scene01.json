@@ -1,0 +1,351 @@
+{
+    "Entities": [
+        {
+            "ID": 0
+        },
+        {
+            "AudioListener": null,
+            "Camera": {
+                "aspect": 1.9927536249160767,
+                "farZ": 1000.0,
+                "fov": 0.7853981852531433,
+                "nearZ": 0.10000000149011612
+            },
+            "ID": 1,
+            "Tag": {
+                "name": "MainCamera"
+            },
+            "Transform": {
+                "position": [
+                    6.717877388000488,
+                    10.889701843261719,
+                    -13.53018856048584
+                ],
+                "rotation": [
+                    0.6700000762939453,
+                    -0.409999817609787,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Collider": {
+                "boxSize": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "height": 2.0,
+                "isTrigger": false,
+                "offset": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "radius": 0.5,
+                "type": 2
+            },
+            "ID": 2,
+            "MeshComponent": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "modelKey": "hero",
+                "scaleOffset": [
+                    0.10000000149011612,
+                    0.10000000149011612,
+                    0.10000000149011612
+                ]
+            },
+            "PlayerInput": {
+                "jumpPower": 5.0,
+                "speed": 3.0
+            },
+            "Rigidbody": {
+                "drag": 0.10000000149011612,
+                "mass": 1.0,
+                "type": 1,
+                "useGravity": true
+            },
+            "Tag": {
+                "name": "Player"
+            },
+            "Transform": {
+                "position": [
+                    0.5,
+                    1.5,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Collider": {
+                "boxSize": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "height": 1.0,
+                "isTrigger": false,
+                "offset": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "radius": 0.5,
+                "type": 0
+            },
+            "ID": 3,
+            "Rigidbody": {
+                "drag": 0.10000000149011612,
+                "mass": 1.0,
+                "type": 1,
+                "useGravity": true
+            },
+            "Tag": {
+                "name": "Enemy"
+            },
+            "Transform": {
+                "position": [
+                    -0.5,
+                    1.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Collider": {
+                "boxSize": [
+                    10.0,
+                    1.0,
+                    10.0
+                ],
+                "height": 1.0,
+                "isTrigger": false,
+                "offset": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "radius": 0.5,
+                "type": 0
+            },
+            "ID": 4,
+            "Rigidbody": {
+                "drag": 0.10000000149011612,
+                "mass": 1.0,
+                "type": 0,
+                "useGravity": false
+            },
+            "Tag": {
+                "name": "Floor"
+            },
+            "Transform": {
+                "position": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Canvas": {
+                "isScreenSpace": true,
+                "referenceSize": [
+                    1280.0,
+                    720.0
+                ]
+            },
+            "ID": 5,
+            "Relationship": {
+                "children": [
+                    6,
+                    7
+                ],
+                "parent": 4294967295
+            },
+            "Tag": {
+                "name": "Canvas"
+            },
+            "Transform2D": {
+                "anchorMax": [
+                    0.5,
+                    0.5
+                ],
+                "anchorMin": [
+                    0.5,
+                    0.5
+                ],
+                "pivot": [
+                    0.5,
+                    0.5
+                ],
+                "position": [
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0
+                ],
+                "size": [
+                    1280.0,
+                    720.0
+                ]
+            }
+        },
+        {
+            "ID": 6,
+            "Relationship": {
+                "children": [],
+                "parent": 5
+            },
+            "Tag": {
+                "name": "Text"
+            },
+            "TextComponent": {
+                "centerAlign": false,
+                "color": [
+                    1.0,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "fontKey": "Reggae One",
+                "fontSize": 80.0,
+                "isBold": false,
+                "isItalic": false,
+                "offset": [
+                    0.0,
+                    0.0
+                ],
+                "text": "Text (テキスト)"
+            },
+            "Transform2D": {
+                "anchorMax": [
+                    0.20000000298023224,
+                    0.0
+                ],
+                "anchorMin": [
+                    0.20000000298023224,
+                    0.0
+                ],
+                "pivot": [
+                    0.5,
+                    0.5
+                ],
+                "position": [
+                    500.0,
+                    50.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0
+                ],
+                "size": [
+                    1000.0,
+                    80.0
+                ]
+            }
+        },
+        {
+            "ID": 7,
+            "Relationship": {
+                "children": [],
+                "parent": 5
+            },
+            "SpriteComponent": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "textureKey": "test"
+            },
+            "Tag": {
+                "name": "Text"
+            },
+            "Transform2D": {
+                "anchorMax": [
+                    0.5,
+                    0.5
+                ],
+                "anchorMin": [
+                    0.5,
+                    0.5
+                ],
+                "pivot": [
+                    0.5,
+                    0.5
+                ],
+                "position": [
+                    500.0,
+                    100.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0
+                ],
+                "size": [
+                    100.0,
+                    100.0
+                ]
+            }
+        }
+    ],
+    "SceneName": "Untitled Scene"
+}

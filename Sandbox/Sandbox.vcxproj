@@ -76,11 +76,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Engine\pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Library\DirectXTex\x64\$(Configuration);$(SolutionDir)Library\Assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /S /I "$(SolutionDir)Resources" "$(OutDir)Resources"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -90,11 +98,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Engine\pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Library\DirectXTex\x64\$(Configuration);$(SolutionDir)Library\Assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /S /I "$(SolutionDir)Resources" "$(OutDir)Resources"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -102,18 +118,21 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ArcheEngine\Source;$(SolutionDir)ArcheEngine\Library\ImGui;$(SolutionDir)ArcheEngine\Library\nlohmann;$(SolutionDir)ArcheEngine\Library\Assimp\include;$(SolutionDir)ArcheEngine\Library\DirectXTex;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Engine\pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)ArcheEngine\Library\DirectXTex\x64\Debug;$(SolutionDir)ArcheEngine\Library\Assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mtd.lib;d3d11.lib;
-dxgi.lib
-;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Library\DirectXTex\x64\$(Configuration);$(SolutionDir)Library\Assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /S /I "$(SolutionDir)Resources" "$(OutDir)Resources"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -123,33 +142,45 @@ dxgi.lib
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ArcheEngine\Source;$(SolutionDir)ArcheEngine\Library\ImGui;$(SolutionDir)ArcheEngine\Library\nlohmann;$(SolutionDir)ArcheEngine\Library\Assimp\include;$(SolutionDir)ArcheEngine\Library\DirectXTex;$(ProjectDir)Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Engine\pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)ArcheEngine\Library\DirectXTex\x64\Release;$(SolutionDir)ArcheEngine\Library\Assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mtd.lib;d3d11.lib;
-dxgi.lib
-;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Library\DirectXTex\x64\$(Configuration);$(SolutionDir)Library\Assimp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /S /I "$(SolutionDir)Resources" "$(OutDir)Resources"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Game\Scenes\SceneGame.cpp" />
-    <ClCompile Include="Source\Game\Scenes\SceneTitle.cpp" />
-    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="..\Source\Engine\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Source\Sandbox\main.cpp" />
+    <ClCompile Include="..\Source\Sandbox\Scenes\SceneGame.cpp" />
+    <ClCompile Include="..\Source\Sandbox\Scenes\SceneTitle.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Game\Scenes\SceneGame.h" />
-    <ClInclude Include="Source\Game\Scenes\SceneTitle.h" />
-    <ClInclude Include="Source\main.h" />
+    <ClInclude Include="..\Source\Sandbox\main.h" />
+    <ClInclude Include="..\Source\Sandbox\Scenes\SceneGame.h" />
+    <ClInclude Include="..\Source\Sandbox\Scenes\SceneTitle.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ArcheEngine\ArcheEngine.vcxproj">
       <Project>{c0ceffcd-749b-4d9d-8565-ebcdaecafabf}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Game\resources.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
