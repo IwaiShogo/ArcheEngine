@@ -28,8 +28,8 @@
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Components/Components.h"
 #include "Engine/Audio/AudioManager.h"
-#include "Engine/Resource/Serializer.h"
 #include "Engine/Editor/Core/InspectorGui.h"
+#include "Engine/Resource/SceneSerializer.h"
 
 class InspectorWindow : public EditorWindow
 {
@@ -54,158 +54,6 @@ public:
 		// --------------------------------------------------------
 
 		DrawAllComponents<ComponentList>(reg, selected);
-
-		// 2. MeshComponent
-		if (reg.has<MeshComponent>(selected)) {
-			if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
-				MeshComponent& m = reg.get<MeshComponent>(selected);
-
-				// ファイル選択 (Modelsフォルダ)
-				FileSelector("Model", m.modelKey, "Resources/Models", ".fbx", ResourceManager::ResourceType::Model); // .objなども可
-
-				ImGui::ColorEdit4("Color", &m.color.x);
-				ImGui::DragFloat3("Scale Offset", &m.scaleOffset.x, 0.01f);
-
-				if (ImGui::Button("Remove Mesh")) reg.remove<MeshComponent>(selected);
-			}
-		}
-
-		// 3. SpriteComponent
-		if (reg.has<SpriteComponent>(selected)) {
-			if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
-				SpriteComponent& s = reg.get<SpriteComponent>(selected);
-
-				FileSelector("Texture", s.textureKey, "Resources/Textures", ".png", ResourceManager::ResourceType::Texture);
-
-				ImGui::ColorEdit4("Color", &s.color.x);
-
-				if (ImGui::Button("Remove Sprite")) reg.remove<SpriteComponent>(selected);
-			}
-		}
-
-		// 4. BillboardComponent
-		if (reg.has<BillboardComponent>(selected)) {
-			if (ImGui::CollapsingHeader("Billboard", ImGuiTreeNodeFlags_DefaultOpen)) {
-				BillboardComponent& b = reg.get<BillboardComponent>(selected);
-
-				FileSelector("Texture", b.textureKey, "Resources/Textures", ".png", ResourceManager::ResourceType::Texture);
-
-				ImGui::DragFloat2("Size", &b.size.x);
-				ImGui::ColorEdit4("Color", &b.color.x);
-
-				if (ImGui::Button("Remove Billboard")) reg.remove<BillboardComponent>(selected);
-			}
-		}
-
-		// 5. AudioSource
-		if (reg.has<AudioSource>(selected)) {
-			if (ImGui::CollapsingHeader("Audio Source", ImGuiTreeNodeFlags_DefaultOpen)) {
-				AudioSource& a = reg.get<AudioSource>(selected);
-
-				FileSelector("Sound", a.soundKey, "Resources/Sounds", ".wav", ResourceManager::ResourceType::Sound);
-
-				ImGui::SliderFloat("Volume", &a.volume, 0.0f, 1.0f);
-				ImGui::DragFloat("Range", &a.range, 0.1f);
-				ImGui::Checkbox("Loop", &a.isLoop);
-				ImGui::Checkbox("Play On Awake", &a.playOnAwake);
-
-				if (ImGui::Button("Test Play")) {
-					AudioManager::Instance().PlaySE(a.soundKey, a.volume);
-				}
-				if (ImGui::Button("Remove Audio")) reg.remove<AudioSource>(selected);
-			}
-		}
-
-		// 6. Camera
-		if (reg.has<Camera>(selected)) {
-			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
-				Camera& c = reg.get<Camera>(selected);
-
-				float fovDeg = XMConvertToDegrees(c.fov);
-				if (ImGui::DragFloat("FOV", &fovDeg, 1.0f, 1.0f, 179.0f)) {
-					c.fov = XMConvertToRadians(fovDeg);
-				}
-				ImGui::DragFloat("Near Z", &c.nearZ, 0.01f);
-				ImGui::DragFloat("Far Z", &c.farZ, 1.0f);
-				ImGui::Text("Aspect: %.2f", c.aspect);
-
-				if (ImGui::Button("Remove Camera")) reg.remove<Camera>(selected);
-			}
-		}
-
-		// 7. Collider (高度な当たり判定)
-		if (reg.has<Collider>(selected)) {
-			if (ImGui::CollapsingHeader("Collider", ImGuiTreeNodeFlags_DefaultOpen)) {
-				Collider& c = reg.get<Collider>(selected);
-
-				// タイプの切り替え
-				const char* types[] = { "Box", "Sphere", "Capsule", "Cylinder" };
-				int currentType = (int)c.type;
-				if (ImGui::Combo("Type", &currentType, types, IM_ARRAYSIZE(types))) {
-					c.type = (ColliderType)currentType;
-				}
-				ImGui::Checkbox("Is Trigger", &c.isTrigger);
-
-				ImGui::DragFloat3("Offset", &c.offset.x, 0.01f);
-
-				// タイプごとのパラメータ
-				if (c.type == ColliderType::Box)
-				{
-					ImGui::DragFloat3("Size", &c.boxSize.x, 0.01f);
-				}
-				else if (c.type == ColliderType::Sphere)
-				{
-					ImGui::DragFloat("Radius", &c.sphere.radius, 0.01f);
-				}
-				else if (c.type == ColliderType::Capsule)
-				{
-					ImGui::DragFloat("Radius", &c.capsule.radius, 0.01f);
-					ImGui::DragFloat("Height", &c.capsule.height, 0.01f);
-				}
-				else if (c.type == ColliderType::Cylinder)
-				{
-					ImGui::DragFloat("Radius", &c.cylinder.radius, 0.01f);
-					ImGui::DragFloat("Height", &c.cylinder.height, 0.01f);
-				}
-
-				if (ImGui::Button("Remove Collider")) reg.remove<Collider>(selected);
-			}
-		}
-
-		// 8. Physics / Logic
-		if (reg.has<Rigidbody>(selected)) {
-			if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen)) {
-				Rigidbody& rb = reg.get<Rigidbody>(selected);
-
-				// BodyType コンボボックス
-				const char* types[] = { "Static", "Dynamic", "Kinematic" };
-				int current = (int)rb.type;
-				if (ImGui::Combo("Body Type", &current, types, IM_ARRAYSIZE(types))) {
-					rb.type = (BodyType)current;
-				}
-
-				ImGui::DragFloat("Mass", &rb.mass, 0.1f);
-				ImGui::DragFloat("Drag", &rb.drag, 0.01f);
-				ImGui::Checkbox("Use Gravity", &rb.useGravity);
-				if (ImGui::Button("Stop")) rb.velocity = { 0,0,0 };
-				if (ImGui::Button("Remove Rigidbody")) reg.remove<Rigidbody>(selected);
-			}
-		}
-		if (reg.has<PlayerInput>(selected)) {
-			if (ImGui::CollapsingHeader("Player Input", ImGuiTreeNodeFlags_DefaultOpen)) {
-				PlayerInput& p = reg.get<PlayerInput>(selected);
-				ImGui::DragFloat("Speed", &p.speed, 0.1f);
-				ImGui::DragFloat("Jump", &p.jumpPower, 0.1f);
-				if (ImGui::Button("Remove PlayerInput")) reg.remove<PlayerInput>(selected);
-			}
-		}
-		if (reg.has<Lifetime>(selected)) {
-			if (ImGui::CollapsingHeader("Lifetime", ImGuiTreeNodeFlags_DefaultOpen)) {
-				Lifetime& l = reg.get<Lifetime>(selected);
-				ImGui::DragFloat("Time Left", &l.time);
-				if (ImGui::Button("Remove Lifetime")) reg.remove<Lifetime>(selected);
-			}
-		}
 
 		ImGui::Separator();
 
@@ -237,7 +85,7 @@ public:
 		// Save Prefab
 		if (ImGui::Button("Save as Prefab")) {
 			std::string path = std::string("Resources/Prefabs/") + reg.get<Tag>(selected).name.c_str() + ".json";
-			Serializer::SaveEntity(reg, selected, path);
+			SceneSerializer::SaveEntity(reg, selected, path);
 			Logger::Log("Saved Prefab: " + path);
 		}
 
@@ -323,6 +171,9 @@ private:
 			(..., [&](void)
 			{
 				using ComponentType = Ts;
+
+				// ダミーの int 型はスキップする！
+				if constexpr (std::is_same_v<ComponentType, DummyComponent>) return;
 
 				// そのコンポーネントを持っているか？
 				if (registry.has<ComponentType>(entity))

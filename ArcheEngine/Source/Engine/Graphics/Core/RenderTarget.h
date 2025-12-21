@@ -24,8 +24,6 @@
 // ===== インクルード =====
 #include"Engine/pch.h"
 
-using Microsoft::WRL::ComPtr;
-
 class RenderTarget
 {
 public:

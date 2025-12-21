@@ -176,6 +176,77 @@ struct InspectorGuiVisitor
 		}
 	}
 
+	// ColliderType (Enum)
+	void operator()(ColliderType& val, const char* name)
+	{
+		// プルダウンの中身
+		const char* items[] = { "Box", "Sphere", "Capsule", "Cylinder" };
+		int current = (int)val;
+
+		// 列挙型の範囲チェック
+		if (current < 0 || current >= IM_ARRAYSIZE(items)) current = 0;
+
+		if (ImGui::Combo(name, &current, items, IM_ARRAYSIZE(items)))
+		{
+			val = (ColliderType)current;
+		}
+	}
+
+	// BodyType (Enum)
+	void operator()(BodyType& val, const char* name)
+	{
+		const char* items[] = { "Static", "Dynamic", "Kinematic" };
+		int current = (int)val;
+
+		if (current < 0 || current >= IM_ARRAYSIZE(items)) current = 0;
+
+		if (ImGui::Combo(name, &current, items, IM_ARRAYSIZE(items)))
+		{
+			val = (BodyType)current;
+		}
+	}
+
+	// Entity型（親IDなどの表示用）
+	void operator()(Entity& val, const char* name)
+	{
+		// 親子関係のリンクの書き換えはInspectorでは行わず、Hierarchyでのドラッグ推奨
+		if (val == NullEntity)
+		{
+			ImGui::Text("%s: None", name);
+		}
+		else
+		{
+			ImGui::Text("%s: Entity(ID: %d)", name, (uint32_t)val);
+		}
+	}
+
+	// std::vector<Entity>型（子リスト表示用）
+	void operator()(std::vector<Entity>& val, const char* name)
+	{
+		// 折り畳み式のツリーで子要素を表示
+		if (ImGui::TreeNode(name))
+		{
+			if (val.empty())
+			{
+				ImGui::TextDisabled("Empty");
+			}
+			else
+			{
+				for (size_t i = 0; i < val.size(); ++i)
+				{
+					ImGui::Text("[%d] Entity(ID: %d)", i, (uint32_t)val[i]);
+				}
+			}
+			ImGui::TreePop();
+		}
+		else
+		{
+			// 閉じているときは要素数だけ表示
+			ImGui::SameLine();
+			ImGui::TextDisabled("(%d items)", val.size());
+		}
+	}
+
 	// その他の型が来てもエラーにならないようにするテンプレート
 	template<typename T>
 	void operator()(T& val, const char* name)

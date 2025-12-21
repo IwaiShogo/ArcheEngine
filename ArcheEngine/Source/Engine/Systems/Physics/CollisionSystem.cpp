@@ -458,7 +458,7 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 			if (c.type == ColliderType::Box)
 			{
 				OBB obb;
-				obb.center = center;
+				center = center;
 				obb.extents = {
 					c.boxSize.x * gScale.x * 0.5f,
 					c.boxSize.y * gScale.y * 0.5f,
@@ -474,14 +474,14 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 			else if (c.type == ColliderType::Sphere)
 			{
 				float maxS = std::max({ gScale.x, gScale.y, gScale.z });
-				float r = c.sphere.radius * maxS;
+				float r = c.radius * maxS;
 				hit = IntersectRaySphere(originV, dirV, centerVec, r, dist);
 			}
 			else if (c.type == ColliderType::Capsule)
 			{
 				XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-				float h = c.capsule.height * gScale.y;
-				float r = c.capsule.radius * std::max(gScale.x, gScale.z);
+				float h = c.height * gScale.y;
+				float r = c.radius * std::max(gScale.x, gScale.z);
 				float halfLen = std::max(0.0f, h * 0.5f - r);
 
 				Physics::Capsule cap;
@@ -497,8 +497,8 @@ Entity CollisionSystem::Raycast(Registry& registry, const XMFLOAT3& rayOrigin, c
 				cyl.center = center;
 				XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
 				XMStoreFloat3(&cyl.axis, axisY);
-				cyl.height = c.cylinder.height * gScale.y;
-				cyl.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
+				cyl.height = c.height * gScale.y;
+				cyl.radius = c.radius * std::max(gScale.x, gScale.z);
 
 				hit = IntersectRayCylinder(originV, dirV, cyl, dist);
 			}
@@ -1185,23 +1185,23 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 	// 形状毎の計算
 	if(c.type == ColliderType::Box)
 	{
-		XMStoreFloat3(&wc.obb.center, centerVec);
-		wc.obb.extents = {
+		XMStoreFloat3(&wc.center, centerVec);
+		wc.extents = {
 			c.boxSize.x * gScale.x * 0.5f,
 			c.boxSize.y * gScale.y * 0.5f,
 			c.boxSize.z * gScale.z * 0.5f
 		};
 		XMFLOAT4X4 rotM; XMStoreFloat4x4(&rotM, rotMat);
-		wc.obb.axes[0] = { rotM._11, rotM._12, rotM._13 };
-		wc.obb.axes[1] = { rotM._21, rotM._22, rotM._23 };
-		wc.obb.axes[2] = { rotM._31, rotM._32, rotM._33 };
+		wc.axes[0] = { rotM._11, rotM._12, rotM._13 };
+		wc.axes[1] = { rotM._21, rotM._22, rotM._23 };
+		wc.axes[2] = { rotM._31, rotM._32, rotM._33 };
 
 		// AABB計算
 		XMVECTOR center = centerVec;
-		XMVECTOR ext = XMLoadFloat3(&wc.obb.extents);
-		XMVECTOR axisX = XMLoadFloat3(&wc.obb.axes[0]);
-		XMVECTOR axisY = XMLoadFloat3(&wc.obb.axes[1]);
-		XMVECTOR axisZ = XMLoadFloat3(&wc.obb.axes[2]);
+		XMVECTOR ext = XMLoadFloat3(&wc.extents);
+		XMVECTOR axisX = XMLoadFloat3(&wc.axes[0]);
+		XMVECTOR axisY = XMLoadFloat3(&wc.axes[1]);
+		XMVECTOR axisZ = XMLoadFloat3(&wc.axes[2]);
 
 		XMVECTOR newExt =
 			XMVectorAbs(axisX) * XMVectorGetX(ext) +
@@ -1213,10 +1213,10 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 	}
 	else if (c.type == ColliderType::Sphere)
 	{
-		XMStoreFloat3(&wc.sphere.center, centerVec);
-		wc.sphere.radius = c.sphere.radius * std::max({ gScale.x, gScale.y, gScale.z });
+		XMStoreFloat3(&wc.center, centerVec);
+		wc.radius = c.radius * std::max({ gScale.x, gScale.y, gScale.z });
 
-		XMVECTOR r = XMVectorReplicate(wc.sphere.radius);
+		XMVECTOR r = XMVectorReplicate(wc.radius);
 
 		vMin = centerVec - r;
 		vMax = centerVec + r;
@@ -1224,15 +1224,15 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 	else if(c.type == ColliderType::Capsule)
 	{
 		XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-		float h = c.capsule.height * gScale.y;
-		float r = c.capsule.radius * std::max(gScale.x, gScale.z);
+		float h = c.height * gScale.y;
+		float r = c.radius * std::max(gScale.x, gScale.z);
 		float segLen = std::max(0.0f, h * 0.5f - r);
 
 		XMVECTOR p1 = centerVec - axisY * segLen;
 		XMVECTOR p2 = centerVec + axisY * segLen;
-		XMStoreFloat3(&wc.capsule.start, p1);
-		XMStoreFloat3(&wc.capsule.end, p2);
-		wc.capsule.radius = r;
+		XMStoreFloat3(&wc.start, p1);
+		XMStoreFloat3(&wc.end, p2);
+		wc.radius = r;
 
 		// AABB計算
 		XMVECTOR capMin = XMVectorMin(p1, p2) - XMVectorReplicate(r);
@@ -1242,17 +1242,17 @@ void CollisionSystem::UpdateWorldCollider(Registry& registry, Entity e, const Tr
 	}
 	else if(c.type == ColliderType::Cylinder)
 	{
-		XMStoreFloat3(&wc.cylinder.center, centerVec);
+		XMStoreFloat3(&wc.center, centerVec);
 		XMVECTOR axisY = XMVector3TransformNormal(XMVectorSet(0, 1, 0, 0), rotMat);
-		XMStoreFloat3(&wc.cylinder.axis, axisY);
-		wc.cylinder.height = c.cylinder.height * gScale.y;
-		wc.cylinder.radius = c.cylinder.radius * std::max(gScale.x, gScale.z);
+		XMStoreFloat3(&wc.axis, axisY);
+		wc.height = c.height * gScale.y;
+		wc.radius = c.radius * std::max(gScale.x, gScale.z);
 
 		// AABB計算
 		// 円柱の頂点群から計算するのが正確だが、ここでは「球」として近似したAABBで代用
 		// あるいは中心軸線分 + 半径で計算
-		float halfH = wc.cylinder.height * 0.5f;
-		float rad = wc.cylinder.radius;
+		float halfH = wc.height * 0.5f;
+		float rad = wc.radius;
 		// 軸に垂直な平面での広がりを考慮
 		XMVECTOR ex = XMVectorAbs(axisY) * halfH;
 		// 半径分を全方向に追加
@@ -1370,109 +1370,109 @@ void CollisionSystem::Update(Registry& registry)
 			// Sphere vs ...
 			if (cA.type == ColliderType::Sphere)
 			{
-				Physics::Sphere sA = { wcA.sphere.center, wcA.sphere.radius };
+				Physics::Sphere sA = { wcA.center, wcA.radius };
 
 				if (cB.type == ColliderType::Sphere)
 				{
-					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					Physics::Sphere sB = { wcB.center, wcB.radius };
 					hit = CheckSphereSphere(sA, sB, contact);
 				}
 				else if (cB.type == ColliderType::Box)
 				{
-					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					Physics::OBB oB = { wcB.center, wcB.extents, wcB.axes[0], wcB.axes[1], wcB.axes[2] };
 					hit = CheckSphereOBB(sA, oB, contact);
 				}
 				else if (cB.type == ColliderType::Capsule)
 				{
-					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					Physics::Capsule cpB = { wcB.start, wcB.end, wcB.radius };
 					hit = CheckSphereCapsule(sA, cpB, contact);
 				}
 				else if (cB.type == ColliderType::Cylinder)
 				{
-					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					Physics::Cylinder cyB = { wcB.center, wcB.axis, wcB.height, wcB.radius };
 					hit = CheckSphereCylinder(sA, cyB, contact);
 				}
 			}
 			// Box vs ...
 			else if (cA.type == ColliderType::Box)
 			{
-				Physics::OBB oA = { wcA.obb.center, wcA.obb.extents, wcA.obb.axes[0], wcA.obb.axes[1], wcA.obb.axes[2] };
+				Physics::OBB oA = { wcA.center, wcA.extents, wcA.axes[0], wcA.axes[1], wcA.axes[2] };
 
 				if (cB.type == ColliderType::Box)
 				{
-					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					Physics::OBB oB = { wcB.center, wcB.extents, wcB.axes[0], wcB.axes[1], wcB.axes[2] };
 					hit = CheckOBBOBB(oA, oB, contact);
 				}
 				else if (cB.type == ColliderType::Sphere)
 				{
-					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					Physics::Sphere sB = { wcB.center, wcB.radius };
 					hit = CheckSphereOBB(sB, oA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
 				else if (cB.type == ColliderType::Capsule)
 				{
-					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					Physics::Capsule cpB = { wcB.start, wcB.end, wcB.radius };
 					hit = CheckOBBCapsule(oA, cpB, contact);
 				}
 				else if (cB.type == ColliderType::Cylinder)
 				{
-					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					Physics::Cylinder cyB = { wcB.center, wcB.axis, wcB.height, wcB.radius };
 					hit = CheckOBBCylinder(oA, cyB, contact);
 				}
 			}
 			// Capsule vs ...
 			else if (cA.type == ColliderType::Capsule)
 			{
-				Physics::Capsule cpA = { wcA.capsule.start, wcA.capsule.end, wcA.capsule.radius };
+				Physics::Capsule cpA = { wcA.start, wcA.end, wcA.radius };
 
 				if (cB.type == ColliderType::Capsule)
 				{
-					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					Physics::Capsule cpB = { wcB.start, wcB.end, wcB.radius };
 					hit = CheckCapsuleCapsule(cpA, cpB, contact);
 				}
 				else if (cB.type == ColliderType::Sphere)
 				{
-					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					Physics::Sphere sB = { wcB.center, wcB.radius };
 					hit = CheckSphereCapsule(sB, cpA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
 				else if (cB.type == ColliderType::Box)
 				{
-					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					Physics::OBB oB = { wcB.center, wcB.extents, wcB.axes[0], wcB.axes[1], wcB.axes[2] };
 					hit = CheckOBBCapsule(oB, cpA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
 				else if (cB.type == ColliderType::Cylinder)
 				{
-					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					Physics::Cylinder cyB = { wcB.center, wcB.axis, wcB.height, wcB.radius };
 					hit = CheckCapsuleCylinder(cpA, cyB, contact);
 				}
 			}
 			// Cylinder vs ...
 			else if (cA.type == ColliderType::Cylinder)
 			{
-				Physics::Cylinder cyA = { wcA.cylinder.center, wcA.cylinder.axis, wcA.cylinder.height, wcA.cylinder.radius };
+				Physics::Cylinder cyA = { wcA.center, wcA.axis, wcA.height, wcA.radius };
 
 				if (cB.type == ColliderType::Cylinder)
 				{
-					Physics::Cylinder cyB = { wcB.cylinder.center, wcB.cylinder.axis, wcB.cylinder.height, wcB.cylinder.radius };
+					Physics::Cylinder cyB = { wcB.center, wcB.axis, wcB.height, wcB.radius };
 					hit = CheckCylinderCylinder(cyA, cyB, contact);
 				}
 				else if (cB.type == ColliderType::Sphere)
 				{
-					Physics::Sphere sB = { wcB.sphere.center, wcB.sphere.radius };
+					Physics::Sphere sB = { wcB.center, wcB.radius };
 					hit = CheckSphereCylinder(sB, cyA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
 				else if (cB.type == ColliderType::Capsule)
 				{
-					Physics::Capsule cpB = { wcB.capsule.start, wcB.capsule.end, wcB.capsule.radius };
+					Physics::Capsule cpB = { wcB.start, wcB.end, wcB.radius };
 					hit = CheckCapsuleCylinder(cpB, cyA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}
 				else if (cB.type == ColliderType::Box)
 				{
-					Physics::OBB oB = { wcB.obb.center, wcB.obb.extents, wcB.obb.axes[0], wcB.obb.axes[1], wcB.obb.axes[2] };
+					Physics::OBB oB = { wcB.center, wcB.extents, wcB.axes[0], wcB.axes[1], wcB.axes[2] };
 					hit = CheckOBBCylinder(oB, cyA, contact);
 					if (hit) contact.normal = { -contact.normal.x, -contact.normal.y, -contact.normal.z }; // 反転
 				}

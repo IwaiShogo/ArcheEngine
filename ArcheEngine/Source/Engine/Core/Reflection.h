@@ -30,6 +30,7 @@ namespace Reflection
 	template<typename T>
 	struct Meta
 	{
+		static constexpr const char* Name = "Unknown";
 		template<typename Visitor>
 		static void Visit(T& instance, Visitor&& visitor) {}
 	};

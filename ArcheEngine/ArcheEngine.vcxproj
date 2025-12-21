@@ -198,7 +198,6 @@
     <ClInclude Include="Source\Engine\Resource\ComponentSerializer.h" />
     <ClInclude Include="Source\Engine\Resource\ResourceManager.h" />
     <ClInclude Include="Source\Engine\Resource\SceneSerializer.h" />
-    <ClInclude Include="Source\Engine\Resource\Serializer.h" />
     <ClInclude Include="Source\Engine\Scene\IScene.h" />
     <ClInclude Include="Source\Engine\Scene\SceneManager.h" />
     <ClInclude Include="Source\Engine\Systems\Audio\AudioSystem.h" />

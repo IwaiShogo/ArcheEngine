@@ -181,9 +181,6 @@
     <ClInclude Include="Source\Engine\Resource\ResourceManager.h">
       <Filter>Source\Engine\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Resource\Serializer.h">
-      <Filter>Source\Engine\Resource</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\pch.h">
       <Filter>Source\Engine</Filter>
     </ClInclude>

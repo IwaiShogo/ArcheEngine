@@ -53,6 +53,25 @@ struct SerializeVisitor {
 	void operator()(const StringId& val, const char* name) {
 		j[name] = val.c_str();
 	}
+
+	// Entity型 (uint32_tとして保存)
+	void operator()(const Entity& val, const char* name) {
+		j[name] = (uint32_t)val;
+	}
+
+	// td::vector<Entity>型 (配列として保存)
+	void operator()(const std::vector<Entity>& val, const char* name) {
+		std::vector<uint32_t> ids;
+		for (auto e : val) ids.push_back((uint32_t)e);
+		j[name] = ids;
+	}
+
+	// Enum型の汎用対応（intキャスト）
+	template<typename T>
+		requires std::is_enum_v<T>
+	void operator()(const T& val, const char* name) {
+		j[name] = static_cast<int>(val);
+	}
 };
 
 // -----------------------------------------------------------------------------
@@ -94,6 +113,28 @@ struct DeserializeVisitor {
 			val = StringId(s.c_str());
 		}
 	}
+
+	// Entity型
+	void operator()(Entity& val, const char* name) {
+		if (j.contains(name)) val = (Entity)j[name].get<uint32_t>();
+	}
+
+	// std::vector<Entity>型
+	void operator()(std::vector<Entity>& val, const char* name) {
+		if (j.contains(name)) {
+			val.clear();
+			for (auto& id : j[name]) {
+				val.push_back((Entity)id.get<uint32_t>());
+			}
+		}
+	}
+
+	// Enum型
+	template<typename T>
+		requires std::is_enum_v<T>
+	void operator()(T& val, const char* name) {
+		if (j.contains(name)) val = static_cast<T>(j[name].get<int>());
+	}
 };
 
 // -----------------------------------------------------------------------------
@@ -119,6 +160,9 @@ private:
 		auto view = [&]<typename... Ts>(std::tuple<Ts...>*) {
 			(..., [&](void) {
 				using T = Ts;
+
+				if constexpr (std::is_same_v<T, DummyComponent>) return;
+
 				if (reg.has<T>(entity)) {
 					json compJson;
 					// Reflectionを使ってメンバを保存
@@ -137,8 +181,10 @@ private:
 		auto view = [&]<typename... Ts>(std::tuple<Ts...>*) {
 			(..., [&](void) {
 				using T = Ts;
-				const char* name = Reflection::Meta<T>::Name;
 
+				if constexpr (std::is_same_v<T, DummyComponent>) return;
+
+				const char* name = Reflection::Meta<T>::Name;
 				// JSONにこのコンポーネントのデータがあれば
 				if (inJson.contains(name)) {
 					// コンポーネントを追加 (既にあれば取得)

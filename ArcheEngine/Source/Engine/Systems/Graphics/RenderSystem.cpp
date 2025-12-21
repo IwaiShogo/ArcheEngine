@@ -110,16 +110,16 @@ void RenderSystem::Render(Registry& registry, const Context& context)
 				{
 					// スケールの最大値を半径に適用
 					float maxScale = std::max({ gScale.x, gScale.y, gScale.z });
-					m_renderer->DrawSphere(center, c.sphere.radius * maxScale, color);
+					m_renderer->DrawSphere(center, c.radius * maxScale, color);
 				}
 				else if (c.type == ColliderType::Capsule) {
 					// 半径: スケールのXZ最大値, 高さ: Yスケール
 					float maxScaleXZ = std::max(gScale.x, gScale.z);
-					m_renderer->DrawCapsule(center, c.capsule.radius * maxScaleXZ, c.capsule.height * gScale.y, gRot, color);
+					m_renderer->DrawCapsule(center, c.radius * maxScaleXZ, c.height * gScale.y, gRot, color);
 				}
 				else if (c.type == ColliderType::Cylinder) {
 					float maxScaleXZ = std::max(gScale.x, gScale.z);
-					m_renderer->DrawCylinder(center, c.cylinder.radius * maxScaleXZ, c.cylinder.height * gScale.y, gRot, color);
+					m_renderer->DrawCylinder(center, c.radius * maxScaleXZ, c.height * gScale.y, gRot, color);
 				}
 			});
 	}

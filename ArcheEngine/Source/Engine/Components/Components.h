@@ -268,14 +268,10 @@ struct Collider
 	Layer layer;		// 所属
 	Layer mask;			// 衝突判定を行うレイヤーのマスク
 
-	// 共用体でメモリ節約
-	union
-	{
-		struct { float x, y, z; } boxSize;
-		struct { float radius; } sphere;
-		struct { float radius, height; } capsule;
-		struct { float radius, height; } cylinder;
-	};
+	XMFLOAT3 boxSize = { 1.0f, 1.0f, 1.0f };
+	float radius = 0.5f;
+	float height = 1.0f;
+
 	XMFLOAT3 offset;	// オフセット
 
 	// デフォルトコンストラクタ
@@ -289,9 +285,9 @@ struct Collider
 		mask = PhysicsConfig::GetMask(layer);
 		// サイズ設定
 		if (type == ColliderType::Box) { boxSize = { info.size.x, info.size.y, info.size.z }; }
-		else if (type == ColliderType::Sphere) { sphere.radius = info.size.x; }
-		else if (type == ColliderType::Capsule) { capsule.radius = info.size.x; capsule.height = info.size.y; }
-		else if (type == ColliderType::Cylinder) { cylinder.radius = info.size.x; cylinder.height = info.size.y; }
+		else if (type == ColliderType::Sphere) { radius = info.size.x; }
+		else if (type == ColliderType::Capsule) { radius = info.size.x; height = info.size.y; }
+		else if (type == ColliderType::Cylinder) { radius = info.size.x; height = info.size.y; }
 	}
 
 	// ------------------------------------------------------------
@@ -383,14 +379,25 @@ struct AABB
  */
 struct WorldCollider
 {
-	// 形状データ
-	union
-	{
-		struct { XMFLOAT3 center; XMFLOAT3 extents; XMFLOAT3 axes[3]; } obb;
-		struct { XMFLOAT3 center; float radius; } sphere;
-		struct { XMFLOAT3 start; XMFLOAT3 end; float radius; } capsule;
-		struct { XMFLOAT3 center; XMFLOAT3 axis; float height; float radius; } cylinder;
+	// --- 共通 / OBB用 ---
+	XMFLOAT3 center = { 0,0,0 };
+	XMFLOAT3 extents = { 0,0,0 };		// OBBのハーフサイズ
+	XMFLOAT3 axes[3] = {				// OBBの回転軸
+		{ 1, 0, 0 },
+		{ 0, 1, 0 },
+		{ 0, 0, 1 }
 	};
+
+	// --- Sphere / Capsule / Cylinder用 ---
+	float radius = 0.0f;
+	float height = 0.0f;
+
+	// --- Capsule用 ---
+	XMFLOAT3 start = { 0,0,0 };
+	XMFLOAT3 end = { 0,0,0 };
+
+	// --- Cylinder用 ---
+	XMFLOAT3 axis = { 0,1,0 };			// 円柱の軸ベクトル
 
 	// ブロードフェーズ用AABB
 	AABB aabb;
@@ -636,6 +643,9 @@ struct Canvas
 // ------------------------------------------------------------
 #include "Engine/Core/Reflection.h"
 
+// ▼ ここに登録したいコンポーネントと、Inspectorに表示したい変数を列挙 ▼
+// 書式: X (構造体名, REFLECT_VAR(変数名)... )
+
 #define COMPONENT_LIST(X) \
 	X(Tag, \
 		REFLECT_VAR(name) \
@@ -644,6 +654,23 @@ struct Canvas
 		REFLECT_VAR(position) \
 		REFLECT_VAR(rotation) \
 		REFLECT_VAR(scale) \
+	) \
+	X(Relationship, \
+		REFLECT_VAR(parent) \
+		REFLECT_VAR(children) \
+	) \
+	X(Transform2D, \
+		REFLECT_VAR(position) \
+		REFLECT_VAR(size) \
+		REFLECT_VAR(rotation) \
+		REFLECT_VAR(scale) \
+		REFLECT_VAR(anchorMin) \
+		REFLECT_VAR(anchorMax) \
+		REFLECT_VAR(pivot) \
+	) \
+	X(Canvas, \
+		REFLECT_VAR(isScreenSpace) \
+		REFLECT_VAR(referenceSize) \
 	) \
 	X(TextComponent, \
 		REFLECT_VAR(text) \
@@ -660,7 +687,53 @@ struct Canvas
 		REFLECT_VAR(scaleOffset) \
 		REFLECT_VAR(color) \
 	) \
-	/* 新しいコンポーネントはここに行を追加するだけ！ */
+	X(SpriteComponent, \
+		REFLECT_VAR(textureKey) \
+		REFLECT_VAR(color) \
+	) \
+	X(BillboardComponent, \
+		REFLECT_VAR(textureKey) \
+		REFLECT_VAR(size) \
+		REFLECT_VAR(color) \
+	) \
+	X(AudioSource, \
+		REFLECT_VAR(soundKey) \
+		REFLECT_VAR(volume) \
+		REFLECT_VAR(range) \
+		REFLECT_VAR(isLoop) \
+		REFLECT_VAR(playOnAwake) \
+	) \
+	X(AudioListener, \
+		/* データなしタグコンポーネント */ \
+	) \
+	X(Camera, \
+		REFLECT_VAR(fov) \
+		REFLECT_VAR(nearZ) \
+		REFLECT_VAR(farZ) \
+		REFLECT_VAR(aspect) \
+	) \
+	X(Collider, \
+		REFLECT_VAR(type) \
+		REFLECT_VAR(isTrigger) \
+		REFLECT_VAR(offset) \
+		REFLECT_VAR(boxSize) \
+		REFLECT_VAR(radius) \
+		REFLECT_VAR(height) \
+	) \
+	X(Rigidbody, \
+		REFLECT_VAR(type) \
+		REFLECT_VAR(mass) \
+		REFLECT_VAR(drag) \
+		REFLECT_VAR(useGravity) \
+	) \
+	X(PlayerInput, \
+		REFLECT_VAR(speed) \
+		REFLECT_VAR(jumpPower) \
+	) \
+	X(Lifetime, \
+		REFLECT_VAR(time) \
+	) \
+/* 新しいコンポーネントを作ったらここに行を足すだけ！ */
 
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -674,14 +747,17 @@ struct Canvas
 		__VA_ARGS__ \
 	REFLECT_STRUCT_END()
 
+// マクロを実行して展開
 COMPONENT_LIST(GENERATE_REFLECTION)
 
 // 2. ComponentList タプルを自動生成
 #define GENERATE_TUPLE_ENTRY(Type, ...) Type,
 
+struct DummyComponent {};
+
 using ComponentList = std::tuple<
 	COMPONENT_LIST(GENERATE_TUPLE_ENTRY)
-	int // ダミーの末尾 (コンマ対策)
+	DummyComponent // ダミーの末尾 (コンマ対策)
 >;
 
 // マクロ掃除

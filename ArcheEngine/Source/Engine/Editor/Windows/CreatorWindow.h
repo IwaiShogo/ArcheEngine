@@ -24,7 +24,7 @@
 #include "Engine/pch.h"
 #include "Engine/Editor/Core/Editor.h"
 #include "Engine/Editor/Tools/ThumbnailGenerator.h"
-#include "Engine/Resource/Serializer.h"
+#include "Engine/Resource/SceneSerializer.h"
 
 class CreatorWindow : public EditorWindow {
 public:
@@ -72,14 +72,14 @@ public:
 
 						if (thumbID) {
 							if (ImGui::ImageButton(id.c_str(), (ImTextureID)thumbID, ImVec2(thumbnailSize, thumbnailSize))) {
-								Entity e = Serializer::LoadEntity(world, entry.path().string());
+								Entity e = SceneSerializer::LoadEntity(world, entry.path().string());
 								selected = e;
 								Logger::Log("Spawned: " + filename);
 							}
 						}
 						else {
 							if (ImGui::Button(filename.c_str(), ImVec2(thumbnailSize, thumbnailSize))) {
-								Entity e = Serializer::LoadEntity(world, entry.path().string());
+								Entity e = SceneSerializer::LoadEntity(world, entry.path().string());
 								selected = e;
 							}
 						}
