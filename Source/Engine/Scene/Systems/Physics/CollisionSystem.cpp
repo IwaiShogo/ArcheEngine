@@ -19,10 +19,10 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Systems/Physics/CollisionSystem.h"
+#include "Engine/Scene/Systems/Physics/CollisionSystem.h"
 #include "Engine/Physics/PhysicsEvents.h"
 #include "Engine/Physics/SpatialHash.h"
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Time/Time.h"
 
 using namespace Physics;
 

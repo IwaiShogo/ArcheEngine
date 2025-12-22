@@ -21,15 +21,15 @@
 #include "Engine/pch.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Config.h"
-#include "Engine/Core/Time.h"
-#include "Engine/Core/Input.h"
+#include "Engine/Core/Time/Time.h"
+#include "Engine/Core/Window/Input.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Editor/Core/Editor.h"
 #include "Editor/Tools/ThumbnailGenerator.h"
 
 #include "Engine/Scene/Components/Components.h"
-#include "Engine/Systems/Physics/CollisionSystem.h"
+#include "Engine/Scene/Systems/Physics/CollisionSystem.h"
 
 Application::Application(HWND hwnd)
 	: m_hwnd(hwnd)

@@ -22,9 +22,9 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
-#include "Engine/Systems/Physics/PhysicsSystem.h"
+#include "Engine/Scene/Systems/Physics/PhysicsSystem.h"
 
 /**
  * @namespace	Physics

@@ -20,26 +20,26 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Sandbox/Scenes/SceneGame.h"
-#include "Engine/Core/Input.h"
+#include "Engine/Core/Window/Input.h"
 #include "Engine/Scene/Components/Components.h"
 
 // エンジン側
-#include "Engine/Systems/Physics/CollisionSystem.h"
-#include "Engine/Systems/Physics/PhysicsSystem.h"
+#include "Engine/Scene/Systems/Physics/CollisionSystem.h"
+#include "Engine/Scene/Systems/Physics/PhysicsSystem.h"
 
 // ゲーム側（未だ移動出来ていない）
-#include "Engine/Systems/Graphics/RenderSystem.h"
-#include "Engine/Systems/Logic/InputSystem.h"
-#include "Engine/Systems/Graphics/SpriteRenderSystem.h"
-#include "Engine/Systems/Graphics/ModelRenderSystem.h"
-#include "Engine/Systems/Audio/AudioSystem.h"
-#include "Engine/Systems/Logic/LifetimeSystem.h"
-#include "Engine/Systems/Logic/HierarchySystem.h"
-#include "Engine/Systems/Graphics/BillboardSystem.h"
-#include "Engine/Systems/Graphics/TextRenderSystem.h"
-#include "Engine/Systems/Logic/UISystem.h"
+#include "Engine/Scene/Systems/Graphics/RenderSystem.h"
+#include "Engine/Scene/Systems/Logic/InputSystem.h"
+#include "Engine/Scene/Systems/Graphics/SpriteRenderSystem.h"
+#include "Engine/Scene/Systems/Graphics/ModelRenderSystem.h"
+#include "Engine/Scene/Systems/Audio/AudioSystem.h"
+#include "Engine/Scene/Systems/Logic/LifetimeSystem.h"
+#include "Engine/Scene/Systems/Logic/HierarchySystem.h"
+#include "Engine/Scene/Systems/Graphics/BillboardSystem.h"
+#include "Engine/Scene/Systems/Graphics/TextRenderSystem.h"
+#include "Engine/Scene/Systems/Logic/UISystem.h"
 
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Core/SceneManager.h"
 #include "Editor/Core/Editor.h"
 #include "Editor/Core/GameCommands.h"
 

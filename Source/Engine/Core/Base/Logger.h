@@ -21,7 +21,7 @@
 #define ___LOGGER_H___
 
 // ===== インクルード =====
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Time/Time.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 

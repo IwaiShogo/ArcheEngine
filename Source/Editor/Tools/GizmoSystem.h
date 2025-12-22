@@ -21,9 +21,9 @@
 #define ___GIZMO_SYSTEM_H___
 
 #include "Engine/pch.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
-#include "Engine/Core/Input.h"
+#include "Engine/Core/Window/Input.h"
 #include "Engine/Core/Context.h" // Config::SCREEN_WIDTH等用
 #include "Engine/Config.h"
 

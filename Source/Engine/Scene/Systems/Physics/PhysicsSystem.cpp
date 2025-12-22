@@ -20,7 +20,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Systems/Physics/PhysicsSystem.h"
+#include "Engine/Scene/Systems/Physics/PhysicsSystem.h"
 
 // ===== 定数・マクロ定義 =====
 static const float GRAVITY = 9.81f;

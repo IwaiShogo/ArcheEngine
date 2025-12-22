@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Renderer/Text/FontManager.h"
 
 class TextRenderer

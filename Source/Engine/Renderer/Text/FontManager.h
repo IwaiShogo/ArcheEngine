@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/StringId.h"
+#include "Engine/Core/Base/StringId.h"
 
 // ===== 前方宣言 =====
 class PrivateFontCollectionLoader;

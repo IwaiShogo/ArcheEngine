@@ -22,9 +22,6 @@
     <Filter Include="Source\Editor\Tools">
       <UniqueIdentifier>{e0e94256-f129-4653-831c-25d02ed4399f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Editor\Windows">
-      <UniqueIdentifier>{29dc7da2-7bb6-4247-a3b3-884c1eb44b61}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Engine\Audio">
       <UniqueIdentifier>{2cc18db6-03b6-4311-8261-73f4ff8e3c51}</UniqueIdentifier>
     </Filter>
@@ -43,14 +40,8 @@
     <Filter Include="Source\Engine\Scene">
       <UniqueIdentifier>{e0709f29-7ccf-4d11-aa22-e74a131e1676}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Engine\Systems">
-      <UniqueIdentifier>{1f730aa7-3f29-4895-9801-08d3d76a773f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Engine\Scene\Components">
       <UniqueIdentifier>{4c119b58-09c3-49e5-9309-3021b4ea7568}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\Scene\ECS">
-      <UniqueIdentifier>{fc97e285-2452-41a9-81c5-c5db8457f30e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Engine\Renderer\Renderers">
       <UniqueIdentifier>{6b15aa1d-209f-4d3f-b79c-58d202dde461}</UniqueIdentifier>
@@ -60,18 +51,6 @@
     </Filter>
     <Filter Include="Source\Engine\Renderer\Core">
       <UniqueIdentifier>{5f7b0680-183e-46c7-a42b-f39bc914682a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\Systems\Audio">
-      <UniqueIdentifier>{97e03841-12ce-4527-a2e2-c8442e4a9cac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\Systems\Logic">
-      <UniqueIdentifier>{dfb9fe1a-17e3-4511-b598-2f52b4b254c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\Systems\Graphics">
-      <UniqueIdentifier>{eb95032a-38d7-42bf-8425-d83605855f22}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\Systems\Physics">
-      <UniqueIdentifier>{1e146fb6-49b0-4ea7-a17b-0029ae2b1fcd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Library\ImGui">
       <UniqueIdentifier>{d69de4bd-7c40-42bf-af97-4208f49aeb61}</UniqueIdentifier>
@@ -91,6 +70,54 @@
     <Filter Include="Resources\DebugMeshes">
       <UniqueIdentifier>{c9611005-b6ac-4fec-9c7e-5437819840da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\Core\Base">
+      <UniqueIdentifier>{8afe79f0-2150-40b7-aabb-04793004fe06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Core\Math">
+      <UniqueIdentifier>{7f8144e7-3e05-4e92-b544-a2a11539caba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Core\Time">
+      <UniqueIdentifier>{b54965df-aafa-4afc-8a37-8ca1116de13a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Core\Window">
+      <UniqueIdentifier>{e8fe3e3a-0f30-405b-a4a1-8aace98e33f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Physics\Core">
+      <UniqueIdentifier>{943d52ca-ece9-4940-bd2c-77a788b391c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Platform">
+      <UniqueIdentifier>{cd43350b-b967-44eb-aa31-cd73de14dc16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Renderer\Data">
+      <UniqueIdentifier>{86ae99dd-96b3-4ed4-92b9-5f4399dca276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Renderer\RHI">
+      <UniqueIdentifier>{db8849bf-6288-44c9-80d7-f9f6bb7c5a76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Core">
+      <UniqueIdentifier>{25642025-39d5-4e79-9300-a271d938b933}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Core\ECS">
+      <UniqueIdentifier>{7a6ec533-613e-4881-bad3-e067b6e596ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Serializer">
+      <UniqueIdentifier>{5047a7aa-270f-45f9-a6f8-491ef78f1899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Systems">
+      <UniqueIdentifier>{2dd2bc1d-5a0e-4e99-aab5-ae6582b566a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Systems\Audio">
+      <UniqueIdentifier>{4bfe691f-6889-4f36-b4e1-89bf23b9d15e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Systems\Graphics">
+      <UniqueIdentifier>{744d87ab-b42d-4e6a-aa09-2d73e699ef8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Systems\Logic">
+      <UniqueIdentifier>{e23aa26b-2a84-40ea-abbe-ce9a251d75bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Systems\Physics">
+      <UniqueIdentifier>{07806c4d-9ccf-47c7-a227-c468c36b115f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Editor\Core\Editor.cpp">
@@ -100,9 +127,6 @@
       <Filter>Source\Engine\Audio</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Engine\Core\Application.cpp">
-      <Filter>Source\Engine\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Engine\Core\Input.cpp">
       <Filter>Source\Engine\Core</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Engine\Renderer\Core\RenderTarget.cpp">
@@ -128,18 +152,6 @@
     </ClCompile>
     <ClCompile Include="..\Source\Engine\Resource\ResourceManager.cpp">
       <Filter>Source\Engine\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Engine\Scene\SceneManager.cpp">
-      <Filter>Source\Engine\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Engine\Systems\Graphics\RenderSystem.cpp">
-      <Filter>Source\Engine\Systems\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Engine\Systems\Physics\CollisionSystem.cpp">
-      <Filter>Source\Engine\Systems\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Engine\Systems\Physics\PhysicsSystem.cpp">
-      <Filter>Source\Engine\Systems\Physics</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Engine\pch.cpp">
       <Filter>Source\Engine</Filter>
@@ -171,6 +183,21 @@
     <ClCompile Include="..\Source\Editor\Panels\ContentBrowser.cpp">
       <Filter>Source\Editor\Panels</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Engine\Core\Window\Input.cpp">
+      <Filter>Source\Engine\Core\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Core\SceneManager.cpp">
+      <Filter>Source\Engine\Scene\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Systems\Graphics\RenderSystem.cpp">
+      <Filter>Source\Engine\Scene\Systems\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Systems\Physics\CollisionSystem.cpp">
+      <Filter>Source\Engine\Scene\Systems\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Systems\Physics\PhysicsSystem.cpp">
+      <Filter>Source\Engine\Scene\Systems\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Editor\Core\Editor.h">
@@ -200,28 +227,7 @@
     <ClInclude Include="..\Source\Engine\Core\Context.h">
       <Filter>Source\Engine\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Engine\Core\Input.h">
-      <Filter>Source\Engine\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Core\Logger.h">
-      <Filter>Source\Engine\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Core\Reflection.h">
-      <Filter>Source\Engine\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Core\StringId.h">
-      <Filter>Source\Engine\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Core\Time.h">
-      <Filter>Source\Engine\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Renderer\Core\Model.h">
-      <Filter>Source\Engine\Renderer\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Engine\Renderer\Core\RenderTarget.h">
-      <Filter>Source\Engine\Renderer\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Renderer\Core\Texture.h">
       <Filter>Source\Engine\Renderer\Core</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.h">
@@ -253,51 +259,6 @@
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Scene\Components\Components.h">
       <Filter>Source\Engine\Scene\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Scene\ECS\ECS.h">
-      <Filter>Source\Engine\Scene\ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Scene\ECS\EntityDef.h">
-      <Filter>Source\Engine\Scene\ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Scene\SceneManager.h">
-      <Filter>Source\Engine\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Audio\AudioSystem.h">
-      <Filter>Source\Engine\Systems\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\BillboardSystem.h">
-      <Filter>Source\Engine\Systems\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\ModelRenderSystem.h">
-      <Filter>Source\Engine\Systems\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\RenderSystem.h">
-      <Filter>Source\Engine\Systems\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\SpriteRenderSystem.h">
-      <Filter>Source\Engine\Systems\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\TextRenderSystem.h">
-      <Filter>Source\Engine\Systems\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Logic\HierarchySystem.h">
-      <Filter>Source\Engine\Systems\Logic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Logic\InputSystem.h">
-      <Filter>Source\Engine\Systems\Logic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Logic\LifetimeSystem.h">
-      <Filter>Source\Engine\Systems\Logic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Logic\UISystem.h">
-      <Filter>Source\Engine\Systems\Logic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Physics\CollisionSystem.h">
-      <Filter>Source\Engine\Systems\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Engine\Systems\Physics\PhysicsSystem.h">
-      <Filter>Source\Engine\Systems\Physics</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Config.h">
       <Filter>Source\Engine</Filter>
@@ -341,20 +302,98 @@
     <ClInclude Include="..\Source\Editor\Panels\ContentBrowser.h">
       <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Editor\Windows\HierarchyWindow.h">
-      <Filter>Source\Editor\Windows</Filter>
+    <ClInclude Include="..\Source\Editor\Panels\HierarchyWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Editor\Windows\InspectorWindow.h">
-      <Filter>Source\Editor\Windows</Filter>
+    <ClInclude Include="..\Source\Editor\Panels\InspectorWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Editor\Windows\SystemWindow.h">
-      <Filter>Source\Editor\Windows</Filter>
+    <ClInclude Include="..\Source\Editor\Panels\SystemWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Base\Logger.h">
+      <Filter>Source\Engine\Core\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Base\Reflection.h">
+      <Filter>Source\Engine\Core\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Base\StringId.h">
+      <Filter>Source\Engine\Core\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Window\Input.h">
+      <Filter>Source\Engine\Core\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Time\Time.h">
+      <Filter>Source\Engine\Core\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Physics\PhysicsEvents.h">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Physics\SpatialHash.h">
+      <Filter>Source\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Renderer\Data\Model.h">
+      <Filter>Source\Engine\Renderer\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Renderer\RHI\Texture.h">
+      <Filter>Source\Engine\Renderer\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Core\IScene.h">
+      <Filter>Source\Engine\Scene\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Core\SceneManager.h">
+      <Filter>Source\Engine\Scene\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Core\ECS\ECS.h">
+      <Filter>Source\Engine\Scene\Core\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Core\ECS\EntityDef.h">
+      <Filter>Source\Engine\Scene\Core\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentSerializer.h">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\SceneSerializer.h">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Audio\AudioSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\BillboardSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\ModelRenderSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\RenderSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\SpriteRenderSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\TextRenderSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\HierarchySystem.h">
+      <Filter>Source\Engine\Scene\Systems\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\InputSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\LifetimeSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\UISystem.h">
+      <Filter>Source\Engine\Scene\Systems\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Physics\CollisionSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Physics\PhysicsSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Source\Engine\Scene\Serializer">
-      <Filter>Source\Engine\Scene</Filter>
-    </None>
     <None Include="..\Library\DirectXTex\DirectXTex.inl">
       <Filter>Library\DirectXTex</Filter>
     </None>

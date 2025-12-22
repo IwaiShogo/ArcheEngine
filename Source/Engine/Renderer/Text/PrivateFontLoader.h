@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/Logger.h"
+#include "Engine/Core/Base/Logger.h"
 
 // 1. フォントファイルを列挙するクラス
 class PrivateFontFileEnumerator : public IDWriteFontFileEnumerator

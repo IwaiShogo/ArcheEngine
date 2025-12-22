@@ -21,7 +21,7 @@
 #include "Engine/pch.h"
 #include "Engine/Renderer/Text/FontManager.h"
 #include "Engine/Renderer/Text/PrivateFontLoader.h"
-#include "Engine/Core/Logger.h"
+#include "Engine/Core/Base/Logger.h"
 
 FontManager::~FontManager()
 {

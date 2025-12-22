@@ -21,7 +21,7 @@
 #include "Engine/pch.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
-#include "Engine/Core/Logger.h"
+#include "Engine/Core/Base/Logger.h"
 #include "Engine/Renderer/Text/FontManager.h"
 
 // ファイルヘッダ構造体

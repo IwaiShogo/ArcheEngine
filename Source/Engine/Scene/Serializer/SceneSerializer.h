@@ -22,8 +22,8 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/ECS/ECS.h"
-#include "Engine/Systems/Physics/CollisionSystem.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
+#include "Engine/Scene/Systems/Physics/CollisionSystem.h"
 #include "Engine/Scene/Serializer/ComponentSerializer.h"
 
 class SceneSerializer

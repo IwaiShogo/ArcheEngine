@@ -23,9 +23,9 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Time/Time.h"
 
 // 接触情報
 namespace Physics

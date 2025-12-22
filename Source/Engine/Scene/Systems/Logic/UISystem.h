@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
 
 class UISystem : public ISystem

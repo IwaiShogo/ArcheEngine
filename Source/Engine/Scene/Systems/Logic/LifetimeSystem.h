@@ -21,9 +21,9 @@
 #define ___LIFETIME_SYSTEM_H___
 
 // ===== インクルード =====
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Time/Time.h"
 
 class LifetimeSystem
 	: public ISystem

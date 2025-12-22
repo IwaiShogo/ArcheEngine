@@ -19,8 +19,8 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/SceneManager.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 
 // 静的メンバ変数の実体
 SceneManager* SceneManager::s_instance = nullptr;

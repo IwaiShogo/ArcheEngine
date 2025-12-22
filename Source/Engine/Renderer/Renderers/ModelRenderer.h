@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Renderer/Core/Model.h" // Model定義
+#include "Engine/Renderer/Data/Model.h" // Model定義
 
 class ModelRenderer {
 public:

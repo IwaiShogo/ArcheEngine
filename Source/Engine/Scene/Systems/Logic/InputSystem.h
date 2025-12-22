@@ -21,9 +21,9 @@
 #define ___INPUT_SYSTEM_H___
 
 // ===== インクルード =====
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
-#include "Engine/Core/Input.h"
+#include "Engine/Core/Window/Input.h"
 
 class InputSystem
 	: public ISystem

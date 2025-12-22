@@ -23,10 +23,10 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Editor/Core/Editor.h"
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Time/Time.h"
 #include "Engine/Core/Context.h"
-#include "Engine/Core/Input.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Core/Window/Input.h"
+#include "Engine/Scene/Core/SceneManager.h"
 #include "Engine/Scene/Serializer/SceneSerializer.h"
 
 class SystemWindow

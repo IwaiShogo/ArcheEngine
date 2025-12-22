@@ -21,7 +21,7 @@
 #define ___AUDIO_SYSTEM_H___
 
 // ===== インクルード =====
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Resource/ResourceManager.h"

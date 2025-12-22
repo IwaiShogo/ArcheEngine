@@ -23,8 +23,8 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Config.h"
-#include "Engine/Scene/ECS/ECS.h"
-#include "Engine/Scene/SceneManager.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
+#include "Engine/Scene/Core/SceneManager.h"
 
 // Renderer
 #include "Engine/Renderer/Renderers/PrimitiveRenderer.h"

@@ -29,9 +29,9 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Time/Time.h"
 #include "Engine/Core/Context.h"
-#include "Engine/Core/Logger.h"
+#include "Engine/Core/Base/Logger.h"
 #include "Engine/Scene/Components/Components.h"
 #include "EntityDef.h"
 

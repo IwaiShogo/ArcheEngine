@@ -19,8 +19,8 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/Input.h"
-#include "Engine/Core/Time.h"
+#include "Engine/Core/Window/Input.h"
+#include "Engine/Core/Time/Time.h"
 
 void Input::Initialize()
 {

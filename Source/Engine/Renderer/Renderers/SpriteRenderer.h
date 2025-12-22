@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Renderer/Core/Texture.h"
+#include "Engine/Renderer/RHI/Texture.h"
 
 class SpriteRenderer
 {

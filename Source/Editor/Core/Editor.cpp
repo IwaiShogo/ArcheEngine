@@ -20,12 +20,12 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Editor/Core/Editor.h"
-#include "Editor/Windows/HierarchyWindow.h"
-#include "Editor/Windows/InspectorWindow.h"
-#include "Editor/Windows/SystemWindow.h"
+#include "Editor/Panels/HierarchyWindow.h"
+#include "Editor/Panels/InspectorWindow.h"
+#include "Editor/Panels/SystemWindow.h"
 #include "Editor/Tools/GizmoSystem.h"
 #include "Editor/Panels/ContentBrowser.h"
-#include "Engine/Systems/Physics/CollisionSystem.h"
+#include "Engine/Scene/Systems/Physics/CollisionSystem.h"
 
 void Editor::Initialize()
 {

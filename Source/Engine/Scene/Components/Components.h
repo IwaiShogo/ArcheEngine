@@ -22,9 +22,9 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/StringId.h"
+#include "Engine/Core/Base/StringId.h"
 #include "Engine/Config.h"
-#include "Engine/Scene/ECS/EntityDef.h"
+#include "Engine/Scene/Core/ECS/EntityDef.h"
 
 // ============================================================
 // 基本コンポーネント
@@ -641,7 +641,7 @@ struct Canvas
 // 全コンポーネントリスト
 // ここに新しいコンポーネントを追加するだけで、Inspectorに自動表示されるようになります。
 // ------------------------------------------------------------
-#include "Engine/Core/Reflection.h"
+#include "Engine/Core/Base/Reflection.h"
 
 // ▼ ここに登録したいコンポーネントと、Inspectorに表示したい変数を列挙 ▼
 // 書式: X (構造体名, REFLECT_VAR(変数名)... )

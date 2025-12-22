@@ -21,7 +21,7 @@
 #define ___RENDER_SYSTEM_H___
 
 // ===== インクルード =====
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Renderer/Renderers/PrimitiveRenderer.h"
 #include "Engine/Renderer/Renderers/ModelRenderer.h"
 #include "Engine/Resource/ResourceManager.h"

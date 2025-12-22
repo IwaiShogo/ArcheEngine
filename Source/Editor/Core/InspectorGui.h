@@ -22,8 +22,8 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/Reflection.h"
-#include "Engine/Core/StringId.h"
+#include "Engine/Core/Base/Reflection.h"
+#include "Engine/Core/Base/StringId.h"
 
 // ------------------------------------------------------------
 // InspectorGuiVisitor

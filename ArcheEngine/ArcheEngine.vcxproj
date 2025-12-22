@@ -71,7 +71,7 @@
     <ClCompile Include="..\Source\Editor\Panels\ContentBrowser.cpp" />
     <ClCompile Include="..\Source\Engine\Audio\AudioManager.cpp" />
     <ClCompile Include="..\Source\Engine\Core\Application.cpp" />
-    <ClCompile Include="..\Source\Engine\Core\Input.cpp" />
+    <ClCompile Include="..\Source\Engine\Core\Window\Input.cpp" />
     <ClCompile Include="..\Source\Engine\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -92,10 +92,10 @@
     <ClCompile Include="..\Source\Engine\Renderer\Text\FontManager.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Text\TextRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Resource\ResourceManager.cpp" />
-    <ClCompile Include="..\Source\Engine\Scene\SceneManager.cpp" />
-    <ClCompile Include="..\Source\Engine\Systems\Graphics\RenderSystem.cpp" />
-    <ClCompile Include="..\Source\Engine\Systems\Physics\CollisionSystem.cpp" />
-    <ClCompile Include="..\Source\Engine\Systems\Physics\PhysicsSystem.cpp" />
+    <ClCompile Include="..\Source\Engine\Scene\Core\SceneManager.cpp" />
+    <ClCompile Include="..\Source\Engine\Scene\Systems\Graphics\RenderSystem.cpp" />
+    <ClCompile Include="..\Source\Engine\Scene\Systems\Physics\CollisionSystem.cpp" />
+    <ClCompile Include="..\Source\Engine\Scene\Systems\Physics\PhysicsSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Library\DirectXTex\DirectXTex.h" />
@@ -113,54 +113,58 @@
     <ClInclude Include="..\Source\Editor\Core\GameCommands.h" />
     <ClInclude Include="..\Source\Editor\Core\InspectorGui.h" />
     <ClInclude Include="..\Source\Editor\Panels\ContentBrowser.h" />
+    <ClInclude Include="..\Source\Editor\Panels\HierarchyWindow.h" />
+    <ClInclude Include="..\Source\Editor\Panels\InspectorWindow.h" />
+    <ClInclude Include="..\Source\Editor\Panels\SystemWindow.h" />
     <ClInclude Include="..\Source\Editor\Tools\GizmoSystem.h" />
     <ClInclude Include="..\Source\Editor\Tools\ThumbnailGenerator.h" />
-    <ClInclude Include="..\Source\Editor\Windows\HierarchyWindow.h" />
-    <ClInclude Include="..\Source\Editor\Windows\InspectorWindow.h" />
-    <ClInclude Include="..\Source\Editor\Windows\SystemWindow.h" />
     <ClInclude Include="..\Source\Engine\Audio\AudioManager.h" />
     <ClInclude Include="..\Source\Engine\Audio\Sound.h" />
     <ClInclude Include="..\Source\Engine\Config.h" />
     <ClInclude Include="..\Source\Engine\Core\Application.h" />
+    <ClInclude Include="..\Source\Engine\Core\Base\Logger.h" />
+    <ClInclude Include="..\Source\Engine\Core\Base\Reflection.h" />
+    <ClInclude Include="..\Source\Engine\Core\Base\StringId.h" />
     <ClInclude Include="..\Source\Engine\Core\Context.h" />
-    <ClInclude Include="..\Source\Engine\Core\Input.h" />
-    <ClInclude Include="..\Source\Engine\Core\Logger.h" />
-    <ClInclude Include="..\Source\Engine\Core\Reflection.h" />
-    <ClInclude Include="..\Source\Engine\Core\StringId.h" />
-    <ClInclude Include="..\Source\Engine\Core\Time.h" />
+    <ClInclude Include="..\Source\Engine\Core\Time\Time.h" />
+    <ClInclude Include="..\Source\Engine\Core\Window\Input.h" />
     <ClInclude Include="..\Source\Engine\pch.h" />
-    <ClInclude Include="..\Source\Engine\Renderer\Core\Model.h" />
+    <ClInclude Include="..\Source\Engine\Physics\PhysicsEvents.h" />
+    <ClInclude Include="..\Source\Engine\Physics\SpatialHash.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Core\RenderTarget.h" />
-    <ClInclude Include="..\Source\Engine\Renderer\Core\Texture.h" />
+    <ClInclude Include="..\Source\Engine\Renderer\Data\Model.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.h" />
+    <ClInclude Include="..\Source\Engine\Renderer\RHI\Texture.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Text\FontManager.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Text\PrivateFontLoader.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Text\TextRenderer.h" />
     <ClInclude Include="..\Source\Engine\Resource\Prefab.h" />
     <ClInclude Include="..\Source\Engine\Resource\ResourceManager.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\Components.h" />
-    <ClInclude Include="..\Source\Engine\Scene\ECS\ECS.h" />
-    <ClInclude Include="..\Source\Engine\Scene\ECS\EntityDef.h" />
-    <ClInclude Include="..\Source\Engine\Scene\SceneManager.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Audio\AudioSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\BillboardSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\ModelRenderSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\RenderSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\SpriteRenderSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Graphics\TextRenderSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Logic\HierarchySystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Logic\InputSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Logic\LifetimeSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Logic\UISystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Physics\CollisionSystem.h" />
-    <ClInclude Include="..\Source\Engine\Systems\Physics\PhysicsSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Core\ECS\ECS.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Core\ECS\EntityDef.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Core\IScene.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Core\SceneManager.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentSerializer.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\SceneSerializer.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Audio\AudioSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\BillboardSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\ModelRenderSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\RenderSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\SpriteRenderSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\TextRenderSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\HierarchySystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\InputSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\LifetimeSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\UISystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Physics\CollisionSystem.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Physics\PhysicsSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Library\DirectXTex\DirectXTex.inl" />
-    <None Include="..\Source\Engine\Scene\Serializer" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Billboard.hlsl">

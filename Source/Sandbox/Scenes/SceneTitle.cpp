@@ -20,8 +20,8 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Sandbox/Scenes/SceneTitle.h"
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Core/Input.h"
+#include "Engine/Scene/Core/SceneManager.h"
+#include "Engine/Core/Window/Input.h"
 
 void SceneTitle::Initialize()
 {

@@ -22,9 +22,9 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Core/StringId.h"
-#include "Engine/Renderer/Core/Texture.h"
-#include "Engine/Renderer/Core/Model.h"
+#include "Engine/Core/Base/StringId.h"
+#include "Engine/Renderer/RHI/Texture.h"
+#include "Engine/Renderer/Data/Model.h"
 #include "Engine/Audio/Sound.h"
 
 class ResourceManager

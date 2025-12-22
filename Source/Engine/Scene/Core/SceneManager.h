@@ -22,7 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Scene/IScene.h"
+#include "Engine/Scene/Core/IScene.h"
 
 /**
  * @class	SceneManager

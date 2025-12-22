@@ -21,9 +21,9 @@
 #define ___GAME_COMMANDS_H___
 
 // ===== インクルード =====
-#include "Engine/Scene/SceneManager.h"
-#include "Engine/Core/Logger.h"
-#include "Engine/Scene/ECS/ECS.h"
+#include "Engine/Scene/Core/SceneManager.h"
+#include "Engine/Core/Base/Logger.h"
+#include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Resource/Prefab.h"
 
 namespace GameCommands
