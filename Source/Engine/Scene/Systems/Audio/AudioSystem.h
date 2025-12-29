@@ -26,45 +26,50 @@
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Resource/ResourceManager.h"
 
-class AudioSystem
-	: public ISystem
+namespace Arche
 {
-public:
-	AudioSystem()
+
+	class AudioSystem
+		: public ISystem
 	{
-		m_systemName = "Audio System";
-	}
+	public:
+		AudioSystem()
+		{
+			m_systemName = "Audio System";
+		}
 
-	void Update(Registry& registry) override
-	{
-		// 1. リスナーを探す
-		XMFLOAT3 listenerPos = { 0, 0, 0 };
-		bool listenerFound = false;
+		void Update(Registry& registry) override
+		{
+			// 1. リスナーを探す
+			XMFLOAT3 listenerPos = { 0, 0, 0 };
+			bool listenerFound = false;
 
-		registry.view<AudioListener, Transform>().each([&](Entity e, AudioListener& l, Transform& t)
-			{
-				if (!listenerFound)
+			registry.view<AudioListener, Transform>().each([&](Entity e, AudioListener& l, Transform& t)
 				{
-					// 最初の1人だけ採用
-					listenerPos = t.position;
-					listenerFound = true;
-				}
-			});
+					if (!listenerFound)
+					{
+						// 最初の1人だけ採用
+						listenerPos = t.position;
+						listenerFound = true;
+					}
+				});
 
-		// 聞く人がいない場合
-		if (!listenerFound) return;
+			// 聞く人がいない場合
+			if (!listenerFound) return;
 
-		// 2. 音源の更新
-		registry.view<AudioSource, Transform>().each([&](Entity e, AudioSource& source, Transform& t)
-			{
-				// --- 再生制御ロジック ---
-				if (source.playOnAwake && !source.isPlaying)
+			// 2. 音源の更新
+			registry.view<AudioSource, Transform>().each([&](Entity e, AudioSource& source, Transform& t)
 				{
-					AudioManager::Instance().Play3DSE(source.soundKey, t.position, listenerPos, source.range, source.volume);
-					source.isPlaying = true;	// 再生済みフラグとして使う
-				}
-			});
-	}
-};
+					// --- 再生制御ロジック ---
+					if (source.playOnAwake && !source.isPlaying)
+					{
+						AudioManager::Instance().Play3DSE(source.soundKey, t.position, listenerPos, source.range, source.volume);
+						source.isPlaying = true;	// 再生済みフラグとして使う
+					}
+				});
+		}
+	};
+
+}	// namespace Arche
 
 #endif // !___AUDIO_SYSTEM_H___

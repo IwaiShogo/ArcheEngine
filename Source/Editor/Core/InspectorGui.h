@@ -20,264 +20,387 @@
 #ifndef ___INSPECTOR_GUI_H___
 #define ___INSPECTOR_GUI_H___
 
+#ifdef _DEBUG
+
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Core/Base/Reflection.h"
 #include "Engine/Core/Base/StringId.h"
+#include "Engine/Resource/ResourceManager.h"
+#include "Engine/Scene/Components/ComponentDefines.h"
 
-// ------------------------------------------------------------
-// InspectorGuiVisitor
-// リフレクション経由で変数を渡され、型に応じたImGuiを描画する
-// ------------------------------------------------------------
-struct InspectorGuiVisitor
+namespace Arche
 {
-	// flaot型
-	void operator()(float& val, const char* name)
+	// ------------------------------------------------------------
+	// InspectorGuiVisitor
+	// 型に応じたImGuiウィジェットを描画する
+	// ------------------------------------------------------------
+	struct InspectorGuiVisitor
 	{
-		// 変数名によってスライダーの感度や範囲を変える工夫も可能
-		if (strstr(name, "Size") || strstr(name, "size"))
+		std::function<void(json&)> serializeFunc;
+		std::function<void(json, json)> commandFunc;
+
+		// 編集開始時の状態を保持する
+		static inline std::map<ImGuiID, json> s_startStates;
+
+		InspectorGuiVisitor(std::function<void(json&)> sFunc, std::function<void(json, json)> cFunc)
+			: serializeFunc(sFunc), commandFunc(cFunc) {}
+
+		// 共通処理ラッパー
+		// ImGuiのウィジェットを描画し、編集開始・終了を検知する
+		// ------------------------------------------------------------
+		template<typename Func>
+		void DrawWidget(const char* label, Func func)
 		{
-			ImGui::DragFloat(name, &val, 1.0f, 0.0f, 1000.0f);
-		}
-		else
-		{
-			ImGui::DragFloat(name, &val, 0.1f);
-		}
-	}
+			ImGui::PushID(label);
 
-	// int型
-	void operator()(int& val, const char* name)
-	{
-		ImGui::DragInt(name, &val);
-	}
+			// 1. ウィジェット描画実行
+			func();
 
-	// bool型
-	void operator()(bool& val, const char* name)
-	{
-		ImGui::Checkbox(name, &val);
-	}
-
-	// XMFLOAT2型
-	void operator()(DirectX::XMFLOAT2& val, const char* name)
-	{
-		float v[2] = { val.x, val.y };
-		if (ImGui::DragFloat2(name, v, 0.1f))
-		{
-			val = { v[0], v[1] };
-		}
-	}
-
-	// XMFLOAT3型
-	void operator()(DirectX::XMFLOAT3& val, const char* name)
-	{
-		float v[3] = { val.x, val.y, val.z };
-		if (ImGui::DragFloat3(name, v, 0.1f))
-		{
-			val = { v[0], v[1], v[2] };
-		}
-	}
-
-	// XMFLOAT4型（空ピッカー）
-	void operator()(DirectX::XMFLOAT4& val, const char* name)
-	{
-		// 変数名に Color が含まれていなくても、XMFLOAT4は基本的に色として扱う
-		float v[4] = { val.x, val.y, val.z, val.w };
-		if (ImGui::ColorEdit4(name, v))
-		{
-			val = { v[0], v[1], v[2], v[3] };
-		}
-	}
-
-	// std::string型（日本語入力対応）
-	void operator()(std::string& val, const char* name)
-	{
-		// 1. テキスト本文 (大きく表示)
-		if (strcmp(name, "text") == 0) {
-			char buf[1024];
-			memset(buf, 0, sizeof(buf));
-
-			// コピーと切り詰め
-			if (val.size() < sizeof(buf)) strcpy_s(buf, val.c_str());
-			else memcpy(buf, val.data(), sizeof(buf) - 1);
-
-			ImGui::LabelText(name, "Content"); // ラベル
-			if (ImGui::InputTextMultiline(
-				"##text", // ID衝突防止のため##を使う
-				buf, sizeof(buf),
-				ImVec2(-1.0f, 100.0f) // 横幅いっぱい、高さ100px
-			)) {
-				val = buf;
+			// 2. 編集開始検知（Activated）
+			if (ImGui::IsItemActivated())
+			{
+				json state;
+				// 現在のコンポーネント全体をシリアライズして保存
+				serializeFunc(state);
+				s_startStates[ImGui::GetID(label)] = state;
 			}
-			return;
+
+			// 3. 編集終了検知（DeactivatedAfterEdit）
+			if (ImGui::IsItemDeactivatedAfterEdit())
+			{
+				ImGuiID id = ImGui::GetID(label);
+				if (s_startStates.count(id))
+				{
+					json oldState = s_startStates[id];
+					json newState;
+					serializeFunc(newState);
+
+					// 値が変わっていればコマンド発行
+					if (oldState != newState)
+					{
+						// コマンド発行
+						commandFunc(oldState, newState);
+					}
+					s_startStates.erase(id);
+				}
+			}
+
+			ImGui::PopID();
 		}
 
-		// 2. フォント名 (プルダウン表示)
-		if (strcmp(name, "fontKey") == 0) {
-			if (ImGui::BeginCombo(name, val.c_str())) {
-				// Resources/Game/Fonts フォルダを走査して表示
-				// ※本来はResourceManagerかFontManagerから取得するのがベストですが、簡易実装として
-				std::string fontDir = "Resources/Game/Fonts";
-				namespace fs = std::filesystem;
+		// 各型の描画実装
+		// ------------------------------------------------------------
 
-				if (fs::exists(fontDir)) {
-					for (const auto& entry : fs::directory_iterator(fontDir)) {
-						if (!entry.is_regular_file()) continue;
+		// 基本型
+		// ------------------------------------------------------------
+		// bool
+		void operator()(bool& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				ImGui::Checkbox(name, &val);
+			});
+		}
 
-						// 拡張子チェック (.ttf, .otf)
-						std::string ext = entry.path().extension().string();
-						if (ext == ".ttf" || ext == ".otf") {
-							// ファイル名（拡張子なし）をキーとする場合
-							// std::string fontName = entry.path().stem().string();
+		// int
+		void operator()(int& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				ImGui::DragInt(name, &val);
+			});
+		}
 
-							// ファイル名（拡張子あり）をキーとする場合 ← FontManagerの実装に合わせてください
-							std::string fontName = entry.path().filename().string();
+		// float
+		void operator()(float& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				float speed = 0.1f;
+				float min = 0.0f;
+				float max = 0.0f;
 
-							bool isSelected = (val == fontName);
-							if (ImGui::Selectable(fontName.c_str(), isSelected)) {
-								val = fontName;
-							}
-							if (isSelected) ImGui::SetItemDefaultFocus();
-						}
+				// 名前による挙動の変化
+				if (strstr(name, "volume") || strstr(name, "Volume"))
+				{
+					speed = 0.01f;
+					max = 1.0f;
+				}
+				else if (strstr(name, "size") || strstr(name, "Size"))
+				{
+					speed = 1.0f;
+				}
+
+				ImGui::DragFloat(name, &val, speed, min, max);
+			});
+		}
+
+		// 文字列（std::string）
+		// ------------------------------------------------------------
+		void operator()(std::string& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				// 1. テキスト本文
+				if (strcmp(name, "text") == 0 || strcmp(name, "Content") == 0)
+				{
+					ImGui::LabelText(name, "Text Content");
+					char buf[1024];
+					strcpy_s(buf, sizeof(buf), val.c_str());
+					if (ImGui::InputTextMultiline(name, buf, sizeof(buf), ImVec2(-1, 60)))
+					{
+						val = buf;
 					}
 				}
-				ImGui::EndCombo();
-			}
-			return;
+				// 2. フォント名 (プルダウン表示)
+				else if (strcmp(name, "fontKey") == 0)
+				{
+					if (ImGui::BeginCombo(name, val.c_str())) {
+						std::string fontDir = "Resources/Game/Fonts";
+						namespace fs = std::filesystem;
+
+						if (fs::exists(fontDir)) {
+							for (const auto& entry : fs::directory_iterator(fontDir)) {
+								if (!entry.is_regular_file()) continue;
+
+								// 拡張子チェック (.ttf, .otf)
+								std::string ext = entry.path().extension().string();
+								if (ext == ".ttf" || ext == ".otf") {
+									// ファイル名（拡張子なし）をキーとする場合
+									// std::string fontName = entry.path().stem().string();
+
+									// ファイル名（拡張子あり）をキーとする場合 ← FontManagerの実装に合わせてください
+									std::string fontName = entry.path().filename().string();
+
+									bool isSelected = (val == fontName);
+									if (ImGui::Selectable(fontName.c_str(), isSelected)) {
+										val = fontName;
+									}
+									if (isSelected) ImGui::SetItemDefaultFocus();
+								}
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
+				else
+				{
+					char buf[256];
+					strcpy_s(buf, sizeof(buf), val.c_str());
+					if (ImGui::InputText(name, buf, sizeof(buf)))
+					{
+						val = buf;
+					}
+				}
+			});
 		}
 
-		// 3. その他 (通常の1行入力)
-		char buf[256];
-		memset(buf, 0, sizeof(buf));
-		if (val.size() < sizeof(buf)) strcpy_s(buf, val.c_str());
-		else memcpy(buf, val.data(), sizeof(buf) - 1);
-
-		if (ImGui::InputText(name, buf, sizeof(buf))) {
-			val = buf;
-		}
-	}
-
-	// StringId
-	void operator()(StringId& val, const char* name)
-	{
-		// 現在の文字列を取得
-		// 注意：Releaseビルドで StringId が文字列を保持していない場合、ここは空文字になります
-		std::string currentStr = val.c_str();
-
-		char buf[256];
-		memset(buf, 0, sizeof(buf));
-		strcpy_s(buf, currentStr.c_str());
-
-		// テキストボックスで編集（IDなのでラベルの横にハッシュ値も出す）
-		std::string label = std::string(name) + " (Hash: " + std::to_string(val.GetHash()) + ")";
-
-		if (ImGui::InputText(label.c_str(), buf, sizeof(buf)))
+		// リソースキー（StringId） -> ドラッグ&ドロップ対応
+		// ------------------------------------------------------------
+		void operator()(StringId& val, const char* name)
 		{
-			val = StringId(buf);
-		}
-	}
-
-	// ColliderType (Enum)
-	void operator()(ColliderType& val, const char* name)
-	{
-		// プルダウンの中身
-		const char* items[] = { "Box", "Sphere", "Capsule", "Cylinder" };
-		int current = (int)val;
-
-		// 列挙型の範囲チェック
-		if (current < 0 || current >= IM_ARRAYSIZE(items)) current = 0;
-
-		if (ImGui::Combo(name, &current, items, IM_ARRAYSIZE(items)))
-		{
-			val = (ColliderType)current;
-		}
-	}
-
-	// BodyType (Enum)
-	void operator()(BodyType& val, const char* name)
-	{
-		const char* items[] = { "Static", "Dynamic", "Kinematic" };
-		int current = (int)val;
-
-		if (current < 0 || current >= IM_ARRAYSIZE(items)) current = 0;
-
-		if (ImGui::Combo(name, &current, items, IM_ARRAYSIZE(items)))
-		{
-			val = (BodyType)current;
-		}
-	}
-
-	// Entity型（親IDなどの表示用）
-	void operator()(Entity& val, const char* name)
-	{
-		// 親子関係のリンクの書き換えはInspectorでは行わず、Hierarchyでのドラッグ推奨
-		if (val == NullEntity)
-		{
-			ImGui::Text("%s: None", name);
-		}
-		else
-		{
-			ImGui::Text("%s: Entity(ID: %d)", name, (uint32_t)val);
-		}
-	}
-
-	// std::vector<Entity>型（子リスト表示用）
-	void operator()(std::vector<Entity>& val, const char* name)
-	{
-		// 折り畳み式のツリーで子要素を表示
-		if (ImGui::TreeNode(name))
-		{
-			if (val.empty())
+			DrawWidget(name, [&]()
 			{
-				ImGui::TextDisabled("Empty");
+				std::string currentStr = val.c_str();
+				char buf[256];
+				strcpy_s(buf, currentStr.c_str());
+
+				// 入力欄
+				if (ImGui::InputText(name, buf, sizeof(buf)))
+				{
+					val = StringId(buf);
+				}
+
+				// マウスオーバーでパスを表示
+				if (ImGui::IsItemHovered())
+				{
+					// リソースタイプを推測してパスを取得
+					ResourceManager::ResourceType type = ResourceManager::ResourceType::Texture;
+					if (strstr(name, "model") || strstr(name, "Model")) type = ResourceManager::ResourceType::Model;
+					else if (strstr(name, "sound") || strstr(name, "Sound")) type = ResourceManager::ResourceType::Sound;
+
+					std::string path = ResourceManager::Instance().GetPathByKey(val, type);
+					if (!path.empty()) ImGui::SetTooltip("Path: %s", path.c_str());
+				}
+
+				// ドラッグ&ドロップ受け入れ
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const char* droppedPath = (const char*)payload->Data;
+						std::string fullPath = "Resources/Game/" + std::string(droppedPath);
+
+						// リソースタイプを推測
+						ResourceManager::ResourceType type = ResourceManager::ResourceType::Texture;
+						std::string n = name;
+						if (n.find("model") != std::string::npos || n.find("Model") != std::string::npos) type = ResourceManager::ResourceType::Model;
+						else if (n.find("sound") != std::string::npos || n.find("Sound") != std::string::npos) type = ResourceManager::ResourceType::Sound;
+
+						// キーとして登録 & 設定
+						StringId newKey(fullPath);
+						ResourceManager::Instance().RegisterResource(newKey, fullPath, type);
+						val = newKey;
+					}
+					ImGui::EndDragDropTarget();
+				}
+			});
+		}
+
+		// DirectX Math型
+		// ------------------------------------------------------------
+		// XMFLOAT2
+		void operator()(DirectX::XMFLOAT2& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				float v[2] = { val.x, val.y };
+				if (ImGui::DragFloat2(name, v, 0.1f))
+				{
+					val = { v[0], v[1] };
+				}
+			});
+		}
+
+		// XMFLOAT3
+		void operator()(DirectX::XMFLOAT3& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				float v[3] = { val.x, val.y, val.z };
+				if (strstr(name, "color") || strstr(name, "Color"))
+				{
+					if (ImGui::ColorEdit3(name, v)) val = { v[0], v[1], v[2] };
+				}
+				else
+				{
+					if (ImGui::DragFloat3(name, v, 0.1f)) val = { v[0], v[1], v[2] };
+				}
+			});
+		}
+
+		// XMFLOAT4型（空ピッカー）
+		void operator()(DirectX::XMFLOAT4& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				// 変数名に Color が含まれていなくても、XMFLOAT4は基本的に色として扱う
+				float v[4] = { val.x, val.y, val.z, val.w };
+				if (ImGui::ColorEdit4(name, v))
+				{
+					val = { v[0], v[1], v[2], v[3] };
+				}
+			});
+		}
+
+		// Enum型
+		// ------------------------------------------------------------
+		// ColliderType
+		void operator()(ColliderType& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				// プルダウンの中身
+				const char* items[] = { "Box", "Sphere", "Capsule", "Cylinder" };
+				int item = (int)val;
+
+				if (ImGui::Combo(name, &item, items, IM_ARRAYSIZE(items))) val = (ColliderType)item;
+			});
+		}
+
+		// BodyType
+		void operator()(BodyType& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				const char* items[] = { "Static", "Dynamic", "Kinematic" };
+				int item = (int)val;
+				if (ImGui::Combo(name, &item, items, IM_ARRAYSIZE(items))) val = (BodyType)item;
+			});
+		}
+
+		// Layer
+		void operator()(Layer& val, const char* name)
+		{
+			DrawWidget(name, [&]()
+			{
+				int layerVal = (int)val;
+				if (ImGui::InputInt(name, &layerVal)) val = (Layer)layerVal;
+			});
+		}
+
+		// その他（Entity等）
+		// ------------------------------------------------------------
+		// Entity
+		void operator()(Entity& val, const char* name)
+		{
+			if (val == NullEntity) ImGui::Text("%s: (None)", name);
+			else ImGui::Text("%s: Entity(%d)", name, (uint32_t)val);
+		}
+
+		// Vector (Sprcialized for Entity)
+		void operator()(std::vector<Entity>& val, const char* name)
+		{
+			// 折り畳み式のツリーで子要素を表示
+			if (ImGui::TreeNode(name))
+			{
+				if (val.empty())
+				{
+					ImGui::TextDisabled("Empty");
+				}
+				else
+				{
+					for (size_t i = 0; i < val.size(); ++i)
+					{
+						ImGui::Text("[%d] Entity(ID: %d)", i, (uint32_t)val[i]);
+					}
+				}
+				ImGui::TreePop();
 			}
 			else
 			{
-				for (size_t i = 0; i < val.size(); ++i)
-				{
-					ImGui::Text("[%d] Entity(ID: %d)", i, (uint32_t)val[i]);
-				}
+				// 閉じているときは要素数だけ表示
+				ImGui::SameLine();
+				ImGui::TextDisabled("(%d items)", val.size());
 			}
-			ImGui::TreePop();
 		}
-		else
-		{
-			// 閉じているときは要素数だけ表示
-			ImGui::SameLine();
-			ImGui::TextDisabled("(%d items)", val.size());
-		}
-	}
 
-	// その他の型が来てもエラーにならないようにするテンプレート
+		// Fallback
+		template<typename T>
+		void operator()(T& val, const char* name)
+		{
+			ImGui::TextDisabled("%s: (Not Supported)", name);
+		}
+	};
+
+	// ------------------------------------------------------------
+	// ヘルパー関数：コンポーネントを描画する
+	// ------------------------------------------------------------
 	template<typename T>
-	void operator()(T& val, const char* name)
+	void DrawComponent(const char* label, T& component, bool& removed)
 	{
-		ImGui::TextDisabled("%s: (Not Supported)", name);
-	}
-};
-
-// ------------------------------------------------------------
-// ヘルパー関数：コンポーネントを描画する
-// ------------------------------------------------------------
-template<typename T>
-void DrawComponent(const char* label, T& component, bool& removed)
-{
-	// ツリーノードを開く（デフォルトで開いた状態）
-	// ImGuiTreeNodeFlags_Framed などで見た目を整えるのもGood
-	if (ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::PushID(label);	// 名前衝突防止
-
-		// メンバ変数を１つずつ Visitor に渡して描画させる
-		Reflection::VisitMembers(component, InspectorGuiVisitor{});
-
-		ImGui::Spacing();
-		if (ImGui::Button("Remove Component"))
+		// ツリーノードを開く（デフォルトで開いた状態）
+		// ImGuiTreeNodeFlags_Framed などで見た目を整えるのもGood
+		if (ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			removed = true;
-		}
+			ImGui::PushID(label);	// 名前衝突防止
 
-		ImGui::PopID();
+			// メンバ変数を１つずつ Visitor に渡して描画させる
+			Reflection::VisitMembers(component, InspectorGuiVisitor{});
+
+			ImGui::Spacing();
+			if (ImGui::Button("Remove Component"))
+			{
+				removed = true;
+			}
+
+			ImGui::PopID();
+		}
 	}
-}
+
+}	// namespace Arche
+
+#endif // _DEBUG
 
 #endif // !___INSPECTOR_GUI_H___

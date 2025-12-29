@@ -10,6 +10,9 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{0b45401b-d595-4e8b-a50f-c5a6f909e217}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{ab457109-d9a8-49c9-9a38-94915308161b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Sandbox\main.cpp">
@@ -34,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\Sandbox\Scenes\SceneTitle.h">
       <Filter>Source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Sandbox\Components\GameComponents.h">
+      <Filter>Source\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

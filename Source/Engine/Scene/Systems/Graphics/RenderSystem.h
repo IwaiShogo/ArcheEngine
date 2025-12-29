@@ -22,49 +22,48 @@
 
 // ===== インクルード =====
 #include "Engine/Scene/Core/ECS/ECS.h"
-#include "Engine/Renderer/Renderers/PrimitiveRenderer.h"
-#include "Engine/Renderer/Renderers/ModelRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Scene/Components/Components.h"
 
-class RenderSystem
-	: public ISystem
+namespace Arche
 {
-public:
-	RenderSystem(PrimitiveRenderer* rendererPtr)
-		: m_renderer(rendererPtr) {
-		m_systemName = "Render System";
-	}
-
-	void Render(Registry& registry, const Context& context) override;
-
-	// 3D座標 -> 2Dスクリーン座標への変換
-	// 戻り値: スクリーン座標 (x, y)。zは深度(0-1)。
-	// 画面外なら false を返すような判定も可能ですが今回は座標のみ計算。
-	static DirectX::XMFLOAT3 WorldToScreen(
-		const DirectX::XMFLOAT3& worldPos,
-		const DirectX::XMMATRIX& view,
-		const DirectX::XMMATRIX& proj,
-		float screenW, float screenH)
+	class RenderSystem
+		: public ISystem
 	{
-		XMVECTOR vWorld = XMLoadFloat3(&worldPos);
+	public:
+		RenderSystem()
+		{
+			m_systemName = "Render System";
+		}
 
-		// 座標変換 (World -> View -> Clip)
-		XMVECTOR vClip = XMVector3TransformCoord(vWorld, view);
-		vClip = XMVector3TransformCoord(vClip, proj);
+		void Render(Registry& registry, const Context& context) override;
 
-		XMFLOAT3 clip;
-		XMStoreFloat3(&clip, vClip);
+		// 3D座標 -> 2Dスクリーン座標への変換
+		// 戻り値: スクリーン座標 (x, y)。zは深度(0-1)。
+		// 画面外なら false を返すような判定も可能ですが今回は座標のみ計算。
+		static DirectX::XMFLOAT3 WorldToScreen(
+			const DirectX::XMFLOAT3& worldPos,
+			const DirectX::XMMATRIX& view,
+			const DirectX::XMMATRIX& proj,
+			float screenW, float screenH)
+		{
+			XMVECTOR vWorld = XMLoadFloat3(&worldPos);
 
-		// NDC (-1~1) -> Screen (0~W, 0~H)
-		float screenX = (clip.x + 1.0f) * 0.5f * screenW;
-		float screenY = (1.0f - clip.y) * 0.5f * screenH; // Yは反転
+			// 座標変換 (World -> View -> Clip)
+			XMVECTOR vClip = XMVector3TransformCoord(vWorld, view);
+			vClip = XMVector3TransformCoord(vClip, proj);
 
-		return XMFLOAT3(screenX, screenY, clip.z);
-	}
+			XMFLOAT3 clip;
+			XMStoreFloat3(&clip, vClip);
 
-private:
-	PrimitiveRenderer* m_renderer;
-};
+			// NDC (-1~1) -> Screen (0~W, 0~H)
+			float screenX = (clip.x + 1.0f) * 0.5f * screenW;
+			float screenY = (1.0f - clip.y) * 0.5f * screenH; // Yは反転
+
+			return XMFLOAT3(screenX, screenY, clip.z);
+		}
+	};
+
+}	// namespace Arche
 
 #endif // !___RENDER_SYSTEM_H___

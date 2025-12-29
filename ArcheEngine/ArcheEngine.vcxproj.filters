@@ -180,9 +180,6 @@
     <ClCompile Include="..\Library\ImGui\imgui_widgets.cpp">
       <Filter>Library\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Editor\Panels\ContentBrowser.cpp">
-      <Filter>Source\Editor\Panels</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\Engine\Core\Window\Input.cpp">
       <Filter>Source\Engine\Core\Window</Filter>
     </ClCompile>
@@ -197,6 +194,9 @@
     </ClCompile>
     <ClCompile Include="..\Source\Engine\Scene\Systems\Physics\PhysicsSystem.cpp">
       <Filter>Source\Engine\Scene\Systems\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Core\ECS\ECS.cpp">
+      <Filter>Source\Engine\Scene\Core\ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -347,9 +347,6 @@
     <ClInclude Include="..\Source\Engine\Scene\Core\ECS\ECS.h">
       <Filter>Source\Engine\Scene\Core\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Engine\Scene\Core\ECS\EntityDef.h">
-      <Filter>Source\Engine\Scene\Core\ECS</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentSerializer.h">
       <Filter>Source\Engine\Scene\Serializer</Filter>
     </ClInclude>
@@ -391,6 +388,36 @@
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Scene\Systems\Physics\PhysicsSystem.h">
       <Filter>Source\Engine\Scene\Systems\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\SceneViewPanel.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\GameViewPanel.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Tools\EditorCamera.h">
+      <Filter>Source\Editor\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\SystemRegistry.h">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentRegistry.h">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Components\UIComponents.h">
+      <Filter>Source\Engine\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\ButtonSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Components\ComponentDefines.h">
+      <Filter>Source\Engine\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Core\CommandHistory.h">
+      <Filter>Source\Editor\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Core\EditorCommands.h">
+      <Filter>Source\Editor\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

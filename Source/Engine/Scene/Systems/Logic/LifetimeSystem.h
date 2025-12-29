@@ -25,37 +25,42 @@
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Core/Time/Time.h"
 
-class LifetimeSystem
-	: public ISystem
+namespace Arche
 {
-public:
-	LifetimeSystem()
+
+	class LifetimeSystem
+		: public ISystem
 	{
-		m_systemName = "Lifetime System";
-	}
-
-	void Update(Registry& registry) override
-	{
-		float dt = Time::DeltaTime();
-
-		// 削除リスト
-		std::vector<Entity> toDestroy;
-
-		registry.view<Lifetime>().each([&](Entity e, Lifetime& life)
-			{
-				life.time -= dt;
-				if (life.time <= 0.0f)
-				{
-					toDestroy.push_back(e);
-				}
-			});
-
-		// まとめて削除
-		for (Entity e : toDestroy)
+	public:
+		LifetimeSystem()
 		{
-			registry.destroy(e);
+			m_systemName = "Lifetime System";
 		}
-	}
-};
+
+		void Update(Registry& registry) override
+		{
+			float dt = Time::DeltaTime();
+
+			// 削除リスト
+			std::vector<Entity> toDestroy;
+
+			registry.view<Lifetime>().each([&](Entity e, Lifetime& life)
+				{
+					life.time -= dt;
+					if (life.time <= 0.0f)
+					{
+						toDestroy.push_back(e);
+					}
+				});
+
+			// まとめて削除
+			for (Entity e : toDestroy)
+			{
+				registry.destroy(e);
+			}
+		}
+	};
+
+}	// namespace Arche
 
 #endif // !___LIFETIME_SYSTEM_H___

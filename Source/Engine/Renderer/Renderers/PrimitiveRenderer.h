@@ -23,82 +23,93 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 
-class PrimitiveRenderer
+namespace Arche
 {
-public:
-	PrimitiveRenderer(ID3D11Device* device, ID3D11DeviceContext* context);
-	~PrimitiveRenderer() = default;
 
-	// 初期化（シェーダー読み込み等）
-	void Initialize();
-
-	// 描画開始（カメラ行列をリセット）
-	void Begin(const XMMATRIX& view, const XMMATRIX& projection);
-
-	// ボックス描画
-	void DrawBox(const XMFLOAT3& position, const XMFLOAT3& size, const XMFLOAT4& rotation, const XMFLOAT4& color);
-	// 球体描画
-	void DrawSphere(const XMFLOAT3& position, float radius, const XMFLOAT4& color);
-	// カプセル描画
-	void DrawCapsule(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color);
-	// 円柱描画
-	void DrawCylinder(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color);
-	// ライン描画
-	void DrawLine(const XMFLOAT3& p1, const XMFLOAT3& p2, const XMFLOAT4& color);
-
-	// ギズモ用の矢印描画
-	void DrawArrow(const XMFLOAT3& start, const XMFLOAT3& end, const XMFLOAT4& color);
-
-	// 描画モード変更
-	void SetFillMode(bool wireframe);
-	// グリッドと軸を描画
-	void DrawGrid(float spacing = 1.0f, int lines = 10);
-	void DrawAxis(float length = 5.0f);
-
-	ID3D11DeviceContext* GetDeviceContext() { return m_context; }
-
-private:
-	// 円を描くヘルパー
-	void DrawCircle(const XMFLOAT3& center, float radius, const XMFLOAT4& color);
-	// メッシュ用ヘルパー
-	void CreateCylinderMesh();
-	void CreateCapsuleMesh();
-
-private:
-	struct ConstantBufferData
+	class PrimitiveRenderer
 	{
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
-		XMFLOAT4 color;
+	public:
+		/**
+		 * @brief	初期化
+		 * @param	device	デバイス
+		 * @param	context	コンテキスト
+		 */
+		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
+
+		/**
+		 * @brief	描画開始（カメラ行列をリセット）
+		 * @param	view		ビュー行列
+		 * @param	projection	プロジェクション行列
+		 */
+		static void Begin(const XMMATRIX& view, const XMMATRIX& projection);
+
+		// ボックス描画
+		static void DrawBox(const XMFLOAT3& position, const XMFLOAT3& size, const XMFLOAT4& rotation, const XMFLOAT4& color);
+		// 球体描画
+		static void DrawSphere(const XMFLOAT3& position, float radius, const XMFLOAT4& color);
+		// カプセル描画
+		static void DrawCapsule(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color);
+		// 円柱描画
+		static void DrawCylinder(const XMFLOAT3& position, float radius, float height, const XMFLOAT4& rotation, const XMFLOAT4& color);
+		// ライン描画
+		static void DrawLine(const XMFLOAT3& p1, const XMFLOAT3& p2, const XMFLOAT4& color);
+
+		// ギズモ用の矢印描画
+		static void DrawArrow(const XMFLOAT3& start, const XMFLOAT3& end, const XMFLOAT4& color);
+
+		// 描画モード変更
+		static void SetFillMode(bool wireframe);
+		// グリッドと軸を描画
+		static void DrawGrid(float spacing = 1.0f, int lines = 10);
+		static void DrawAxis(float length = 5.0f);
+
+		static ID3D11DeviceContext* GetDeviceContext() { return s_context; }
+
+	private:
+		// 円を描くヘルパー
+		static void DrawCircle(const XMFLOAT3& center, float radius, const XMFLOAT4& color);
+		// メッシュ用ヘルパー
+		static void CreateCylinderMesh();
+		static void CreateCapsuleMesh();
+
+	private:
+		struct ConstantBufferData
+		{
+			XMMATRIX world;
+			XMMATRIX view;
+			XMMATRIX projection;
+			XMFLOAT4 color;
+		};
+
+		// 静的メンバ変数
+		static ID3D11Device* s_device;
+		static ID3D11DeviceContext* s_context;
+
+		static ComPtr<ID3D11VertexShader>	s_vs;
+		static ComPtr<ID3D11PixelShader>	s_ps;
+		static ComPtr<ID3D11InputLayout>	s_inputLayout;
+		static ComPtr<ID3D11Buffer>			s_vertexBuffer;
+		static ComPtr<ID3D11Buffer>			s_indexBuffer;
+		static ComPtr<ID3D11Buffer>			s_constantBuffer;
+		static ComPtr<ID3D11Buffer>			s_lineVertexBuffer;
+		static ComPtr<ID3D11DepthStencilState> s_depthState;
+		// 球体用のバッファ
+		static ComPtr<ID3D11Buffer>		s_sphereVB;
+		static ComPtr<ID3D11Buffer>		s_sphereIB;
+		static UINT						s_sphereIndexCount;
+		// 円柱用バッファ
+		static ComPtr<ID3D11Buffer> s_cylinderVB, s_cylinderIB;
+		static UINT s_cylinderIndexCount;
+		// カプセル用バッファ
+		static ComPtr<ID3D11Buffer> s_capsuleVB, s_capsuleIB;
+		static UINT s_capsuleIndexCount;
+
+		static ConstantBufferData	s_cbData;
+
+		static ComPtr<ID3D11RasterizerState>	s_rsWireframe;
+		static ComPtr<ID3D11RasterizerState>	s_rsSolid;
 	};
 
-	ID3D11Device*			m_device;
-	ID3D11DeviceContext*	m_context;
-
-	ComPtr<ID3D11VertexShader>	m_vs;
-	ComPtr<ID3D11PixelShader>	m_ps;
-	ComPtr<ID3D11InputLayout>	m_inputLayout;
-	ComPtr<ID3D11Buffer>		m_vertexBuffer;
-	ComPtr<ID3D11Buffer>		m_indexBuffer;
-	ComPtr<ID3D11Buffer>		m_constantBuffer;
-	ComPtr<ID3D11Buffer>		m_lineVertexBuffer;
-	ComPtr<ID3D11DepthStencilState> m_depthState;
-	// 球体用のバッファ
-	ComPtr<ID3D11Buffer>		m_sphereVB;
-	ComPtr<ID3D11Buffer>		m_sphereIB;
-	UINT						m_sphereIndexCount = 0;
-	// 円柱用バッファ
-	ComPtr<ID3D11Buffer> m_cylinderVB, m_cylinderIB;
-	UINT m_cylinderIndexCount = 0;
-	// カプセル用バッファ
-	ComPtr<ID3D11Buffer> m_capsuleVB, m_capsuleIB;
-	UINT m_capsuleIndexCount = 0;
-
-	ConstantBufferData	m_cbData;
-
-	ComPtr<ID3D11RasterizerState>	m_rsWireframe;
-	ComPtr<ID3D11RasterizerState>	m_rsSolid;
-};
+}	// namespace Arche
 
 #endif // !___PRIMITIVE_RENDERER_H___

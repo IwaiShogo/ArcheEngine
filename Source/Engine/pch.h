@@ -48,6 +48,8 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <wrl/client.h>	// ComPtr
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
 // --- Standard Library ---
@@ -75,6 +77,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <tuple>
+#include <deque>
 
 // --- Libraries ---
 #include <json.hpp>	// nlohmann/json

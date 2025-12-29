@@ -20,50 +20,68 @@
 #ifndef ___CONTEXT_H___
 #define ___CONTEXT_H___
 
+// ===== インクルード =====
+#include "Engine/pch.h"
+
 // ===== 前方宣言 =====
 class PrimitiveRenderer;
 class SpriteRenderer;
 class ModelRenderer;
 class BillboardRenderer;
 
-//  デバッグ設定（全シーン共有）
-struct DebugSettings
+namespace Arche
 {
-	// ビルド構成によってデフォルト値を切り替える定数
+	// エディタの状態
+	enum class EditorState
+	{
+		Edit,	// 編集モード（物理停止、ギズモ有効）
+		Play,	// 実行モード（物理稼働）
+		Pause	// 一時停止
+	};
+
+	// レンダリング用のカメラ情報（追加）
+	struct RenderCamera
+	{
+		XMFLOAT4X4 viewMatrix;
+		XMFLOAT4X4 projMatrix;
+		XMFLOAT3 position;
+		bool useOverride = false;	// true ならこのカメラ情報を使用する
+	};
+
+	//  デバッグ設定（全シーン共有）
+	struct DebugSettings
+	{
+		// ビルド構成によってデフォルト値を切り替える定数
 #ifdef _DEBUG
-	static constexpr bool DefaultOn = true;	 // Debug時は True
+		static constexpr bool DefaultOn = true;	 // Debug時は True
 #else
-	static constexpr bool DefaultOn = false; // Release時は False
+		static constexpr bool DefaultOn = false; // Release時は False
 #endif
 
-	// 各フラグを定数で初期化
-	bool showFps = DefaultOn;
-	bool showGrid = DefaultOn;
-	bool showAxis = DefaultOn;
-	bool showColliders = DefaultOn;
-	bool showSoundLocation = DefaultOn;
-	bool enableMousePicking = DefaultOn;
-	bool useDebugCamera = DefaultOn;
+		// 各フラグを定数で初期化
+		bool showFps = DefaultOn;
+		bool showGrid = DefaultOn;
+		bool showAxis = DefaultOn;
+		bool showColliders = DefaultOn;
+		bool showSoundLocation = DefaultOn;
+		bool enableMousePicking = DefaultOn;
+		bool useDebugCamera = DefaultOn;
 
-	// 以下の設定はDebug時でも最初はOFFにしておくのが一般的（お好みで DefaultOn にしてもOK）
-	bool wireframeMode = false;
-	bool showDemoWindow = false;
-	bool pauseGame = false;
-};
+		// 以下の設定はDebug時でも最初はOFFにしておくのが一般的（お好みで DefaultOn にしてもOK）
+		bool wireframeMode = false;
+		bool showDemoWindow = false;
+		bool pauseGame = false;
+	};
 
-struct Context
-{
-	// Renderer
-	PrimitiveRenderer*	renderer = nullptr; 
-	SpriteRenderer*		spriteRenderer = nullptr;
-	ModelRenderer*		modelRenderer = nullptr;
-	BillboardRenderer*	billboardRenderer = nullptr;
+	// コンテキスト本体
+	struct Context
+	{
+		DebugSettings debugSettings;
+		RenderCamera renderCamera;
 
-	// DirectX Device & Context
-	ID3D11Device* device = nullptr;
-	ID3D11DeviceContext* context = nullptr;
+		EditorState editorState = EditorState::Edit;
+	};
 
-	DebugSettings debug;
-};
+}	// namespace Arche
 
 #endif // !___CONTEXT_H___

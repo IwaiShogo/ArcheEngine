@@ -24,52 +24,77 @@
 #include "Engine/pch.h"
 #include "Engine/Renderer/Data/Model.h" // Model定義
 
-class ModelRenderer {
-public:
-	ModelRenderer(ID3D11Device* device, ID3D11DeviceContext* context);
+namespace Arche
+{
 
-	void Initialize();
+	class ModelRenderer
+	{
+	public:
+		/**
+		 * @brief	初期化
+		 * @param	device	デバイス
+		 * @param	context	コンテキスト
+		 */
+		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
 
-	// 描画開始 (カメラ行列とライト情報をセット)
-	void Begin(const XMMATRIX& view, const XMMATRIX& projection,
-		const XMFLOAT3& lightDir = { 1, -1, 1 },
-		const XMFLOAT3& lightColor = { 1, 1, 1 });
+		/**
+		 * @brief	描画開始（カメラ行列とライト情報をセット）
+		 * @param	view		ビュー行列
+		 * @param	projection	プロジェクション行列
+		 * @param	lightDir	明かりの向き
+		 * @param	lightColor	明かりの色
+		 */
+		static void Begin(const XMMATRIX& view, const XMMATRIX& projection,
+			const XMFLOAT3& lightDir = { 1, -1, 1 },
+			const XMFLOAT3& lightColor = { 1, 1, 1 });
 
-	// モデル描画
-	void Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos,
-		const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT3& rot = { 0,0,0 });
+		/**
+		 * @brief	モデル描画
+		 * @param	model	モデル
+		 * @param	pos		位置
+		 * @param	scale	スケール
+		 * @param	rot		回転
+		 */
+		static void Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos,
+			const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT3& rot = { 0,0,0 });
 
-	// ワールド行列
-	void Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix);
+		/**
+		 * @brief	ワールド行列対応版
+		 * @param	model		モデル
+		 * @param	worldMatrix	ワールド行列
+		 */
+		static void Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix);
 
-private:
-	ID3D11Device* m_device;
-	ID3D11DeviceContext* m_context;
+	private:
+		static ID3D11Device* s_device;
+		static ID3D11DeviceContext* s_context;
 
-	ComPtr<ID3D11VertexShader> m_vs;
-	ComPtr<ID3D11PixelShader> m_ps;
-	ComPtr<ID3D11InputLayout> m_inputLayout;
-	ComPtr<ID3D11Buffer> m_constantBuffer;
-	ComPtr<ID3D11SamplerState> m_samplerState;
+		static ComPtr<ID3D11VertexShader> s_vs;
+		static ComPtr<ID3D11PixelShader> s_ps;
+		static ComPtr<ID3D11InputLayout> s_inputLayout;
+		static ComPtr<ID3D11Buffer> s_constantBuffer;
+		static ComPtr<ID3D11SamplerState> s_samplerState;
 
-	// ソリッド描画用ステート
-	ComPtr<ID3D11RasterizerState> m_rsSolid;
+		// ソリッド描画用ステート
+		static ComPtr<ID3D11RasterizerState> s_rsSolid;
 
-	struct CBData {
-		XMMATRIX world;
-		XMMATRIX view;
-		XMMATRIX projection;
-		XMFLOAT4 lightDir;
-		XMFLOAT4 lightColor;
-		XMFLOAT4 materialColor;
+		struct CBData {
+			XMMATRIX world;
+			XMMATRIX view;
+			XMMATRIX projection;
+			XMFLOAT4 lightDir;
+			XMFLOAT4 lightColor;
+			XMFLOAT4 materialColor;
+		};
+		static CBData s_cbData;
+
+		// デフォルトの白テクスチャ
+		static ComPtr<ID3D11ShaderResourceView> s_whiteTexture;
+
+		// 内部用：白テクスチャを作る関数
+		static void CreateWhiteTexture();
 	};
-	CBData m_cbData;
 
-	// デフォルトの白テクスチャ
-	ComPtr<ID3D11ShaderResourceView> m_whiteTexture;
-
-	// 内部用：白テクスチャを作る関数
-	void CreateWhiteTexture();
-};
+}	// namespace Arche
 
 #endif // !___MODEL_RENDERER_H___

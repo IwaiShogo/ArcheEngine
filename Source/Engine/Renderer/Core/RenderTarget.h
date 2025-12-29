@@ -8,14 +8,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date	2025/11/29	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___RENDER_TARGET_H___
@@ -24,36 +16,64 @@
 // ===== インクルード =====
 #include"Engine/pch.h"
 
-class RenderTarget
+namespace Arche
 {
-public:
-	RenderTarget(ID3D11Device* device, int width, int height);
-	~RenderTarget() = default;
 
-	// 描画先としてセットする
-	void Activate(ID3D11DeviceContext* context, ID3D11DepthStencilView* depthStencil);
+	class RenderTarget
+	{
+	public:
+		RenderTarget() = default;	// デフォルトコンストラクタ（make_unique用）
+		~RenderTarget() = default;
 
-	// 描画結果をクリアする
-	void Clear(ID3D11DeviceContext* context, float r, float g, float b, float a);
+		/**
+		 * @brief	初期化・再生成
+		 * @param	device	デバイス
+		 * @param	width	画面幅
+		 * @param	height	画面高さ
+		 */
+		void Create(ID3D11Device* device, int width, int height);
 
-	// ImGuiで表示するためのテクスチャIDを取得
-	void* GetID() const { return m_srv.Get(); }
+		/**
+		 * @brief	描画先として設定
+		 * @param	context	コンテキスト
+		 */
+		void Bind(ID3D11DeviceContext* context);
 
-	int GetWidth() const { return m_width; }
-	int GetHeight() const { return m_height; }
-	
-	ID3D11RenderTargetView* GetRTV() const { return m_rtv.Get(); }
+		/**
+		 * @brief	描画結果をクリア
+		 * @param	context	コンテキスト
+		 * @param	r		背景色（R）
+		 * @param	g		背景色（G）
+		 * @param	b		背景色（B）
+		 * @param	a		背景色（A）
+		 */
+		void Clear(ID3D11DeviceContext* context, float r, float g, float b, float a);
 
-	// リサイズ対応（ウィンドウサイズが変わった時用）
-	void Resize(ID3D11Device* device, int width, int height);
+		/**
+		 * @brief	ImGuiやテクスチャとして扱うためのSRV
+		 * @return	ID3D11ShaderResourceView*
+		 */
+		ID3D11ShaderResourceView* GetSRV() const { return m_srv.Get(); }
 
-	ID3D11ShaderResourceView* GetSRV() const { return m_srv.Get(); }
+		/**
+		 * @brief	互換性のため（ImGui::Image用）
+		 */
+		void* GetID() const { return m_srv.Get(); }
+		
+		// --- 画面サイズの取得 ---
+		int GetWidth() const { return m_width; }
+		int GetHeight() const { return m_height; }
 
-private:
-	int m_width, m_height;
-	ComPtr<ID3D11Texture2D> m_texture;
-	ComPtr<ID3D11RenderTargetView> m_rtv;
-	ComPtr<ID3D11ShaderResourceView> m_srv;	// ImGui表示用
-};
+	private:
+		int m_width = 0;
+		int m_height = 0;
+		
+		ComPtr<ID3D11Texture2D>				m_texture;
+		ComPtr<ID3D11RenderTargetView>		m_rtv;
+		ComPtr<ID3D11ShaderResourceView>	m_srv;	// ImGui表示用
+		ComPtr<ID3D11DepthStencilView>		m_dsv;
+	};
+
+}	// namespace Arche
 
 #endif // !___RENDER_TARGET_H___

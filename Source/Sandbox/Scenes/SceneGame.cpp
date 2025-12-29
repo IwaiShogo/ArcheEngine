@@ -43,6 +43,8 @@
 #include "Editor/Core/Editor.h"
 #include "Editor/Core/GameCommands.h"
 
+using namespace Arche;
+
 void SceneGame::Initialize()
 {
 	// 親クラスの初期化
@@ -52,46 +54,46 @@ void SceneGame::Initialize()
 	// ------------------------------------------------------------
 	// システムの登録
 	// ------------------------------------------------------------
-	// 1. 入力
-	auto inputSys = m_world.registerSystem<InputSystem>();
+	// 1. ロジック・物理系
+	// 入力
+	auto inputSys = m_world.registerSystem<InputSystem>(SystemGroup::Always);
 	inputSys->SetContext(m_context);
-	// 2. 移動
+	// 移動
 	m_world.registerSystem<PhysicsSystem>();
-	// 3. 寿命管理
-	m_world.registerSystem<LifetimeSystem>();
-	// 4. 行列計算
-	m_world.registerSystem<HierarchySystem>();
-	// 5. 衝突判定
+	// 衝突判定
 	m_world.registerSystem<CollisionSystem>();
 	// UI
-	m_world.registerSystem<UISystem>();
-	// 6. 描画
-	if (m_context->spriteRenderer)
-	{
-		m_world.registerSystem<SpriteRenderSystem>(m_context->spriteRenderer);
-	}
+	m_world.registerSystem<UISystem>(SystemGroup::Always);
+	// 寿命管理
+	m_world.registerSystem<LifetimeSystem>();
+	// 行列計算
+	m_world.registerSystem<HierarchySystem>(SystemGroup::Always);
 
-	if (m_context->billboardRenderer)
-	{
-		m_world.registerSystem<BillboardSystem>(m_context->billboardRenderer);
-	}
-	if (m_context->modelRenderer)
-	{
-		m_world.registerSystem<ModelRenderSystem>(m_context->modelRenderer);
-	}
-	if (m_context->renderer)
-	{
-		m_world.registerSystem<RenderSystem>(m_context->renderer);
-	}
-	m_world.registerSystem<TextRenderSystem>(m_context->device, m_context->context);
-	// 7. オーディオ
-	m_world.registerSystem<AudioSystem>();
+	// 2. 3D描画系（背景・モデル）
+	// プリミティブ
+	m_world.registerSystem<RenderSystem>(SystemGroup::Always);
+	// 3Dモデル
+	m_world.registerSystem<ModelRenderSystem>(SystemGroup::Always);
+
+	// 3. 2D・透過描画系
+	// ビルボード（3D空間内のアイコン等）
+	m_world.registerSystem<BillboardSystem>(SystemGroup::Always);
+	// 2D画像
+	m_world.registerSystem<SpriteRenderSystem>(SystemGroup::Always);
+	// 2Dテキスト
+	m_world.registerSystem<TextRenderSystem>(SystemGroup::Always);
+
+	// 4. オーディオ関連
+	// オーディオ
+	m_world.registerSystem<AudioSystem>(SystemGroup::Always);
+
+	// 5. コマンドの登録
 #ifdef _DEBUG
 	if (m_context)
 	{
 		GameCommands::RegisterAll(m_world, *m_context);
 	}
-	Editor::Instance().Initialize();
+	Arche::Editor::Instance().Initialize();
 #endif // _DEBUG
 
 	// ------------------------------------------------------------
@@ -116,7 +118,8 @@ void SceneGame::Initialize()
 		.add<Tag>("MainCamera")
 		.add<Transform>(XMFLOAT3(2.0f, 10.0f, -10.0f), XMFLOAT3(0.78f, 0.0f, 0.0f))
 		.add<Camera>()
-		.add<AudioListener>();
+		.add<AudioListener>()
+		.add<Collider>(Collider::CreateSphere(0.5f, Layer::Default));
 
 	// Player
 	m_world.create_entity()
@@ -143,13 +146,13 @@ void SceneGame::Initialize()
 	// UIルート（Canvas）
 	Entity canvas = m_world.create_entity()
 		.add<Tag>("Canvas")
-		.add<Transform2D>(0.0f, 0.0f, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT)
+		.add<Transform2D>(0, 0, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT)
 		.add<Canvas>(true, XMFLOAT2(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT)).id();
 
 	m_world.create_entity()
 		.add<Tag>("Text")
 		.setParent(canvas)
-		.add<Transform2D>(XMFLOAT2(500.0f, 50.0f), XMFLOAT2(1000.0f, 80.0f), XMFLOAT2(0.2f, 0.0f))
+		.add<Transform2D>(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(1000.0f, 80.0f))
 		.add<TextComponent>(
 			(const char*)u8"Text (テキスト)",		// テキスト
 			"Oradano-mincho-GSRR",		// フォントキー
@@ -160,7 +163,7 @@ void SceneGame::Initialize()
 	m_world.create_entity()
 		.add<Tag>("Text")
 		.setParent(canvas)
-		.add<Transform2D>(XMFLOAT2(500.0f, 100.0f), XMFLOAT2(100.0f, 100.0f), XMFLOAT2(0.5f, 0.5f))
+		.add<Transform2D>(XMFLOAT2(0.0f, 0.0f), XMFLOAT2(100.0f, 100.0f))
 		.add<SpriteComponent>("test");
 }
 
@@ -173,7 +176,7 @@ void SceneGame::Finalize()
 
 void SceneGame::Update()
 {
-	m_world.Tick();
+	m_world.Tick(m_context->editorState);
 }
 
 void SceneGame::Render()

@@ -23,167 +23,222 @@
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Config.h"
 
-TextRenderer::TextRenderer(ID3D11Device* device, ID3D11DeviceContext* context)
-	: m_device(device), m_context(context)
+namespace Arche
 {
-	FontManager::Instance().Initialize();
-}
+	// 静的メンバ定義
+	ID3D11Device* TextRenderer::s_device = nullptr;
+	ID3D11DeviceContext* TextRenderer::s_context = nullptr;
+	ComPtr<ID2D1Factory> TextRenderer::s_d2dFactory;
+	ComPtr<ID2D1SolidColorBrush> TextRenderer::s_brush;
+	std::unordered_map<ID3D11RenderTargetView*, ComPtr<ID2D1RenderTarget>> TextRenderer::s_d2dTargets;
 
-TextRenderer::~TextRenderer()
-{
-	m_d2dTargets.clear();
-}
-
-void TextRenderer::Render(Registry& registry, ID3D11RenderTargetView* rtv, float viewportWidth, float viewportHeight)
-{
-	if (!rtv) return;
-
-	// キャッシュをクリア
-	m_d2dTargets.clear();
-
-	// 1. D2D RenderTargetの取得
-	ID2D1RenderTarget* d2dRT = GetD2DRenderTarget(rtv);
-	if (!d2dRT) return;
-
-	// 2. 描画開始
-	d2dRT->BeginDraw();
-
-	// 基準解像度
-	float baseWidth = static_cast<float>(Config::SCREEN_WIDTH);
-	float baseHeight = static_cast<float>(Config::SCREEN_HEIGHT);
-	if (baseWidth == 0) baseWidth = 1920.0f;
-	if (baseHeight == 0) baseHeight = 1080.0f;
-
-	// 現在のビューポートとの比率を計算
-	float ratioX = viewportWidth / baseWidth;
-	float ratioY = viewportHeight / baseHeight;
-	float uniformScale = (ratioX < ratioY) ? ratioX : ratioY;
-
-	registry.view<TextComponent, Transform2D>().each([&](Entity e, TextComponent& text, Transform2D& trans)
+	void TextRenderer::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 	{
-		// フォントサイズを計算し、キャッシュキーに含める
-		// これにより、サイズが変わるたびに別のフォントとしてキャッシュ・取得されるようになる。
-		int targetFontSize = (int)text.fontSize;
-		if (targetFontSize < 1) targetFontSize = 1;
+		s_device = device;
+		s_context = context;
 
-		// キー生成: フォント名 + サイズ + 太字 + 斜体
-		std::string uniqueKeyStr = text.fontKey.c_str();
-		uniqueKeyStr += "_" + std::to_string(targetFontSize);
-		if (text.isBold) uniqueKeyStr += "_B";
-		if (text.isItalic) uniqueKeyStr += "_I";
-		StringId uniqueKey(uniqueKeyStr.c_str());
+		// FontManager初期化
+		FontManager::Instance().Initialize();
 
-		// フォント名: コンポーネントの fontKey を使う
-		// StringId -> std::string -> std::wstring 変換
-		std::string fontNameStr = text.fontKey;
-		int nameSize = MultiByteToWideChar(CP_UTF8, 0, fontNameStr.c_str(), (int)fontNameStr.size(), NULL, 0);
-		std::wstring fontNameW(nameSize, 0);
-		MultiByteToWideChar(CP_UTF8, 0, fontNameStr.c_str(), (int)fontNameStr.size(), &fontNameW[0], nameSize);
-		if (fontNameStr == "Default") fontNameW = L"Meiryo";
+		// D2Dファクトリの取得
+		s_d2dFactory = FontManager::Instance().GetD2DFactory();
+	}
 
-		auto format = FontManager::Instance().GetTextFormat(
-			uniqueKey,
-			fontNameW, // 個別のフォント名
-			(float)targetFontSize,
-			text.isBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, // 太字
-			text.isItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL // 斜体
-		);
+	void TextRenderer::Finalize()
+	{
+		s_d2dTargets.clear();
+		s_brush.Reset();
+		s_d2dFactory.Reset();
+	}
 
-		if (format) {
-			// 配置設定
-			format->SetTextAlignment(text.centerAlign ? DWRITE_TEXT_ALIGNMENT_CENTER : DWRITE_TEXT_ALIGNMENT_LEADING);
-			format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	void TextRenderer::ClearCache()
+	{
+		// ターゲットとブラシを破棄
+		s_d2dTargets.clear();
+		s_brush.Reset();
+	}
 
-			// ブラシ色設定
-			if (!m_brush) d2dRT->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1), &m_brush);
-			m_brush->SetColor(D2D1::ColorF(text.color.x, text.color.y, text.color.z, text.color.w));
-
-			// 矩形定義
-			D2D1_RECT_F layoutRect = D2D1::RectF(
-				trans.calculatedRect.x,
-				trans.calculatedRect.y,
-				trans.calculatedRect.z,
-				trans.calculatedRect.w
-			);
-
-			// 文字列変換
-			int size_needed = MultiByteToWideChar(CP_UTF8, 0, text.text.c_str(), (int)text.text.size(), NULL, 0);
-			std::wstring wText(size_needed, 0);
-			MultiByteToWideChar(CP_UTF8, 0, text.text.c_str(), (int)text.text.size(), &wText[0], size_needed);
-
-			// 平行移動成分 (dx, dy) を取り出し、画面比率(ratioX, ratioY)に合わせて移動
-			float newX = trans.worldMatrix.dx * ratioX;
-			float newY = trans.worldMatrix.dy * ratioY;
-
-			// 2. 回転・スケール成分 (平行移動以外) を取り出す
-			D2D1::Matrix3x2F localMat = reinterpret_cast<D2D1::Matrix3x2F&>(trans.worldMatrix);
-			localMat.dx = 0;
-			localMat.dy = 0;
-
-			// 3. 文字自体のサイズは「アスペクト比維持 (uniformScale)」で拡大縮小
-			D2D1::Matrix3x2F scaleMat = D2D1::Matrix3x2F::Scale(ratioX, ratioY);
-
-			// 4. 合成: [元の回転] * [ユニフォーム拡大]
-			D2D1::Matrix3x2F finalMat = localMat * scaleMat;
-
-			// 5. 最後に計算した「新しい位置」をセット
-			finalMat.dx = newX;
-			finalMat.dy = newY;
-
-			d2dRT->SetTransform(finalMat);
-
-			// 描画
-			d2dRT->DrawText(
-				wText.c_str(),
-				(UINT32)wText.length(),
-				format.Get(),
-				layoutRect,
-				m_brush.Get()
-			);
+	void TextRenderer::Draw(Registry& registry, ID3D11RenderTargetView* rtv)
+	{
+		// RTVが指定されていない場合、現在バインドされている物を取得
+		ComPtr<ID3D11RenderTargetView> currentRTV;
+		if (!rtv)
+		{
+			ComPtr<ID3D11DepthStencilView> dsv;
+			s_context->OMGetRenderTargets(1, currentRTV.GetAddressOf(), dsv.GetAddressOf());
+			rtv = currentRTV.Get();
 		}
-	});
 
-	// 4. 描画終了
-	d2dRT->EndDraw();
-}
+		if (!rtv) return;
 
-ID2D1RenderTarget* TextRenderer::GetD2DRenderTarget(ID3D11RenderTargetView* rtv)
-{
-	// キャッシュにあれば返す
-	if (m_d2dTargets.find(rtv) != m_d2dTargets.end()) {
-		return m_d2dTargets[rtv].Get();
+		// D2Dレンダーターゲット取得
+		ID2D1RenderTarget* d2dRT = GetD2DRenderTarget(rtv);
+		if (!d2dRT) return;
+
+		// --------------------------------------------------------
+		// 描画開始
+		// --------------------------------------------------------
+		d2dRT->BeginDraw();
+
+		// ブラシ作成（まだ無ければ）
+		if (!s_brush) {
+			d2dRT->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), s_brush.GetAddressOf());
+		}
+
+		// ビューポートサイズ取得（解像度依存の配置のため）
+		D2D1_SIZE_F rtSize = d2dRT->GetSize();
+
+		// ビューポート比率計算
+		float viewportWidth = rtSize.width;
+		float viewportHeight = rtSize.height;
+
+		float ratioX = viewportWidth / (float)Config::SCREEN_WIDTH;
+		float ratioY = viewportHeight / (float)Config::SCREEN_HEIGHT;
+
+		// ECSからTextComponentを持つエンティティを走査
+		registry.view<TextComponent>().each([&](Entity e, TextComponent& text)
+			{
+				// Transform2Dの取得
+				D2D1::Matrix3x2F worldMat = D2D1::Matrix3x2F::Identity();
+
+				if (registry.has<Transform2D>(e))
+				{
+					auto& t2d = registry.get<Transform2D>(e);
+					auto& m = t2d.worldMatrix;
+
+					worldMat = D2D1::Matrix3x2F(m._11, m._12, m._21, m._22, m._31, m._32);
+				}
+				else
+				{
+					worldMat = D2D1::Matrix3x2F::Translation(text.offset.x, text.offset.y);
+				}
+
+				// 座標系変換
+				float screenHalfW = Config::SCREEN_WIDTH * 0.5f;
+				float screenHalfH = Config::SCREEN_HEIGHT * 0.5f;
+
+				// 行列の平行移動成分を取り出し、変換
+				float worldX = worldMat.dx;
+				float worldY = worldMat.dy;
+
+				float d2dX = worldX + screenHalfW;
+				float d2dY = screenHalfH - worldY; // Y-Up -> Y-Down
+
+				D2D1::Matrix3x2F screenTransform = D2D1::Matrix3x2F::Scale(1.0f, -1.0f, D2D1::Point2F(0, 0)) * D2D1::Matrix3x2F::Translation(screenHalfW, screenHalfH);
+				D2D1::Matrix3x2F finalMat = worldMat * screenTransform;
+
+				// 色設定
+				s_brush->SetColor(D2D1::ColorF(text.color.x, text.color.y, text.color.z, text.color.w));
+
+				// テキストフォーマット取得
+				std::wstring wFontName = std::wstring(text.fontKey.begin(), text.fontKey.end());
+				if (wFontName.empty()) wFontName = L"Meiryo"; // デフォルト
+
+				DWRITE_FONT_WEIGHT weight = text.isBold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL;
+				DWRITE_FONT_STYLE style = text.isItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
+
+				// フォント作成 (StringIdなど使っている場合は適宜修正)
+				auto format = FontManager::Instance().GetTextFormat(
+					StringId(text.fontKey), // キー
+					wFontName,
+					text.fontSize,
+					weight,
+					style
+				);
+
+				if (format)
+				{
+					// 文字列変換 (UTF8 -> Wide)
+					int size_needed = MultiByteToWideChar(CP_UTF8, 0, text.text.c_str(), (int)text.text.size(), NULL, 0);
+					std::wstring wText(size_needed, 0);
+					MultiByteToWideChar(CP_UTF8, 0, text.text.c_str(), (int)text.text.size(), &wText[0], size_needed);
+
+					if (!wText.empty() && wText.back() == L'\0') wText.pop_back();
+
+					D2D1::Matrix3x2F textFlip = D2D1::Matrix3x2F::Scale(1.0f, -1.0f);
+					finalMat = textFlip * finalMat;
+
+					// 描画領域
+					float layoutW = viewportWidth * 2.0f;
+					float layoutH = viewportHeight * 2.0f;
+					D2D1_RECT_F layoutRect;
+
+					// 配置設定
+					if (text.centerAlign)
+					{
+						layoutRect = D2D1::RectF(-layoutW * 0.5f, -layoutH * 0.5f, layoutW * 0.5f, layoutH * 0.5f);
+						format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+						format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+					}
+					else
+					{
+						layoutRect = D2D1::RectF(0.0f, 0.0f, layoutW, layoutH);
+						format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+						format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+					}
+
+					// 画面比率（ウィンドウサイズ対応）
+					D2D1::Matrix3x2F scaleToViewport = D2D1::Matrix3x2F::Scale(ratioX, ratioY);
+
+					// 最終行列 = ワールド行列(Logic) * ビューポート拡縮
+					d2dRT->SetTransform(finalMat * scaleToViewport);
+
+					// 描画
+					d2dRT->DrawText(
+						wText.c_str(),
+						(UINT32)wText.length(),
+						format.Get(),
+						layoutRect,
+						s_brush.Get()
+					);
+				}
+			});
+
+		// 変換行列を戻す
+		d2dRT->SetTransform(D2D1::Matrix3x2F::Identity());
+
+		d2dRT->EndDraw();
 	}
 
-	// なければ作成 (DXGI Surface経由)
-	ComPtr<ID3D11Resource> resource;
-	rtv->GetResource(&resource);
-	if (!resource) return nullptr;
+	ID2D1RenderTarget* TextRenderer::GetD2DRenderTarget(ID3D11RenderTargetView* rtv)
+	{
+		// キャッシュにあれば返す
+		if (s_d2dTargets.find(rtv) != s_d2dTargets.end()) {
+			return s_d2dTargets[rtv].Get();
+		}
 
-	ComPtr<IDXGISurface> surface;
-	resource.As(&surface);
-	if (!surface) return nullptr;
+		// なければ作成 (DXGI Surface経由)
+		ComPtr<ID3D11Resource> resource;
+		rtv->GetResource(&resource);
+		if (!resource) return nullptr;
 
-	// DXGIサーフェスのプロパティ
-	D2D1_RENDER_TARGET_PROPERTIES props =
-		D2D1::RenderTargetProperties(
-			D2D1_RENDER_TARGET_TYPE_DEFAULT,
-			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-			96.0f, 96.0f // DPI
+		ComPtr<IDXGISurface> surface;
+		resource.As(&surface);
+		if (!surface) return nullptr;
+
+		// DXGIサーフェスのプロパティ
+		D2D1_RENDER_TARGET_PROPERTIES props =
+			D2D1::RenderTargetProperties(
+				D2D1_RENDER_TARGET_TYPE_DEFAULT,
+				D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+				96.0f, 96.0f // DPI
+			);
+
+		ComPtr<ID2D1RenderTarget> target;
+		HRESULT hr = FontManager::Instance().GetD2DFactory()->CreateDxgiSurfaceRenderTarget(
+			surface.Get(),
+			&props,
+			&target
 		);
 
-	ComPtr<ID2D1RenderTarget> target;
-	HRESULT hr = FontManager::Instance().GetD2DFactory()->CreateDxgiSurfaceRenderTarget(
-		surface.Get(),
-		&props,
-		&target
-	);
+		if (SUCCEEDED(hr))
+		{
+			target->SetDpi(96.0f, 96.0f);
 
-	if (SUCCEEDED(hr))
-	{
-		target->SetDpi(96.0f, 96.0f);
-
-		m_d2dTargets[rtv] = target;
-		return target.Get();
+			s_d2dTargets[rtv] = target;
+			return target.Get();
+		}
+		return nullptr;
 	}
-	return nullptr;
+
 }

@@ -24,34 +24,36 @@
 #include "Engine/pch.h"
 #include "Engine/Renderer/RHI/Texture.h"
 
-using namespace DirectX;
-using Microsoft::WRL::ComPtr;
-
-// 頂点データ（位置、法線、UV）
-struct ModelVertex
+namespace Arche
 {
-	XMFLOAT3 position;
-	XMFLOAT3 normal;
-	XMFLOAT2 uv;
-};
 
-// 1つのメッシュ（モデルの構成部品）
-struct Mesh
-{
-	ComPtr<ID3D11Buffer> vertexBuffer;
-	ComPtr<ID3D11Buffer> indexBuffer;
-	unsigned int indexCount = 0;
+	// 頂点データ（位置、法線、UV）
+	struct ModelVertex
+	{
+		XMFLOAT3 position;
+		XMFLOAT3 normal;
+		XMFLOAT2 uv;
+	};
 
-	// マテリアル情報
-	std::shared_ptr<Texture> texture;
-};
+	// 1つのメッシュ（モデルの構成部品）
+	struct Mesh
+	{
+		ComPtr<ID3D11Buffer> vertexBuffer;
+		ComPtr<ID3D11Buffer> indexBuffer;
+		unsigned int indexCount = 0;
 
-// モデル全体（複数のメッシュを持つ）
-class Model
-{
-public:
-	std::vector<Mesh> meshes;
-	std::string filepath;	// デバッグ用
-};
+		// マテリアル情報
+		std::shared_ptr<Texture> texture;
+	};
+
+	// モデル全体（複数のメッシュを持つ）
+	class Model
+	{
+	public:
+		std::vector<Mesh> meshes;
+		std::string filepath;	// デバッグ用
+	};
+
+}	// namespace Arche
 
 #endif // !___MODEL_H___

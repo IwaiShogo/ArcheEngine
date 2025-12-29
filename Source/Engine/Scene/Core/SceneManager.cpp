@@ -22,104 +22,109 @@
 #include "Engine/Scene/Core/SceneManager.h"
 #include "Engine/Scene/Core/ECS/ECS.h"
 
-// 静的メンバ変数の実体
-SceneManager* SceneManager::s_instance = nullptr;
-
-SceneManager::SceneManager()
+namespace Arche
 {
-	assert(s_instance == nullptr && "SceneManagerは既に存在します！重複生成禁止です。");
-	s_instance = this;
-}
 
-SceneManager::~SceneManager()
-{
-	if (m_currentScene)
+	// 静的メンバ変数の実体
+	SceneManager* SceneManager::s_instance = nullptr;
+
+	SceneManager::SceneManager()
 	{
-		m_currentScene->Finalize();
+		assert(s_instance == nullptr && "SceneManagerは既に存在します！重複生成禁止です。");
+		s_instance = this;
 	}
 
-	if (s_instance == this)
+	SceneManager::~SceneManager()
 	{
-		s_instance = nullptr;
-	}
-}
+		if (m_currentScene)
+		{
+			m_currentScene->Finalize();
+		}
 
-SceneManager& SceneManager::Instance()
-{
-	assert(s_instance != nullptr && "SceneManagerがまだ生成されていません！Application初期化前に読んでいませんか？");
-	return *s_instance;
-}
-
-void SceneManager::Initialize()
-{
-	
-}
-
-void SceneManager::Update()
-{
-	// シーン切り替えリクエストがあれば処理
-	if (!m_nextSceneRequest.empty())
-	{
-		ProcessSceneChange();
+		if (s_instance == this)
+		{
+			s_instance = nullptr;
+		}
 	}
 
-	if (m_currentScene)
+	SceneManager& SceneManager::Instance()
 	{
-		m_currentScene->Update();
-	}
-}
-
-void SceneManager::Render()
-{
-	if (m_currentScene)
-	{
-		m_currentScene->Render();
-	}
-}
-
-void SceneManager::ChangeScene(const std::string& name)
-{
-	m_nextSceneRequest = name;
-}
-
-World& SceneManager::GetWorld()
-{
-	if (!m_currentScene)
-	{
-		// シーンが無い場合のダミーWorld（クラッシュ防止）
-		static World emptyWorld;
-		return emptyWorld;
-	}
-	return m_currentScene->GetWorld();
-}
-
-void SceneManager::ProcessSceneChange()
-{
-	std::string nextName = m_nextSceneRequest;
-	m_nextSceneRequest = "";	// リクエスト消化
-
-	// 登録されていないシーンならエラーログを出して無視
-	auto it = m_factories.find(nextName);
-	if (it == m_factories.end())
-	{
-		Logger::LogError("Error: Scene not found" + nextName + "\n");
-		return;
+		assert(s_instance != nullptr && "SceneManagerがまだ生成されていません！Application初期化前に読んでいませんか？");
+		return *s_instance;
 	}
 
-	// 現在のシーン終了
-	if (m_currentScene)
+	void SceneManager::Initialize()
 	{
-		m_currentScene->Finalize();
+
 	}
 
-	// 新しいシーンを生成（ファクトリ関数を実行）
-	m_currentScene = it->second();
-	m_currentSceneName = nextName;
-
-	// 新しいシーンの初期化
-	if (m_currentScene)
+	void SceneManager::Update()
 	{
-		m_currentScene->Setup(&m_context);
-		m_currentScene->Initialize();
+		// シーン切り替えリクエストがあれば処理
+		if (!m_nextSceneRequest.empty())
+		{
+			ProcessSceneChange();
+		}
+
+		if (m_currentScene)
+		{
+			m_currentScene->Update();
+		}
 	}
-}
+
+	void SceneManager::Render()
+	{
+		if (m_currentScene)
+		{
+			m_currentScene->Render();
+		}
+	}
+
+	void SceneManager::ChangeScene(const std::string& name)
+	{
+		m_nextSceneRequest = name;
+	}
+
+	World& SceneManager::GetWorld()
+	{
+		if (!m_currentScene)
+		{
+			// シーンが無い場合のダミーWorld（クラッシュ防止）
+			static World emptyWorld;
+			return emptyWorld;
+		}
+		return m_currentScene->GetWorld();
+	}
+
+	void SceneManager::ProcessSceneChange()
+	{
+		std::string nextName = m_nextSceneRequest;
+		m_nextSceneRequest = "";	// リクエスト消化
+
+		// 登録されていないシーンならエラーログを出して無視
+		auto it = m_factories.find(nextName);
+		if (it == m_factories.end())
+		{
+			Logger::LogError("Error: Scene not found" + nextName + "\n");
+			return;
+		}
+
+		// 現在のシーン終了
+		if (m_currentScene)
+		{
+			m_currentScene->Finalize();
+		}
+
+		// 新しいシーンを生成（ファクトリ関数を実行）
+		m_currentScene = it->second();
+		m_currentSceneName = nextName;
+
+		// 新しいシーンの初期化
+		if (m_currentScene)
+		{
+			m_currentScene->Setup(&m_context);
+			m_currentScene->Initialize();
+		}
+	}
+
+}	// namespace Arche

@@ -23,45 +23,51 @@
 #include "Engine/pch.h"
 #include "Engine/Scene/Core/ECS/ECS.h"
 
-namespace Physics
+namespace Arche
 {
-	enum class CollisionState
+
+	namespace Physics
 	{
-		Enter,	// 当たった瞬間
-		Stay,	// 当たり続けている
-		Exit,	// 離れたとき
-	};
-
-	struct CollisionEvent
-	{
-		Entity self;
-		Entity other;
-		CollisionState state;
-		DirectX::XMFLOAT3 normal;	// 衝突法線
-	};
-
-	// フレームごとの全イベントを保持するコンテナ
-	// （これをRegistryのコンテキストやシングルトンとして扱う）
-	struct EventQueue
-	{
-		std::vector<CollisionEvent> events;
-
-		void Clear() { events.clear(); }
-
-		void Add(Entity a, Entity b, CollisionState state, const DirectX::XMFLOAT3& n)
+		enum class CollisionState
 		{
-			events.push_back({ a, b, state, n });
-			// 逆方向のイベントも必要なら登録
-			DirectX::XMFLOAT3 invNormal = { -n.x, -n.y, -n.z };
-			events.push_back({ b, a, state, invNormal });
-		}
+			Enter,	// 当たった瞬間
+			Stay,	// 当たり続けている
+			Exit,	// 離れたとき
+		};
 
-		static inline EventQueue& Instance()
+		struct CollisionEvent
 		{
-			static EventQueue instance;
-			return instance;
-		}
-	};
-}
+			Entity self;
+			Entity other;
+			CollisionState state;
+			DirectX::XMFLOAT3 normal;	// 衝突法線
+		};
+
+		// フレームごとの全イベントを保持するコンテナ
+		// （これをRegistryのコンテキストやシングルトンとして扱う）
+		struct EventQueue
+		{
+			std::vector<CollisionEvent> events;
+
+			void Clear() { events.clear(); }
+
+			void Add(Entity a, Entity b, CollisionState state, const DirectX::XMFLOAT3& n)
+			{
+				events.push_back({ a, b, state, n });
+				// 逆方向のイベントも必要なら登録
+				DirectX::XMFLOAT3 invNormal = { -n.x, -n.y, -n.z };
+				events.push_back({ b, a, state, invNormal });
+			}
+
+			static inline EventQueue& Instance()
+			{
+				static EventQueue instance;
+				return instance;
+			}
+		};
+
+	}	// namespace Physics
+
+}	// namespace Arche
 
 #endif // !___PHYSICS_EVENTS_H___

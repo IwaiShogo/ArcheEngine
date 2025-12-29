@@ -25,49 +25,54 @@
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Core/Window/Input.h"
 
-class InputSystem
-	: public ISystem
+namespace Arche
 {
-public:
-	InputSystem() { m_systemName = "Input System"; }
 
-	void Update(Registry& registry) override
+	class InputSystem
+		: public ISystem
 	{
-		// デバッグカメラモードなら受け付けない
-		if (m_context && m_context->debug.useDebugCamera) return;
+	public:
+		InputSystem() { m_systemName = "Input System"; }
 
-		// Inputクラスから値を取得
-		float x = Input::GetAxis(Axis::Horizontal);
-		float z = Input::GetAxis(Axis::Vertical);
-
-		// 斜め移動の正規化
-		if (x != 0.0f || z != 0.0f)
+		void Update(Registry& registry) override
 		{
-			float length = std::sqrt(x * x + z * z);
-			if (length > 1.0f)
+			// デバッグカメラモードなら受け付けない
+			if (m_context && m_context->debugSettings.useDebugCamera) return;
+
+			// Inputクラスから値を取得
+			float x = Input::GetAxis(Axis::Horizontal);
+			float z = Input::GetAxis(Axis::Vertical);
+
+			// 斜め移動の正規化
+			if (x != 0.0f || z != 0.0f)
 			{
-				x /= length;
-				z /= length;
+				float length = std::sqrt(x * x + z * z);
+				if (length > 1.0f)
+				{
+					x /= length;
+					z /= length;
+				}
 			}
+
+			registry.view<PlayerInput, Rigidbody>().each([&](Entity e, PlayerInput& input, Rigidbody& rb)
+				{
+					rb.velocity.x = x * input.speed;
+					rb.velocity.z = z * input.speed;
+
+					if (Input::GetButtonDown(Button::A))
+					{
+						// 上方向（Y）に速度を与える
+						rb.velocity.y = input.jumpPower;
+					}
+				});
 		}
 
-		registry.view<PlayerInput, Rigidbody>().each([&](Entity e, PlayerInput& input, Rigidbody& rb)
-			{
-				rb.velocity.x = x * input.speed;
-				rb.velocity.z = z * input.speed;
+		void SetContext(Context* ctx) { m_context = ctx; }
 
-				if (Input::GetButtonDown(Button::A))
-				{
-					// 上方向（Y）に速度を与える
-					rb.velocity.y = input.jumpPower;
-				}
-			});
-	}
+	private:
+		Context* m_context = nullptr;
+	};
 
-	void SetContext(Context* ctx) { m_context = ctx; }
-
-private:
-	Context* m_context = nullptr;
-};
+}	// namespace Arche
 
 #endif // !___INPUT_SYSTEM_H___

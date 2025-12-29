@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date   2025/11/25	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___SPRITE_RENDERER_H___
@@ -24,53 +16,47 @@
 #include "Engine/pch.h"
 #include "Engine/Renderer/RHI/Texture.h"
 
-class SpriteRenderer
+namespace Arche
 {
-public:
-	SpriteRenderer(ID3D11Device* device, ID3D11DeviceContext* context);
-	~SpriteRenderer() = default;
 
-	void Initialize();
+	class SpriteRenderer
+	{
+	public:
+		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context, float screenW, float screenH);
 
-	// 描画開始
-	void Begin();
+		// 描画開始
+		static void Begin();
 
-	/**
-	 * @brief	スプライト描画
-	 * 
-	 * @param	[in] texture 描画する画像
-	 * @param	[in] x 左上のX座標
-	 * @param	[in] y 左上のY座標
-	 * @param	[in] color 色合い
-	 */
-	void Draw(Texture* texture, float x, float y, const XMFLOAT4& color = { 1, 1, 1, 1 });
+		// サイズ指定版
+		static void Draw(Texture* texture, const XMMATRIX& worldMatrix, const XMFLOAT4& color = { 1, 1, 1, 1 });
 
-	// サイズ指定版
-	void Draw(Texture* texture, float x, float y, float w, float h, const XMFLOAT4& color = { 1, 1, 1, 1 });
+	private:
+		static ID3D11Device*		s_device;
+		static ID3D11DeviceContext*	s_context;
+		static float s_screenWidth;
+		static float s_screenHeight;
 
-private:
-	ID3D11Device* m_device;
-	ID3D11DeviceContext* m_context;
+		static ComPtr<ID3D11VertexShader>		s_vs;
+		static ComPtr<ID3D11PixelShader>		s_ps;
+		static ComPtr<ID3D11InputLayout>		s_inputLayout;
+		static ComPtr<ID3D11Buffer>				s_vertexBuffer;
+		static ComPtr<ID3D11Buffer>				s_constantBuffer;
+		static ComPtr<ID3D11RasterizerState>	s_rs2D;
+		static ComPtr<ID3D11DepthStencilState>	s_ds2D;
 
-	ComPtr<ID3D11VertexShader>		m_vs;
-	ComPtr<ID3D11PixelShader>		m_ps;
-	ComPtr<ID3D11InputLayout>		m_inputLayout;
-	ComPtr<ID3D11Buffer>			m_vertexBuffer;
-	ComPtr<ID3D11Buffer>			m_constantBuffer;
-	ComPtr<ID3D11RasterizerState>	m_rs2D;
-	ComPtr<ID3D11DepthStencilState>	m_ds2D;
+		// 透過処理用
+		static ComPtr<ID3D11BlendState>		s_blendState;
+		// サンプラー（テクスチャの貼り方設定）
+		static ComPtr<ID3D11SamplerState>	s_samplerState;
 
-	// 透過処理用
-	ComPtr<ID3D11BlendState> m_blendState;
-	// サンプラー（テクスチャの貼り方設定）
-	ComPtr<ID3D11SamplerState> m_samplerState;
-
-	struct ConstantBufferData {
-		XMMATRIX world;
-		XMMATRIX projection;
-		XMFLOAT4 color;
+		struct ConstantBufferData {
+			XMMATRIX world;
+			XMMATRIX projection;
+			XMFLOAT4 color;
+		};
+		static ConstantBufferData s_cbData;
 	};
-	ConstantBufferData m_cbData;
-};
+
+}
 
 #endif // !___SPRITE_RENDERER_H___

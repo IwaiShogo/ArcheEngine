@@ -27,32 +27,37 @@
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Core/Time/Time.h"
 
-// 接触情報
-namespace Physics
+namespace Arche
 {
-	struct Contact
+
+	// 接触情報
+	namespace Physics
 	{
-		Entity a, b;				// 衝突した2つのエンティティ
-		DirectX::XMFLOAT3 normal;	// A -> Bの法線
-		float depth;				// めり込み量
+		struct Contact
+		{
+			Entity a, b;				// 衝突した2つのエンティティ
+			DirectX::XMFLOAT3 normal;	// A -> Bの法線
+			float depth;				// めり込み量
+		};
+	}
+
+	/**
+	 * @class	PhysicsSystem
+	 * @brief	物理挙動
+	 */
+	class PhysicsSystem
+		: public ISystem
+	{
+	public:
+		PhysicsSystem() { m_systemName = "Physics System"; }
+
+		// 物理シミュレーション更新（重力、速度更新）
+		void Update(Registry& registry) override;
+
+		// 衝突解決（CollisionSystemから呼ばれる）
+		static void Solve(Registry& registry, const std::vector<Physics::Contact>& contacts);
 	};
-}
 
-/**
- * @class	PhysicsSystem
- * @brief	物理挙動
- */
-class PhysicsSystem
-	: public ISystem
-{
-public:
-	PhysicsSystem() { m_systemName = "Physics System"; }
-
-	// 物理シミュレーション更新（重力、速度更新）
-	void Update(Registry& registry) override;
-
-	// 衝突解決（CollisionSystemから呼ばれる）
-	static void Solve(Registry& registry, const std::vector<Physics::Contact>& contacts);
-};
+}	// namespace Arche
 
 #endif // !___PHYSICS_SYSTEM_H___

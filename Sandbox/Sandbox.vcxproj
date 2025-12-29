@@ -170,6 +170,7 @@
     <ClCompile Include="..\Source\Sandbox\Scenes\SceneTitle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\Sandbox\Components\GameComponents.h" />
     <ClInclude Include="..\Source\Sandbox\main.h" />
     <ClInclude Include="..\Source\Sandbox\Scenes\SceneGame.h" />
     <ClInclude Include="..\Source\Sandbox\Scenes\SceneTitle.h" />

@@ -24,38 +24,42 @@
 #include "Engine/pch.h"
 #include "Engine/Core/Context.h"
 
-// ===== 前方宣言 =====
-class World;
-
-/**
- * @class	IScene
- * @brief	シーンの基底クラス
- */
-class IScene
+namespace Arche
 {
-public:
-	virtual ~IScene() = default;
+	// ===== 前方宣言 =====
+	class World;
 
-	// @brief	初期化（リソース読み込み等）
-	virtual void Initialize() {}
+	/**
+	 * @class	IScene
+	 * @brief	シーンの基底クラス
+	 */
+	class IScene
+	{
+	public:
+		virtual ~IScene() = default;
 
-	// @brief	終了処理（リソース解放等）
-	virtual void Finalize() {}
+		// @brief	初期化（リソース読み込み等）
+		virtual void Initialize() {}
 
-	// @brief	更新
-	virtual void Update() {}
+		// @brief	終了処理（リソース解放等）
+		virtual void Finalize() {}
 
-	// @brief	描画
-	virtual void Render() {}
+		// @brief	更新
+		virtual void Update() {}
 
-	// @brief	ECSワールドの取得
-	virtual World& GetWorld() = 0;
+		// @brief	描画
+		virtual void Render() {}
 
-	// @brief	Context設定（エディタ連携用）
-	virtual void Setup(Context* context) { m_context = context; }
+		// @brief	ECSワールドの取得
+		virtual World& GetWorld() = 0;
 
-protected:
-	Context*	m_context = nullptr;
-};
+		// @brief	Context設定（エディタ連携用）
+		virtual void Setup(Context* context) { m_context = context; }
+
+	protected:
+		Context* m_context = nullptr;
+	};
+
+}	// namespace Arche
 
 #endif // !___ISCENE_H___

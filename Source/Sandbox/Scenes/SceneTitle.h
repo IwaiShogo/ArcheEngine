@@ -25,6 +25,8 @@
 #include "Engine/Scene/Core/IScene.h"
 #include "Engine/Scene/Core/ECS/ECS.h"
 
+using namespace Arche;
+
 /**
  * @class	SceneTitle
  * @brief	タイトルシーン

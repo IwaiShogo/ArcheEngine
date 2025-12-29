@@ -26,43 +26,51 @@
 #include "Engine/Renderer/Renderers/SpriteRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
 
-class SpriteRenderSystem
-	: public ISystem
+namespace Arche
 {
-public:
-	SpriteRenderSystem(SpriteRenderer* renderer)
-		: m_renderer(renderer)
+
+	class SpriteRenderSystem
+		: public ISystem
 	{
-		m_systemName = "Sprite Render System";
-	}
+	public:
+		SpriteRenderSystem()
+		{
+			m_systemName = "Sprite Render System";
+		}
 
-	void Render(Registry& registry, const Context& context) override
-	{
-		if (!m_renderer) return;
+		void Render(Registry& registry, const Context& context) override
+		{
+			// 2D描画開始
+			SpriteRenderer::Begin();
 
-		// 2D描画開始
-		m_renderer->Begin();
-
-		registry.view<SpriteComponent, Transform2D>().each([&](Entity e, SpriteComponent& s, Transform2D& t2d)
+			registry.view<SpriteComponent, Transform2D>().each([&](Entity e, SpriteComponent& s, Transform2D& t2d)
 			{
 				// テクスチャ取得
 				auto tex = ResourceManager::Instance().GetTexture(s.textureKey);
 				if (tex)
 				{
-					// 座標計算
-					float width = t2d.calculatedRect.z - t2d.calculatedRect.x;
-					float height = t2d.calculatedRect.w - t2d.calculatedRect.y;
-					float centerX = t2d.calculatedRect.x + width * 0.5f;
-					float centerY = t2d.calculatedRect.y + height * 0.5f;
+					// 1. 矩形変形行列
+					XMMATRIX matGeometry = XMMatrixScaling(t2d.size.x, t2d.size.y, 1.0f) *
+						XMMatrixTranslation(-t2d.size.x * t2d.pivot.x, -t2d.size.y * t2d.pivot.y, 0.0f);
+
+					auto& m = t2d.worldMatrix;
+					XMMATRIX matWorld = XMMatrixSet(
+						m._11, m._12, 0.0f, 0.0f,
+						m._21, m._22, 0.0f, 0.0f,
+						0.0f,  0.0f,  1.0f, 0.0f,
+						m._31, m._32, 0.0f, 1.0f
+					);
+
+					// 3. 合成
+					XMMATRIX finalMat = matGeometry * matWorld;
 
 					// 描画
-					m_renderer->Draw(tex.get(), centerX - (width * 0.5f), centerY - (height * 0.5f), width, height, s.color);
+					SpriteRenderer::Draw(tex.get(), finalMat, s.color);
 				}
 			});
-	}
+		}
+	};
 
-private:
-	SpriteRenderer* m_renderer;
-};
+}	// namespace Arche
 
 #endif // !___SPRITE_RENDERER_SYSTEM_H___

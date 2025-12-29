@@ -23,6 +23,8 @@
 #include "Engine/Scene/Core/SceneManager.h"
 #include "Engine/Core/Window/Input.h"
 
+using namespace Arche;
+
 void SceneTitle::Initialize()
 {
 	// 初期化処理

@@ -26,54 +26,53 @@
 #include "Engine/Renderer/Renderers/BillboardRenderer.h"
 #include "Engine/Resource/ResourceManager.h"
 
-class BillboardSystem : public ISystem {
-public:
-	BillboardSystem(BillboardRenderer* renderer)
-		: m_renderer(renderer)
-	{
-		m_systemName = "Billboard System";
-	}
+namespace Arche
+{
 
-	void Render(Registry& registry, const Context& context) override
-	{
-		if (!m_renderer) return;
+	class BillboardSystem : public ISystem {
+	public:
+		BillboardSystem()
+		{
+			m_systemName = "Billboard System";
+		}
 
-		// カメラ計算 (RenderSystem等と同じロジック。共通化推奨)
-		XMMATRIX viewMatrix = XMMatrixIdentity();
-		XMMATRIX projMatrix = XMMatrixIdentity();
-		bool cameraFound = false;
-		registry.view<Camera, Transform>().each([&](Entity e, Camera& cam, Transform& trans)
-			{
-				if (cameraFound) return;
-				XMVECTOR eye = XMLoadFloat3(&trans.position);
-				XMMATRIX rotM = XMMatrixRotationRollPitchYaw(trans.rotation.x, trans.rotation.y, 0.0f);
-				XMVECTOR look = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rotM);
-				XMVECTOR up = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rotM);
-				viewMatrix = XMMatrixLookToLH(eye, look, up);
-				projMatrix = XMMatrixPerspectiveFovLH(cam.fov, cam.aspect, cam.nearZ, cam.farZ);
-				cameraFound = true;
-			});
-		if (!cameraFound) return;
-
-		// 描画開始
-		m_renderer->Begin(viewMatrix, projMatrix);
-
-		registry.view<Transform, BillboardComponent>().each([&](Entity e, Transform& t, BillboardComponent& b)
-			{
-				auto tex = ResourceManager::Instance().GetTexture(b.textureKey);
-				if (tex)
+		void Render(Registry& registry, const Context& context) override
+		{
+			// カメラ計算 (RenderSystem等と同じロジック。共通化推奨)
+			XMMATRIX viewMatrix = XMMatrixIdentity();
+			XMMATRIX projMatrix = XMMatrixIdentity();
+			bool cameraFound = false;
+			registry.view<Camera, Transform>().each([&](Entity e, Camera& cam, Transform& trans)
 				{
-					// Transformのスケールも加味する場合:
-					float w = b.size.x * t.scale.x;
-					float h = b.size.y * t.scale.y;
+					if (cameraFound) return;
+					XMVECTOR eye = XMLoadFloat3(&trans.position);
+					XMMATRIX rotM = XMMatrixRotationRollPitchYaw(trans.rotation.x, trans.rotation.y, 0.0f);
+					XMVECTOR look = XMVector3TransformCoord(XMVectorSet(0, 0, 1, 0), rotM);
+					XMVECTOR up = XMVector3TransformCoord(XMVectorSet(0, 1, 0, 0), rotM);
+					viewMatrix = XMMatrixLookToLH(eye, look, up);
+					projMatrix = XMMatrixPerspectiveFovLH(cam.fov, cam.aspect, cam.nearZ, cam.farZ);
+					cameraFound = true;
+				});
+			if (!cameraFound) return;
 
-					m_renderer->Draw(tex.get(), t.position, w, h, b.color);
-				}
-			});
-	}
+			// 描画開始
+			BillboardRenderer::Begin(viewMatrix, projMatrix);
 
-private:
-	BillboardRenderer* m_renderer;
-};
+				registry.view<Transform, BillboardComponent>().each([&](Entity e, Transform& t, BillboardComponent& b)
+					{
+						auto tex = ResourceManager::Instance().GetTexture(b.textureKey);
+						if (tex)
+						{
+							// Transformのスケールも加味する場合:
+							float w = b.size.x * t.scale.x;
+							float h = b.size.y * t.scale.y;
+
+							BillboardRenderer::Draw(tex.get(), t.position, w, h, b.color);
+						}
+					});
+		}
+	};
+
+}	// namespace Arche
 
 #endif // !___BILLBOARD_SYSTEM_H___

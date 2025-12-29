@@ -23,25 +23,31 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 
-// リフレクションシステム内部用
-namespace Reflection
+namespace Arche
 {
-	// 基本テンプレート
-	template<typename T>
-	struct Meta
-	{
-		static constexpr const char* Name = "Unknown";
-		template<typename Visitor>
-		static void Visit(T& instance, Visitor&& visitor) {}
-	};
 
-	// メンバ訪問用関数
-	template <typename T, typename Visitor>
-	void VisitMembers(T& instance, Visitor&& visitor)
+	// リフレクションシステム内部用
+	namespace Reflection
 	{
-		Meta<T>::Visit(instance, std::forward<Visitor>(visitor));
-	}
-}
+		// 基本テンプレート
+		template<typename T>
+		struct Meta
+		{
+			static constexpr const char* Name = "Unknown";
+			template<typename Visitor>
+			static void Visit(T& instance, Visitor&& visitor) {}
+		};
+
+		// メンバ訪問用関数
+		template <typename T, typename Visitor>
+		void VisitMembers(T& instance, Visitor&& visitor)
+		{
+			Meta<T>::Visit(instance, std::forward<Visitor>(visitor));
+		}
+
+	}	// namespace Reflection
+
+}	// namespace Arche
 
 // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
 // ユーザー利用用マクロ

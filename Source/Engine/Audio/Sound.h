@@ -20,21 +20,27 @@
 #ifndef ___SOUND_H___
 #define ___SOUND_H___
 
+// ===== インクルード =====
 #include "Engine/pch.h"
 
-/**
- * @class	Sound
- * @brief	音声データのコンテナ
- */
-class Sound
+namespace Arche
 {
-public:
-	WAVEFORMATEX wfx = { 0 };		// フォーマット情報
-	std::vector<BYTE> buffer;		// 波形データの実体
-	XAUDIO2_BUFFER xBuffer = { 0 };	// XAudio2用のバッファ構造体
 
-	std::string filepath;
-	float duration = 0.0f;			// 再生時間（秒）
-};
+	/**
+	 * @class	Sound
+	 * @brief	音声データのコンテナ
+	 */
+	class Sound
+	{
+	public:
+		WAVEFORMATEX wfx = { 0 };		// フォーマット情報
+		std::vector<BYTE> buffer;		// 波形データの実体
+		XAUDIO2_BUFFER xBuffer = { 0 };	// XAudio2用のバッファ構造体
+
+		std::string filepath;
+		float duration = 0.0f;			// 再生時間（秒）
+	};
+
+}	// namespace Arche
 
 #endif // !___SOUND_H___
