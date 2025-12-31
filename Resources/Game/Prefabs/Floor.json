@@ -2,9 +2,9 @@
     {
         "Collider": {
             "boxSize": [
+                10.0,
                 1.0,
-                1.0,
-                1.0
+                10.0
             ],
             "enabled": true,
             "height": 1.0,
@@ -18,13 +18,13 @@
             "radius": 0.5,
             "type": 0
         },
-        "ID": 3,
+        "ID": 4,
         "Rigidbody": {
             "drag": 0.10000000149011612,
             "enabled": true,
             "mass": 1.0,
-            "type": 1,
-            "useGravity": true
+            "type": 0,
+            "useGravity": false
         },
         "Tag": {
             "componentOrder": [
@@ -33,12 +33,12 @@
                 "Tag",
                 "Transform"
             ],
-            "name": "Enemy"
+            "name": "Floor"
         },
         "Transform": {
             "enabled": true,
             "position": [
-                5.0,
+                1.0,
                 0.0,
                 0.0
             ],

@@ -4,25 +4,19 @@
     <Filter Include="Source">
       <UniqueIdentifier>{616a3bb7-7ebd-47f2-8123-e54cc817b437}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Scenes">
-      <UniqueIdentifier>{a9906fb0-1f9e-4a25-a220-4b9cb947f8b3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{0b45401b-d595-4e8b-a50f-c5a6f909e217}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Components">
       <UniqueIdentifier>{ab457109-d9a8-49c9-9a38-94915308161b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Systems">
+      <UniqueIdentifier>{d2249cca-e857-4003-9e06-55fef705267e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Sandbox\main.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Sandbox\Scenes\SceneGame.cpp">
-      <Filter>Source\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Sandbox\Scenes\SceneTitle.cpp">
-      <Filter>Source\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Engine\pch.cpp">
       <Filter>Source</Filter>
@@ -32,13 +26,10 @@
     <ClInclude Include="..\Source\Sandbox\main.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Sandbox\Scenes\SceneGame.h">
-      <Filter>Source\Scenes</Filter>
+    <ClInclude Include="..\Source\Sandbox\Systems\PlayerMoveSystem.h">
+      <Filter>Source\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Sandbox\Scenes\SceneTitle.h">
-      <Filter>Source\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Sandbox\Components\GameComponents.h">
+    <ClInclude Include="..\Source\Sandbox\Components\PlayerMoveData.h">
       <Filter>Source\Components</Filter>
     </ClInclude>
   </ItemGroup>

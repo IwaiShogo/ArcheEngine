@@ -72,4 +72,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::AudioSystem, "Audio System")
+
 #endif // !___AUDIO_SYSTEM_H___

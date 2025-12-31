@@ -106,4 +106,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::ModelRenderSystem, "Model Render System")
+
 #endif // !___MODEL_RENDER_SYSTEM_H___

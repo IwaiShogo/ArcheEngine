@@ -4,9 +4,42 @@
             "ID": 0
         },
         {
-            "AudioListener": null,
+            "ID": 1
+        },
+        {
+            "ID": 2
+        },
+        {
+            "ID": 3
+        },
+        {
+            "ID": 4
+        },
+        {
+            "ID": 5
+        },
+        {
+            "ID": 6
+        },
+        {
+            "ID": 7
+        },
+        {
+            "ID": 8
+        },
+        {
+            "ID": 9
+        },
+        {
+            "ID": 10
+        },
+        {
+            "AudioListener": {
+                "enabled": true
+            },
             "Camera": {
                 "aspect": 1.7777777910232544,
+                "enabled": true,
                 "farZ": 1000.0,
                 "fov": 0.7853981852531433,
                 "nearZ": 0.10000000149011612
@@ -17,8 +50,10 @@
                     1.0,
                     1.0
                 ],
+                "enabled": true,
                 "height": 1.0,
                 "isTrigger": false,
+                "layer": 1,
                 "offset": [
                     0.0,
                     0.0,
@@ -27,11 +62,19 @@
                 "radius": 0.5,
                 "type": 1
             },
-            "ID": 1,
+            "ID": 11,
             "Tag": {
+                "componentOrder": [
+                    "AudioListener",
+                    "Camera",
+                    "Collider",
+                    "Tag",
+                    "Transform"
+                ],
                 "name": "MainCamera"
             },
             "Transform": {
+                "enabled": true,
                 "position": [
                     2.0,
                     10.0,
@@ -56,8 +99,10 @@
                     1.0,
                     1.0
                 ],
+                "enabled": true,
                 "height": 2.0,
                 "isTrigger": false,
+                "layer": 2,
                 "offset": [
                     0.0,
                     0.0,
@@ -66,7 +111,7 @@
                 "radius": 0.5,
                 "type": 2
             },
-            "ID": 2,
+            "ID": 12,
             "MeshComponent": {
                 "color": [
                     1.0,
@@ -74,6 +119,7 @@
                     1.0,
                     1.0
                 ],
+                "enabled": true,
                 "modelKey": "hero",
                 "scaleOffset": [
                     0.10000000149011612,
@@ -82,27 +128,39 @@
                 ]
             },
             "PlayerInput": {
+                "enabled": true,
                 "jumpPower": 5.0,
                 "speed": 3.0
             },
             "Rigidbody": {
                 "drag": 0.10000000149011612,
+                "enabled": true,
                 "mass": 1.0,
                 "type": 1,
                 "useGravity": true
             },
             "Tag": {
+                "componentOrder": [
+                    "Collider",
+                    "MeshComponent",
+                    "PlayerInput",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform",
+                    "NativeScriptComponent"
+                ],
                 "name": "Player"
             },
             "Transform": {
+                "enabled": true,
                 "position": [
                     0.0,
-                    0.0,
+                    4.168966293334961,
                     0.0
                 ],
                 "rotation": [
                     0.0,
-                    0.0,
+                    -0.0,
                     0.0
                 ],
                 "scale": [
@@ -119,8 +177,10 @@
                     1.0,
                     1.0
                 ],
+                "enabled": true,
                 "height": 1.0,
                 "isTrigger": false,
+                "layer": 1,
                 "offset": [
                     0.0,
                     0.0,
@@ -129,25 +189,33 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 3,
+            "ID": 13,
             "Rigidbody": {
                 "drag": 0.10000000149011612,
+                "enabled": true,
                 "mass": 1.0,
                 "type": 1,
                 "useGravity": true
             },
             "Tag": {
+                "componentOrder": [
+                    "Collider",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform"
+                ],
                 "name": "Enemy"
             },
             "Transform": {
+                "enabled": true,
                 "position": [
-                    5.0,
-                    0.0,
+                    2.8211817741394043,
+                    2.3565568923950195,
                     0.0
                 ],
                 "rotation": [
                     0.0,
-                    0.0,
+                    -0.0,
                     0.0
                 ],
                 "scale": [
@@ -164,8 +232,10 @@
                     1.0,
                     10.0
                 ],
+                "enabled": true,
                 "height": 1.0,
                 "isTrigger": false,
+                "layer": 1,
                 "offset": [
                     0.0,
                     0.0,
@@ -174,19 +244,27 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 4,
+            "ID": 14,
             "Rigidbody": {
                 "drag": 0.10000000149011612,
+                "enabled": true,
                 "mass": 1.0,
                 "type": 0,
                 "useGravity": false
             },
             "Tag": {
+                "componentOrder": [
+                    "Collider",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform"
+                ],
                 "name": "Floor"
             },
             "Transform": {
+                "enabled": true,
                 "position": [
-                    1.0,
+                    0.0,
                     0.0,
                     0.0
                 ],
@@ -204,39 +282,43 @@
         },
         {
             "Canvas": {
+                "enabled": true,
                 "isScreenSpace": true,
                 "referenceSize": [
                     1280.0,
                     720.0
                 ]
             },
-            "ID": 5,
+            "ID": 15,
             "Relationship": {
                 "children": [
-                    6,
-                    7
+                    16,
+                    17
                 ],
+                "enabled": true,
                 "parent": 4294967295
             },
             "Tag": {
+                "componentOrder": [],
                 "name": "Canvas"
             },
             "Transform2D": {
                 "anchorMax": [
-                    0.0,
-                    0.0
+                    0.5,
+                    0.5
                 ],
                 "anchorMin": [
-                    0.0,
-                    0.0
+                    0.5,
+                    0.5
                 ],
+                "enabled": true,
                 "pivot": [
                     0.5,
                     0.5
                 ],
                 "position": [
-                    640.0,
-                    360.0
+                    0.0,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -254,12 +336,19 @@
             }
         },
         {
-            "ID": 6,
+            "ID": 16,
             "Relationship": {
                 "children": [],
-                "parent": 5
+                "enabled": true,
+                "parent": 15
             },
             "Tag": {
+                "componentOrder": [
+                    "Relationship",
+                    "Tag",
+                    "TextComponent",
+                    "Transform2D"
+                ],
                 "name": "Text"
             },
             "TextComponent": {
@@ -270,6 +359,7 @@
                     0.5,
                     1.0
                 ],
+                "enabled": true,
                 "fontKey": "Oradano-mincho-GSRR",
                 "fontSize": 80.0,
                 "isBold": false,
@@ -282,13 +372,14 @@
             },
             "Transform2D": {
                 "anchorMax": [
-                    0.0,
-                    0.0
+                    0.5,
+                    0.5
                 ],
                 "anchorMin": [
-                    0.0,
-                    0.0
+                    0.5,
+                    0.5
                 ],
+                "enabled": true,
                 "pivot": [
                     0.5,
                     0.5
@@ -313,10 +404,11 @@
             }
         },
         {
-            "ID": 7,
+            "ID": 17,
             "Relationship": {
                 "children": [],
-                "parent": 5
+                "enabled": true,
+                "parent": 15
             },
             "SpriteComponent": {
                 "color": [
@@ -325,20 +417,23 @@
                     1.0,
                     1.0
                 ],
+                "enabled": true,
                 "textureKey": "test"
             },
             "Tag": {
+                "componentOrder": [],
                 "name": "Text"
             },
             "Transform2D": {
                 "anchorMax": [
-                    0.0,
-                    0.0
+                    0.5,
+                    0.5
                 ],
                 "anchorMin": [
-                    0.0,
-                    0.0
+                    0.5,
+                    0.5
                 ],
+                "enabled": true,
                 "pivot": [
                     0.5,
                     0.5
@@ -363,5 +458,58 @@
             }
         }
     ],
-    "SceneName": "Untitled Scene"
+    "Physics": {
+        "LayerCollision": []
+    },
+    "SceneName": "Untitled Scene",
+    "Systems": [
+        {
+            "Group": 0,
+            "Name": "Input System"
+        },
+        {
+            "Group": 1,
+            "Name": "Physics System"
+        },
+        {
+            "Group": 1,
+            "Name": "Collision System"
+        },
+        {
+            "Group": 0,
+            "Name": "UI System"
+        },
+        {
+            "Group": 1,
+            "Name": "Lifetime System"
+        },
+        {
+            "Group": 0,
+            "Name": "Hierarchy System"
+        },
+        {
+            "Group": 0,
+            "Name": "Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Model Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Billboard System"
+        },
+        {
+            "Group": 0,
+            "Name": "Sprite Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Text Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Audio System"
+        }
+    ]
 }

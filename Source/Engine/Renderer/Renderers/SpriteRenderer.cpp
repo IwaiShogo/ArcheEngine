@@ -143,7 +143,7 @@ namespace Arche
 		// Z範囲は 0.0～1.0
 		float w = static_cast<float>(Config::SCREEN_WIDTH);
 		float h = static_cast<float>(Config::SCREEN_HEIGHT);
-		s_cbData.projection = XMMatrixTranspose(XMMatrixOrthographicLH(w, h, 0.0f, 1.0f));
+		s_cbData.projection = XMMatrixTranspose(XMMatrixOrthographicLH(w, -h, 0.0f, 1.0f));
 
 		s_context->RSSetState(s_rs2D.Get());
 		s_context->OMSetDepthStencilState(s_ds2D.Get(), 0);

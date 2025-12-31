@@ -36,35 +36,35 @@ namespace Arche
 
 		void Update(Registry& registry) override
 		{
-			// デバッグカメラモードなら受け付けない
-			if (m_context && m_context->debugSettings.useDebugCamera) return;
+			//// デバッグカメラモードなら受け付けない
+			//if (m_context && m_context->debugSettings.useDebugCamera) return;
 
-			// Inputクラスから値を取得
-			float x = Input::GetAxis(Axis::Horizontal);
-			float z = Input::GetAxis(Axis::Vertical);
+			//// Inputクラスから値を取得
+			//float x = Input::GetAxis(Axis::Horizontal);
+			//float z = Input::GetAxis(Axis::Vertical);
 
-			// 斜め移動の正規化
-			if (x != 0.0f || z != 0.0f)
-			{
-				float length = std::sqrt(x * x + z * z);
-				if (length > 1.0f)
-				{
-					x /= length;
-					z /= length;
-				}
-			}
+			//// 斜め移動の正規化
+			//if (x != 0.0f || z != 0.0f)
+			//{
+			//	float length = std::sqrt(x * x + z * z);
+			//	if (length > 1.0f)
+			//	{
+			//		x /= length;
+			//		z /= length;
+			//	}
+			//}
 
-			registry.view<PlayerInput, Rigidbody>().each([&](Entity e, PlayerInput& input, Rigidbody& rb)
-				{
-					rb.velocity.x = x * input.speed;
-					rb.velocity.z = z * input.speed;
+			//registry.view<PlayerInput, Rigidbody>().each([&](Entity e, PlayerInput& input, Rigidbody& rb)
+			//	{
+			//		rb.velocity.x = x * input.speed;
+			//		rb.velocity.z = z * input.speed;
 
-					if (Input::GetButtonDown(Button::A))
-					{
-						// 上方向（Y）に速度を与える
-						rb.velocity.y = input.jumpPower;
-					}
-				});
+			//		if (Input::GetButtonDown(Button::A))
+			//		{
+			//			// 上方向（Y）に速度を与える
+			//			rb.velocity.y = input.jumpPower;
+			//		}
+			//	});
 		}
 
 		void SetContext(Context* ctx) { m_context = ctx; }
@@ -74,5 +74,8 @@ namespace Arche
 	};
 
 }	// namespace Arche
+
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::InputSystem, "Input System")
 
 #endif // !___INPUT_SYSTEM_H___

@@ -22,15 +22,22 @@
 #include "Engine/Core/Context.h" // Config::SCREEN_WIDTH等用
 #include "Engine/Config.h"
 
+// コマンド関連のインクルード
+#include "Editor/Core/CommandHistory.h"
+#include "Editor/Core/EditorCommands.h"
+#include "Engine/Scene/Serializer/ComponentRegistry.h"
+
 namespace Arche
 {
 
 	class GizmoSystem
 	{
 	public:
-		static void Draw(Registry& reg, Entity& selected, const XMMATRIX& view, const XMMATRIX& proj, float x, float y, float width, float height)
+		static void Draw(World& world, Entity& selected, const XMMATRIX& view, const XMMATRIX& proj, float x, float y, float width, float height)
 		{
 			if (selected == NullEntity) return;
+
+			Registry& reg = world.getRegistry();
 
 			// =================================================================================
 			// 1. Transform2D (UI / 2D) の場合
@@ -51,7 +58,7 @@ namespace Arche
 
 				float screenW = (float)Config::SCREEN_WIDTH;
 				float screenH = (float)Config::SCREEN_HEIGHT;
-				XMMATRIX proj2D = XMMatrixOrthographicLH(screenW, screenH, 0.1f, 1000.0f);
+				XMMATRIX proj2D = XMMatrixOrthographicLH(screenW, -screenH, 0.1f, 1000.0f);
 
 				float viewM[16], projM[16], worldM[16];
 				MatrixToFloat16(view2D, viewM);
@@ -180,20 +187,53 @@ namespace Arche
 				if (Input::GetKeyDown('3')) mCurrentGizmoOperation = ImGuizmo::SCALE;
 
 				// ギズモ描画と操作判定
-				if (ImGuizmo::Manipulate(viewM, projM, mCurrentGizmoOperation, ImGuizmo::LOCAL, worldM))
+				ImGuizmo::Manipulate(viewM, projM, mCurrentGizmoOperation, ImGuizmo::LOCAL, worldM);
+
+				// Undo / Redo
+				bool isUsingNow = ImGuizmo::IsUsing();
+
+				// 1. 操作開始
+				if (isUsingNow && !s_isUsing)
 				{
+					// 現在の値をシリアライズして保存
+					ComponentRegistry::Instance().GetInterfaces().at("Transform")
+						.serialize(reg, selected, s_startValue);
+				}
+				
+				// 2. 操作中
+				if (isUsingNow)
+				{
+					// 値を分解して適用
 					float translation[3], rotation[3], scale[3];
 					ImGuizmo::DecomposeMatrixToComponents(worldM, translation, rotation, scale);
 
 					t.position = { translation[0], translation[1], translation[2] };
+					t.rotation = { rotation[0], rotation[1], rotation[2] };
 					t.scale = { scale[0], scale[1], scale[2] };
 
-					t.rotation.x = rotation[0];
-					t.rotation.y = rotation[1];
-					t.rotation.z = rotation[2];
+					// 更新通知
+					//reg.patch<Transform>(selected);
 				}
-			}
 
+				// 3. 操作終了
+				if (!isUsingNow && s_isUsing)
+				{
+					json endValue;
+					ComponentRegistry::Instance().GetInterfaces().at("Transform")
+						.serialize(reg, selected, endValue);
+
+					// 値が変わっていればコマンドスタックに積む
+					if (s_startValue != endValue)
+					{
+						CommandHistory::Execute(std::make_shared<ChangeComponentValueCommand>(
+							world, selected, "Transform", s_startValue, endValue
+						));
+					}
+				}
+
+				// 状態更新
+				s_isUsing = isUsingNow;
+			}
 		}
 
 	private:
@@ -201,6 +241,11 @@ namespace Arche
 		static void MatrixToFloat16(const XMMATRIX& m, float* out) {
 			XMStoreFloat4x4((XMFLOAT4X4*)out, m);
 		}
+
+	private:
+		// 状態保存用
+		static inline bool s_isUsing = false;
+		static inline json s_startValue;	// 操作開始時の値
 	};
 
 }	// namespace Arche

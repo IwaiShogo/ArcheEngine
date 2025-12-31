@@ -60,6 +60,9 @@ namespace Arche
 					{
 						tag.name = buf;
 					}
+
+					// 順序リストの同期
+					SyncComponentOrder(reg, selected, tag);
 				}
 				else
 				{
@@ -71,43 +74,52 @@ namespace Arche
 				// 2. コンポーネント自動描画
 				// ------------------------------------------------------------
 				// レジストリに登録されているすべてのコンポーネントを確認
-				for (auto& [name, iface] : ComponentRegistry::Instance().GetInterfaces())
+				if (reg.has<Tag>(selected))
 				{
-					// エンティティが持っている場合のみ表示
-					if (iface.has(reg, selected))
+					auto& tag = reg.get<Tag>(selected);
+					auto& interfaces = ComponentRegistry::Instance().GetInterfaces();
+
+					// 並び替え用コールバック
+					auto onReorder = [&](int srcIdx, int dstIdx)
 					{
-						// 折り畳みヘッダーを表示
-						bool isOpen = ImGui::CollapsingHeader(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+						std::vector<std::string> newOrder = tag.componentOrder;
+						std::string item = newOrder[srcIdx];
+						newOrder.erase(newOrder.begin() + srcIdx);
+						newOrder.insert(newOrder.begin() + dstIdx, item);
 
-						// 右クリックで削除メニュー
-						if (ImGui::BeginPopupContextItem(name.c_str()))
+						CommandHistory::Execute(std::make_shared<ReorderComponentCommand>(
+							world, selected, tag.componentOrder, newOrder
+						));
+					};
+
+					// 順序リストに基づいて描画
+					for (int i = 0; i < tag.componentOrder.size(); ++i)
+					{
+						std::string name = tag.componentOrder[i];
+
+						if (name == "Tag") continue;
+
+						if (interfaces.count(name))
 						{
-							if (ImGui::MenuItem("Remove Component"))
-							{
+							auto& iface = interfaces.at(name);
+
+							// 削除時のコールバック
+							auto onRemove = [&, name]() {
 								CommandHistory::Execute(std::make_shared<RemoveComponentCommand>(world, selected, name));
-							}
-							ImGui::EndPopup();
-						}
+								};
 
-						if (iface.has(reg, selected) && isOpen)
-						{
-							ImGui::PushID(name.c_str());
-							ImGui::Indent();
-
-							// コマンド発行用のコールバックを作成
+							// 値変更用コールバック
 							auto onCommand = [&](json oldVal, json newVal)
 							{
 								CommandHistory::Execute(std::make_shared<ChangeComponentValueCommand>(
-									world, selected, name, oldVal, newVal
-								));
+									world, selected, name, oldVal, newVal));
 							};
 
-							// Inspector描画実行
-							iface.drawInspector(reg, selected, onCommand);
-
-							ImGui::Unindent();
-							ImGui::PopID();
-							ImGui::Spacing();
+							// if文の羅列を廃止し、統一されたインターフェースを呼ぶ
+							if (iface.drawInspectorDnD)
+							{
+								iface.drawInspectorDnD(reg, selected, i, onReorder, onRemove, onCommand);
+							}
 						}
 					}
 				}
@@ -130,11 +142,13 @@ namespace Arche
 					// 検索ボックス
 					static char searchBuf[64] = "";
 					ImGui::InputTextWithHint("##Search", "Search...", searchBuf, sizeof(searchBuf));
-
 					ImGui::Separator();
 
+					// A. 通常コンポーネント（Data Components）
 					for (auto& [name, iface] : ComponentRegistry::Instance().GetInterfaces())
 					{
+						if (name == "NativeScriptComponent") continue;
+
 						// まだ持っていない、かつ検索ワードにヒットするものだけ表示
 						if (!iface.has(reg, selected))
 						{
@@ -154,10 +168,50 @@ namespace Arche
 							}
 						}
 					}
+
 					ImGui::EndPopup();
 				}
 			}
 			ImGui::End();
+		}
+
+	private:
+		// コンポーネント順序リストを実体と同期させる
+		void SyncComponentOrder(Registry& reg, Entity e, Tag& tag)
+		{
+			auto& interfaces = ComponentRegistry::Instance().GetInterfaces();
+			std::vector<std::string> actualComponents;
+
+			// 1. 実際に持っているコンポーネントをリストアップ
+			for (auto& [name, iface] : interfaces)
+			{
+				if (iface.has(reg, e))
+				{
+					actualComponents.push_back(name);
+				}
+			}
+
+			// 2. componentOrder に足りないものを追加
+			for (const auto& name : actualComponents)
+			{
+				if (std::find(tag.componentOrder.begin(), tag.componentOrder.end(), name) == tag.componentOrder.end())
+				{
+					tag.componentOrder.push_back(name);
+				}
+			}
+
+			// 3. componentOrder にあるが実際にはないものを削除
+			for (auto it = tag.componentOrder.begin(); it != tag.componentOrder.end();)
+			{
+				if (std::find(actualComponents.begin(), actualComponents.end(), *it) == actualComponents.end())
+				{
+					it = tag.componentOrder.erase(it);
+				}
+				else
+				{
+					++it;
+				}
+			}
 		}
 	};
 

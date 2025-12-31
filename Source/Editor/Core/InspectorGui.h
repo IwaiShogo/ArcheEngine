@@ -46,30 +46,61 @@ namespace Arche
 		InspectorGuiVisitor(std::function<void(json&)> sFunc, std::function<void(json, json)> cFunc)
 			: serializeFunc(sFunc), commandFunc(cFunc) {}
 
+		// 比較用ヘルパー
+		// ------------------------------------------------------------
+		template<typename T> bool IsChanged(const T& a, const T& b) { return a != b; }
+		bool IsChanged(const DirectX::XMFLOAT2& a, const DirectX::XMFLOAT2& b) { return a.x != b.x || a.y != b.y; }
+		bool IsChanged(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b) { return a.x != b.x || a.y != b.y || a.z != b.z; }
+		bool IsChanged(const DirectX::XMFLOAT4& a, const DirectX::XMFLOAT4& b) { return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w; }
+
 		// 共通処理ラッパー
 		// ImGuiのウィジェットを描画し、編集開始・終了を検知する
 		// ------------------------------------------------------------
-		template<typename Func>
-		void DrawWidget(const char* label, Func func)
+		template<typename T, typename Func>
+		void DrawWidget(const char* label, T& currentVal, Func func)
 		{
-			ImGui::PushID(label);
+			// 1. 描画前の値をバックアップ
+			T oldVal = currentVal;
 
-			// 1. ウィジェット描画実行
+			ImGui::PushID(label);
+			ImGuiID id = ImGui::GetID(label);
+
+			// 2. ウィジェット描画実行
 			func();
 
-			// 2. 編集開始検知（Activated）
-			if (ImGui::IsItemActivated())
+			// 3. 編集開始検知（Activated）
+			if (ImGui::IsItemActivated() || (ImGui::IsItemActive() && s_startStates.find(id) == s_startStates.end()))
 			{
-				json state;
-				// 現在のコンポーネント全体をシリアライズして保存
-				serializeFunc(state);
-				s_startStates[ImGui::GetID(label)] = state;
+				// まだ保存していなければ保存
+				if (s_startStates.find(id) == s_startStates.end())
+				{
+					if (IsChanged(oldVal, currentVal))
+					{
+						// 一旦値を戻す
+						T temp = currentVal;
+						currentVal = oldVal;
+
+						// 変更前の状態でシリアライズ
+						json state;
+						serializeFunc(state);
+						s_startStates[ImGui::GetID(label)] = state;
+
+						// 値を最新に戻す
+						currentVal = temp;
+					}
+					else
+					{
+						// 変わっていないならそのままシリアライズ
+						json state;
+						serializeFunc(state);
+						s_startStates[ImGui::GetID(label)] = state;
+					}
+				}
 			}
 
-			// 3. 編集終了検知（DeactivatedAfterEdit）
+			// 4. 編集終了検知（DeactivatedAfterEdit）
 			if (ImGui::IsItemDeactivatedAfterEdit())
 			{
-				ImGuiID id = ImGui::GetID(label);
 				if (s_startStates.count(id))
 				{
 					json oldState = s_startStates[id];
@@ -97,7 +128,7 @@ namespace Arche
 		// bool
 		void operator()(bool& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				ImGui::Checkbox(name, &val);
 			});
@@ -106,7 +137,7 @@ namespace Arche
 		// int
 		void operator()(int& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				ImGui::DragInt(name, &val);
 			});
@@ -115,7 +146,7 @@ namespace Arche
 		// float
 		void operator()(float& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				float speed = 0.1f;
 				float min = 0.0f;
@@ -140,7 +171,7 @@ namespace Arche
 		// ------------------------------------------------------------
 		void operator()(std::string& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				// 1. テキスト本文
 				if (strcmp(name, "text") == 0 || strcmp(name, "Content") == 0)
@@ -200,7 +231,7 @@ namespace Arche
 		// ------------------------------------------------------------
 		void operator()(StringId& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				std::string currentStr = val.c_str();
 				char buf[256];
@@ -253,7 +284,7 @@ namespace Arche
 		// XMFLOAT2
 		void operator()(DirectX::XMFLOAT2& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				float v[2] = { val.x, val.y };
 				if (ImGui::DragFloat2(name, v, 0.1f))
@@ -266,7 +297,7 @@ namespace Arche
 		// XMFLOAT3
 		void operator()(DirectX::XMFLOAT3& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				float v[3] = { val.x, val.y, val.z };
 				if (strstr(name, "color") || strstr(name, "Color"))
@@ -283,7 +314,7 @@ namespace Arche
 		// XMFLOAT4型（空ピッカー）
 		void operator()(DirectX::XMFLOAT4& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				// 変数名に Color が含まれていなくても、XMFLOAT4は基本的に色として扱う
 				float v[4] = { val.x, val.y, val.z, val.w };
@@ -299,7 +330,7 @@ namespace Arche
 		// ColliderType
 		void operator()(ColliderType& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				// プルダウンの中身
 				const char* items[] = { "Box", "Sphere", "Capsule", "Cylinder" };
@@ -312,7 +343,7 @@ namespace Arche
 		// BodyType
 		void operator()(BodyType& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				const char* items[] = { "Static", "Dynamic", "Kinematic" };
 				int item = (int)val;
@@ -323,7 +354,7 @@ namespace Arche
 		// Layer
 		void operator()(Layer& val, const char* name)
 		{
-			DrawWidget(name, [&]()
+			DrawWidget(name, val, [&]()
 			{
 				int layerVal = (int)val;
 				if (ImGui::InputInt(name, &layerVal)) val = (Layer)layerVal;
@@ -378,25 +409,65 @@ namespace Arche
 	// ヘルパー関数：コンポーネントを描画する
 	// ------------------------------------------------------------
 	template<typename T>
-	void DrawComponent(const char* label, T& component, bool& removed)
+	void DrawComponent(
+		const char* label,
+		T& component,
+		bool& removed,
+		std::function<void(json&)> serializeFunc,			// ★追加: 保存用関数
+		std::function<void(json, json)> commandFunc,		// ★追加: コマンド発行用関数
+		int index = -1,
+		std::function<void(int, int)> onReorder = nullptr
+	)
 	{
-		// ツリーノードを開く（デフォルトで開いた状態）
-		// ImGuiTreeNodeFlags_Framed などで見た目を整えるのもGood
-		if (ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::PushID(label);	// 名前衝突防止
+		// D&D用のID
+		ImGui::PushID(label);
 
-			// メンバ変数を１つずつ Visitor に渡して描画させる
-			Reflection::VisitMembers(component, InspectorGuiVisitor{});
+		// ヘッダー描画
+		bool open = ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen);
+
+		// ドラッグ&ドロップ処理
+		// ------------------------------------------------------------
+		if (onReorder && index >= 0)
+		{
+			// 1. ドラッグ元（Source）
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+			{
+				// 並び変え元のインデックスを渡す
+				ImGui::SetDragDropPayload("COMPONENT_ORDER", &index, sizeof(int));
+				ImGui::Text("Move %s", label);
+				ImGui::EndDragDropSource();
+			}
+
+			// 2. ドロップ先（Target）
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("COMPONENT_ORDER"))
+				{
+					int srcIndex = *(const int*)payload->Data;
+					// 自分自身へのドロップでなければ並び替え実行
+					if (srcIndex != index)
+					{
+						onReorder(srcIndex, index);
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+		}
+
+		if (open)
+		{
+			// 受け取った関数を使ってVisitorを正しく構築する
+			InspectorGuiVisitor visitor(serializeFunc, commandFunc);
+			Reflection::VisitMembers(component, visitor);
 
 			ImGui::Spacing();
 			if (ImGui::Button("Remove Component"))
 			{
 				removed = true;
 			}
-
-			ImGui::PopID();
 		}
+
+		ImGui::PopID();
 	}
 
 }	// namespace Arche

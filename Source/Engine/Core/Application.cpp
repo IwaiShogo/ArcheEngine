@@ -24,8 +24,12 @@
 #include "Engine/Renderer/Renderers/BillboardRenderer.h"
 #include "Engine/Renderer/Text/TextRenderer.h"
 
+#include "Engine/EngineLoader.h"
+#include "Sandbox/GameLoader.h"
+
 #ifdef _DEBUG
 #include "Editor/Core/Editor.h"
+#include "Editor/Core/GameCommands.h"
 #endif // _DEBUG
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -109,11 +113,32 @@ namespace Arche
 		s_instance = nullptr;
 	}
 
-
 	void Application::Run()
 	{
 		OnInitialize();
 		SceneManager::Instance().Initialize();
+
+#ifdef _DEBUG
+		Context& ctx = SceneManager::Instance().GetContext();
+		GameCommands::RegisterAll(SceneManager::Instance().GetWorld(), ctx);
+#endif // _DEBUG
+
+		// スタートアップシーンのロード
+		std::string startScene = "Resources/Game/Scenes/GameScene.json";
+
+		// ファイルが存在するかチェック
+		std::ifstream f(startScene);
+		if (f.good())
+		{
+			f.close();
+			// シーンロード（システム、エンティティ、レイヤー設定含む）
+			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
+			Logger::Log("Startup: Loaded: " + startScene);
+		}
+		else
+		{
+			Logger::LogWarning("Startup: Scene file not found. Created empty scene.");
+		}
 
 		MSG msg = {};
 		while (msg.message != WM_QUIT)
@@ -136,209 +161,6 @@ namespace Arche
 			}
 		}
 	}
-
-//	void Application::Initialize()
-//	{
-//		// 1. スワップチェーンの設定
-//		DXGI_SWAP_CHAIN_DESC scd = {};
-//		scd.BufferCount = 1;
-//		scd.BufferDesc.Width = Config::SCREEN_WIDTH;
-//		scd.BufferDesc.Height = Config::SCREEN_HEIGHT;
-//		scd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-//		scd.BufferDesc.RefreshRate.Numerator = Config::FRAME_RATE;
-//		scd.BufferDesc.RefreshRate.Denominator = 1;
-//		scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-//		scd.OutputWindow = m_hwnd;
-//		scd.SampleDesc.Count = 1;
-//		scd.SampleDesc.Quality = 0;
-//		scd.Windowed = TRUE;
-//
-//		// フラグ設定
-//		UINT creationFlags = 0;
-//#ifdef _DEBUG
-//		creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
-//#endif // _DEBUG
-//		creationFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-//
-//		// 2. デバイスとスワップチェーンの作成
-//		D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
-//		D3D_FEATURE_LEVEL featureLevel;
-//
-//		HRESULT hr = D3D11CreateDeviceAndSwapChain(
-//			nullptr,
-//			D3D_DRIVER_TYPE_HARDWARE,
-//			nullptr,
-//			creationFlags,
-//			featureLevels,
-//			1,
-//			D3D11_SDK_VERSION,
-//			&scd,
-//			&m_swapChain,
-//			&m_device,
-//			&featureLevel,
-//			&m_context
-//		);
-//
-//		if (FAILED(hr))
-//		{
-//			throw std::runtime_error("Failed to create D3D11 device");
-//		}
-//
-//		// 3. レンダーターゲットビュー（RTV）の作成
-//		ComPtr<ID3D11Texture2D> backBuffer;
-//		hr = m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-//		if (FAILED(hr))
-//		{
-//			throw std::runtime_error("Failed to get back buffer");
-//		}
-//
-//		hr = m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_renderTargetView);
-//		if (FAILED(hr))
-//		{
-//			throw std::runtime_error("Failed to create RTV");
-//		}
-//
-//		// 4. 深度バッファ（Z-Buffer）の作成
-//		D3D11_TEXTURE2D_DESC depthBufferDesc = {};
-//		depthBufferDesc.Width = Config::SCREEN_WIDTH;
-//		depthBufferDesc.Height = Config::SCREEN_HEIGHT;
-//		depthBufferDesc.MipLevels = 1;
-//		depthBufferDesc.ArraySize = 1;
-//		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-//		depthBufferDesc.SampleDesc.Count = 1;
-//		depthBufferDesc.SampleDesc.Quality = 0;
-//		depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-//		depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-//		depthBufferDesc.CPUAccessFlags = 0;
-//		depthBufferDesc.MiscFlags = 0;
-//
-//		// テクスチャ作成
-//		ComPtr<ID3D11Texture2D> depthStencilBuffer;
-//		hr = m_device->CreateTexture2D(&depthBufferDesc, nullptr, &depthStencilBuffer);
-//		if (FAILED(hr))
-//		{
-//			throw std::runtime_error("Failed to create Depth Stencil Buffer");
-//		}
-//
-//		// ビュー作成
-//		hr = m_device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, &m_depthStencilView);
-//		if (FAILED(hr))
-//		{
-//			throw std::runtime_error("Failed to create Depth Stencil View");
-//		}
-//
-//		// レンダーターゲットをセット
-//		m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-//
-//		// ビューポート設定
-//		D3D11_VIEWPORT vp = {};
-//		vp.Width = static_cast<float>(Config::SCREEN_WIDTH);
-//		vp.Height = static_cast<float>(Config::SCREEN_HEIGHT);
-//		vp.MinDepth = 0.0f;
-//		vp.MaxDepth = 1.0f;
-//		vp.TopLeftX = 0;
-//		vp.TopLeftY = 0;
-//		m_context->RSSetViewports(1, &vp);
-//
-//		// 時間管理の初期化
-//		Time::Initialize();
-//		Time::SetFrameRate(Config::FRAME_RATE);
-//
-//		// 入力
-//		Input::Initialize();
-//
-//		FontManager::Instance().Initialize();
-//
-//#ifdef _DEBUG
-//		// --- ImGui ---
-//		IMGUI_CHECKVERSION();
-//		ImGui::CreateContext();
-//		ImGuiIO& io = ImGui::GetIO(); (void)io;
-//
-//		// ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-//		// 日本語フォントの読み込み
-//		// ------------------------------------------------------------
-//		// Windows標準の「メイリオ」などを読み込む
-//		static const ImWchar* glyphRanges = io.Fonts->GetGlyphRangesJapanese();
-//
-//		// フォントサイズ 18.0f で読み込み
-//		ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\meiryo.ttc", 18.0f, nullptr, glyphRanges);
-//
-//		// もし読み込みに失敗した場合の保険
-//		if (font == nullptr)
-//		{
-//			io.Fonts->AddFontDefault();
-//		}
-//		// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-//
-//		// ドッキングとマルチビューポートを有効化
-//		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;	// キーボード操作有効
-//		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		// ウィンドウドッキング有効
-//		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;		// 別ウィンドウ化を有効
-//
-//		// スタイル調整
-//		ImGui::StyleColorsDark();
-//		ImGuiStyle& style = ImGui::GetStyle();
-//
-//		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-//		{
-//			style.WindowBorderHoverPadding = 1.0f;
-//			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-//		}
-//
-//		// Win32 / DX11 バインディングの初期化
-//		ImGui_ImplWin32_Init(m_hwnd);
-//		ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
-//
-//		// エディタ用の画面サイズで初期化
-//		m_sceneRT = std::make_unique<RenderTarget>(m_device.Get(), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
-//		m_gameRT = std::make_unique<RenderTarget>(m_device.Get(), Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
-//#endif // _DEBUG
-//
-//		// マネージャー
-//		ResourceManager::Instance().Initialize(m_device.Get());
-//		AudioManager::Instance().Initialize();	// オーディオ初期化
-//		ResourceManager::Instance().LoadManifest("Resources/Game/resources.json");
-//		ResourceManager::Instance().LoadAll();
-//
-//		// 3D描画作成
-//		m_primitiveRenderer = std::make_unique<PrimitiveRenderer>(m_device.Get(), m_context.Get());
-//		m_primitiveRenderer->Initialize();
-//
-//		// 2D描画作成
-//		m_spriteRenderer = std::make_unique<SpriteRenderer>(m_device.Get(), m_context.Get());
-//		m_spriteRenderer->Initialize();
-//
-//		// モデル描画作成
-//		m_modelRenderer = std::make_unique<ModelRenderer>(m_device.Get(), m_context.Get());
-//		m_modelRenderer->Initialize();
-//
-//		// ビルボードレンダラー作成
-//		m_billboardRenderer = std::make_unique<BillboardRenderer>(m_device.Get(), m_context.Get());
-//		m_billboardRenderer->Initialize();
-//
-//		// テキストレンダラー
-//		m_textRenderer = std::make_unique<TextRenderer>(m_device.Get(), m_context.Get());
-//
-//		Context context;
-//		context.renderer = m_primitiveRenderer.get();
-//		context.spriteRenderer = m_spriteRenderer.get();
-//		context.modelRenderer = m_modelRenderer.get();
-//		context.billboardRenderer = m_billboardRenderer.get();
-//		context.device = m_device.Get();
-//		context.context = m_context.Get();
-//
-//		// サムネイル生成器の初期化
-//		ThumbnailGenerator::Instance().Initialize(m_device.Get(), m_context.Get(), m_modelRenderer.get());
-//		// 全プレファブのサムネイルを作る
-//		ThumbnailGenerator::Instance().GenerateAll("Resources/Game/Prefabs");
-//
-//		// シーンマネージャ
-//		SceneManager::Instance().SetContext(context);
-//		m_appContext = context;
-//		SceneManager::Instance().SetContext(m_appContext);
-//		SceneManager::Instance().Initialize();
-//	}
 
 	void Application::Update()
 	{

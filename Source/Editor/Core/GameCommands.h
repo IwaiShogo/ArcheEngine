@@ -61,12 +61,12 @@ namespace Arche
 				});
 
 			// scene [title/game]: シーン遷移
-			Logger::RegisterCommand("scene", [&](auto args) {
+			/*Logger::RegisterCommand("scene", [&](auto args) {
 				if (args.empty()) return;
 				if (args[0] == "title")		SceneManager::Instance().ChangeScene("Title");
 				else if (args[0] == "game")	SceneManager::Instance().ChangeScene("Game");
 				Logger::Log("Switching scene...");
-				});
+				});*/
 
 			// wireframe [on/off]: ワイヤーフレーム表示の切り替え
 			Logger::RegisterCommand("wireframe", [&](auto args) {

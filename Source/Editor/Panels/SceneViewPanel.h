@@ -23,6 +23,8 @@
 #include "Engine/Core/Window/Input.h"
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Scene/Systems/Physics/CollisionSystem.h"
+#include "Engine/Scene/Serializer/SceneSerializer.h"
+#include "Engine/Resource/ResourceManager.h"
 
 namespace Arche
 {
@@ -45,6 +47,18 @@ namespace Arche
 				ImGui::End();
 				ImGui::PopStyleVar();
 				return;
+			}
+
+			// 0. Deleteキーでの削除ショートカット
+			// ------------------------------------------------------------
+			if (ImGui::IsWindowFocused() && selectedEntity != NullEntity)
+			{
+				if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+				{
+					// コマンド発行
+					CommandHistory::Execute(std::make_shared<DeleteEntityCommand>(world, selectedEntity));
+					selectedEntity = NullEntity;	// 選択解除
+				}
 			}
 
 			// 1. サイズチェック、必要ならリサイズ
@@ -115,6 +129,111 @@ namespace Arche
 				ImGui::Image((void*)srv, imageSize);
 			}
 
+			// 7. シーンビューへのドラッグ&ドロップ
+			// ------------------------------------------------------------
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					// 1. パス処理
+					const char* droppedPath = (const char*)payload->Data;
+					std::string relativePath = droppedPath;
+					std::string rootPath = "";
+					std::string fullPath = (relativePath.find(rootPath) == 0) ? relativePath : rootPath + relativePath;
+					std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+
+					std::filesystem::path fpath = fullPath;
+					std::string ext = fpath.extension().string();
+					std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+					// 2. マウス位置からワールド座標を計算 (Z=0平面へのレイキャスト)
+					auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+					auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+					auto viewportOffset = ImGui::GetWindowPos();
+
+					// コンテンツ領域の開始位置
+					float contentX = viewportOffset.x + viewportMinRegion.x;
+					float contentY = viewportOffset.y + viewportMinRegion.y;
+
+					// マウス座標
+					auto mousePos = ImGui::GetMousePos();
+
+					// ビューポート内ローカル座標
+					float vecX = mousePos.x - contentX;
+					float vecY = mousePos.y - contentY;
+
+					// ビューポートサイズ
+					float width = viewportMaxRegion.x - viewportMinRegion.x;
+					float height = viewportMaxRegion.y - viewportMinRegion.y;
+
+					// 3D空間へのUnproject
+					XMMATRIX viewMat = m_camera.GetViewMatrix();
+					XMMATRIX projMat = m_camera.GetProjectionMatrix();
+
+					XMVECTOR mouseNear = XMVector3Unproject(XMVectorSet(vecX, vecY, 0.0f, 1.0f),
+						0, 0, width, height, 0.0f, 1.0f, projMat, viewMat, XMMatrixIdentity());
+					XMVECTOR mouseFar = XMVector3Unproject(XMVectorSet(vecX, vecY, 1.0f, 1.0f),
+						0, 0, width, height, 0.0f, 1.0f, projMat, viewMat, XMMatrixIdentity());
+
+					XMVECTOR rayDir = XMVector3Normalize(mouseFar - mouseNear);
+					XMVECTOR rayOrigin = mouseNear;
+
+					// 平面 Z=0 との交差判定 (t = -origin.z / dir.z)
+					float t = -XMVectorGetZ(rayOrigin) / XMVectorGetZ(rayDir);
+					XMVECTOR worldPos = rayOrigin + rayDir * t;
+
+					XMFLOAT3 spawnPos;
+					XMStoreFloat3(&spawnPos, worldPos);
+					spawnPos.z = 0.0f; // 2D的な配置
+
+					// 3. 生成処理
+					Entity newEntity = NullEntity;
+
+					if (ext == ".json") // Prefab
+					{
+						// PrefabかどうかのチェックはLoadPrefab内でエラーハンドリングされる前提
+						newEntity = SceneSerializer::LoadPrefab(world, fullPath);
+					}
+					else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga")
+					{
+						newEntity = world.create_entity().id();
+						std::string name = fpath.stem().string();
+						world.getRegistry().emplace<Tag>(newEntity, name);
+						world.getRegistry().emplace<Transform>(newEntity);
+
+						StringId key(fullPath);
+						ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Texture);
+						world.getRegistry().emplace<SpriteComponent>(newEntity, key);
+
+						// 画像サイズに合わせてTransformを調整
+						auto tex = ResourceManager::Instance().GetTexture(key);
+						if (tex)
+						{
+							world.getRegistry().emplace<Transform2D>(newEntity, 0.0f, 0.0f, (float)tex->width, (float)tex->height);
+						}
+						else
+						{
+							world.getRegistry().emplace<Transform2D>(newEntity, 0.0f, 0.0f, 100.0f, 100.0f);
+						}
+					}
+
+					// 4. 位置の適用
+					if (newEntity != NullEntity)
+					{
+						if (world.getRegistry().has<Transform>(newEntity))
+							world.getRegistry().get<Transform>(newEntity).position = spawnPos;
+
+						if (world.getRegistry().has<Transform2D>(newEntity))
+						{
+							world.getRegistry().get<Transform2D>(newEntity).position = { spawnPos.x, spawnPos.y };
+						}
+
+						selectedEntity = newEntity;
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			// 描画直後のアイテム（画像）の情報を取得
 			ImVec2 imageMin = ImGui::GetItemRectMin();	// 画像の左上（絶対座標）
 
@@ -136,7 +255,7 @@ namespace Arche
 				ImGuizmo::SetRect(imageStart.x, imageStart.y, imageSize.x, imageSize.y);
 
 				// ギズモ描画実行
-				GizmoSystem::Draw(world.getRegistry(), selectedEntity, viewMat, projMat, imageStart.x, imageStart.y, imageSize.x, imageSize.y);
+				GizmoSystem::Draw(world, selectedEntity, viewMat, projMat, imageStart.x, imageStart.y, imageSize.x, imageSize.y);
 			}
 
 			// 6. マウスピッキング

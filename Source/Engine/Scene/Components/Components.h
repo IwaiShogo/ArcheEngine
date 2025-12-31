@@ -56,6 +56,7 @@ namespace Arche
 	struct Tag
 	{
 		StringId name;
+		std::vector<std::string> componentOrder;	// 表示順序を保存するリスト
 
 		// コンストラクタ
 		Tag() = default;
@@ -67,7 +68,7 @@ namespace Arche
 		bool operator==(const Tag& other) const { return name == other.name; }
 		bool operator==(const StringId& strId) const { return name == strId; }
 	};
-	ARCHE_COMPONENT(Tag, REFLECT_VAR(name))
+	ARCHE_COMPONENT(Tag, REFLECT_VAR(name) REFLECT_VAR(componentOrder))
 
 	/**
 	 * @struct	Transform
@@ -189,6 +190,13 @@ namespace Arche
 			{
 				PhysicsConfig::matrix[target] &= ~other;
 				PhysicsConfig::matrix[other] &= ~target;	// 相手側からも自分を除外
+				return *this;
+			}
+
+			// @brief	直接設定（上書き）
+			RuleBuilder& setMask(Layer other)
+			{
+				PhysicsConfig::matrix[target] = other;
 				return *this;
 			}
 		};
@@ -345,6 +353,8 @@ namespace Arche
 	};
 	ARCHE_COMPONENT(Collider,
 		REFLECT_VAR(enabled)
+		REFLECT_VAR(type)
+		REFLECT_VAR(layer)
 		REFLECT_VAR(isTrigger)
 		REFLECT_VAR(offset)
 		REFLECT_VAR(boxSize)

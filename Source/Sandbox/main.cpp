@@ -14,48 +14,24 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Base/Logger.h"
 
-// Scenes
-#include "SandBox/Scenes/SceneTitle.h"
-#include "SandBox/Scenes/SceneGame.h"
 
-using namespace Arche;
-
-// アプリケーション設定
-class SandboxApp
-	: public Arche::Application
+namespace Arche
 {
-public:
-	SandboxApp()
-		: Arche::Application("Arche Engine Project", Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT) {}
-
-	~SandboxApp() = default;
-
-	// 初期化時にシーンを登録する
-	void OnInitialize() override
+	// エンジン側にアプリケーションの実体を渡す関数
+	Application* CreateApplication()
 	{
-		auto& sm = SceneManager::Instance();
-		
-		sm.Initialize();
-
-		sm.RegisterScene<SceneTitle>("Title");
-		sm.RegisterScene<SceneGame>("Game");
-
-		// 最初のシーンへ
-		sm.ChangeScene("Title");
-
-		Logger::Log("Sandbox Initialized.");
+		return new Application("Arche Engine", Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
 	}
-};
-
-// エンジン側にアプリケーションの実体を渡す関数
-Arche::Application* Arche::CreateApplication()
-{
-	return new SandboxApp();
 }
 
 // Windows エントリーポイント
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 {
+	// メモリリークチェック
+#ifdef _DEBUG
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif // _DEBUG
+
 	// アプリ生成
 	auto app = Arche::CreateApplication();
 

@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date   2025/11/27	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 // ===== インクルード =====
@@ -30,6 +22,7 @@
 #include "Editor/Panels/InspectorWindow.h"
 #include "Editor/Panels/SystemWindow.h"
 #include "Editor/Panels/ContentBrowser.h"
+#include "Editor/Panels/ProjectSettingsWindow.h"
 
 namespace Arche
 {
@@ -42,6 +35,7 @@ namespace Arche
 		m_windows.push_back(std::make_unique<InspectorWindow>());
 		m_windows.push_back(std::make_unique<SystemWindow>());
 		m_windows.push_back(std::make_unique<ContentBrowser>());
+		m_windows.push_back(std::make_unique<ProjectSettingsWindow>());
 
 		// 2. ImGuiの設定
 		ImGuiIO& io = ImGui::GetIO();
@@ -74,10 +68,13 @@ namespace Arche
 		}
 	}
 
+	static std::string s_currentScenePath = "Resources/Game/Scenes/GameScene.json";
+
 	void Editor::Draw(World& world, Context& ctx)
 	{
 		bool ctrl = Input::GetKey(VK_CONTROL);
 
+		// Undo / Redo
 		if (ctrl && Input::GetKeyDown('Z'))
 		{
 			CommandHistory::Undo();
@@ -87,15 +84,48 @@ namespace Arche
 			CommandHistory::Redo();
 		}
 
+		// シーン保存
+		if (ctrl && Input::GetKeyDown('S'))
+		{
+			// Editモードの時だけ保存可能
+			if (ctx.editorState == EditorState::Edit)
+			{
+				SceneSerializer::SaveScene(world, s_currentScenePath);
+			}
+		}
+
+		// Play / Edit 切り替え
+		if (ctrl && Input::GetKeyDown('P'))
+		{
+			if (ctx.editorState == EditorState::Edit)
+				ctx.editorState = EditorState::Play;
+			else
+				ctx.editorState = EditorState::Edit;
+		}
+
 		ImGui::DockSpaceOverViewport(ImGui::GetID("MainDockSpace"), ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
 		// ツールバー
 		if (ImGui::BeginMainMenuBar())
 		{
+			// ファイルメニュー
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Save Scene", "Ctrl + S"))
+				{
+					SceneSerializer::SaveScene(world, s_currentScenePath);
+				}
+				ImGui::EndMenu();
+			}
+
+			// Play / Stop 切り替え
 			if (ctx.editorState == EditorState::Edit)
 			{
 				if (ImGui::Button("Play"))
 				{
+					// 一時保存
+					SceneSerializer::SaveScene(world, "Resources/Engine/Cache/SceneCache.json");
+
 					ctx.editorState = EditorState::Play;
 				}
 			}
@@ -104,6 +134,9 @@ namespace Arche
 				if (ImGui::Button("Stop"))
 				{
 					ctx.editorState = EditorState::Edit;
+
+					// 復元
+					SceneSerializer::LoadScene(world, "Resources/Engine/Cache/SceneCache.json");
 				}
 			}
 
@@ -128,11 +161,6 @@ namespace Arche
 
 		// ログウィンドウの描画
 		Logger::Draw("Debug Logger");
-	}
-
-	void Editor::DrawGizmo(World& world, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj, float x, float y, float w, float h)
-	{
-		GizmoSystem::Draw(world.getRegistry(), m_selectedEntity, view, proj, x, y, w, h);
 	}
 
 }	// namespace Arche

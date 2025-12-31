@@ -170,4 +170,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::UISystem, "UI System")
+
 #endif // !___UI_SYSTEM_H___

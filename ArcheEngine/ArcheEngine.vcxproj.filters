@@ -118,6 +118,9 @@
     <Filter Include="Source\Engine\Scene\Systems\Physics">
       <UniqueIdentifier>{07806c4d-9ccf-47c7-a227-c468c36b115f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{2224f43a-d908-4c7e-a3e3-f0f9efd4c6a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Editor\Core\Editor.cpp">
@@ -338,9 +341,6 @@
     <ClInclude Include="..\Source\Engine\Renderer\RHI\Texture.h">
       <Filter>Source\Engine\Renderer\RHI</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Engine\Scene\Core\IScene.h">
-      <Filter>Source\Engine\Scene\Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Engine\Scene\Core\SceneManager.h">
       <Filter>Source\Engine\Scene\Core</Filter>
     </ClInclude>
@@ -419,6 +419,9 @@
     <ClInclude Include="..\Source\Editor\Core\EditorCommands.h">
       <Filter>Source\Editor\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\ProjectSettingsWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Library\DirectXTex\DirectXTex.inl">
@@ -435,6 +438,9 @@
     </None>
     <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
       <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="..\Scripts\GenerateGameLoader.ps1">
+      <Filter>Scripts</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -20,6 +20,18 @@
 
 namespace Arche
 {
+	static void RemoveChildFromParent(Registry& reg, Entity parent, Entity child)
+	{
+		if (parent != NullEntity && reg.valid(parent) && reg.has<Relationship>(parent))
+		{
+			auto& children = reg.get<Relationship>(parent).children;
+			children.erase(
+				std::remove(children.begin(), children.end(), child),
+				children.end()
+			);
+		}
+	}
+
 	// エンティティ削除コマンド
 	// ------------------------------------------------------------
 	class DeleteEntityCommand
@@ -27,48 +39,150 @@ namespace Arche
 	{
 	public:
 		DeleteEntityCommand(World& world, Entity entity)
-			: m_world(world), m_entity(entity), m_parent(NullEntity)
+			: m_world(world), m_targetEntity(entity), m_parentOfTarget(NullEntity)
 		{
-			// 親を覚えておく
 			Registry& reg = m_world.getRegistry();
+
+			// 1. 削除対象の親を覚えておく（Undoでの再結合用）
 			if (reg.has<Relationship>(entity))
 			{
-				m_parent = reg.get<Relationship>(entity).parent;
+				m_parentOfTarget = reg.get<Relationship>(entity).parent;
 			}
-			// データをバックアップ
-			SceneSerializer::SerializeEntityToJson(reg, entity, m_backup);
+
+			// 2. 自分と全子孫を再帰的にバックアップ
+			CollectDescendants(reg, entity);
 		}
 
 		void Execute() override
 		{
-			if (m_world.getRegistry().valid(m_entity))
+			Registry& reg = m_world.getRegistry();
+
+			// 1. 親から切り離す
+			if (m_parentOfTarget != NullEntity)
 			{
-				m_world.getRegistry().destroy(m_entity);
+				RemoveChildFromParent(reg, m_parentOfTarget, m_targetEntity);
+			}
+
+			// 2. 収集した全エンティティを削除（リストは親->子の順なので、逆順(子->親)で消すと安全だがEnTTは順序不問）
+			// IDが無効になる前に全て削除
+			for (const auto& backup : m_backups)
+			{
+				Entity e = (Entity)backup.originalID;
+				if (reg.valid(e))
+				{
+					reg.destroy(e);
+				}
 			}
 		}
 
 		void Undo() override
 		{
-			// 復元実行
 			Registry& reg = m_world.getRegistry();
-			m_entity = SceneSerializer::DeserializeEntityFromJson(reg, m_backup);
 
-			// 親子関係の修復
-			if (m_parent != NullEntity && reg.valid(m_parent))
+			// 旧ID -> 新Entity の変換マップ
+			std::map<uint32_t, Entity> idMap;
+
+			// 1. 全エンティティを復元（コンポーネントデータ含む）
+			Entity newTargetEntity = NullEntity;
+
+			for (const auto& backup : m_backups)
 			{
-				if (!reg.has<Relationship>(m_entity)) reg.emplace<Relationship>(m_entity);
-				reg.get<Relationship>(m_entity).parent = m_parent;
+				// 生成 & デシリアライズ
+				Entity newEntity = SceneSerializer::DeserializeEntityFromJson(reg, backup.data);
 
-				if (!reg.has<Relationship>(m_parent)) reg.emplace<Relationship>(m_parent);
-				reg.get<Relationship>(m_parent).children.push_back(m_entity);
+				// マップに登録
+				idMap[backup.originalID] = newEntity;
+
+				// ターゲット（削除の起点となったエンティティ）の新しいIDを保持
+				if (backup.originalID == (uint32_t)m_targetEntity)
+				{
+					newTargetEntity = newEntity;
+				}
+			}
+
+			// ターゲットのIDを更新（次回Redoのため）
+			m_targetEntity = newTargetEntity;
+
+			// 2. 親子関係のIDリンクを修復（IDリマッピング）
+			for (auto& [oldId, newEntity] : idMap)
+			{
+				if (!reg.has<Relationship>(newEntity)) continue;
+				auto& rel = reg.get<Relationship>(newEntity);
+
+				// Parentの書き換え
+				if (rel.parent != NullEntity)
+				{
+					uint32_t oldParentID = (uint32_t)rel.parent;
+					// 復元されたグループ内に親がいるならIDを書き換え
+					if (idMap.count(oldParentID))
+					{
+						rel.parent = idMap[oldParentID];
+					}
+					// 親が削除対象外（生き残っている親）なら、IDはそのまま
+				}
+
+				// Childrenの書き換え
+				for (auto& child : rel.children)
+				{
+					uint32_t oldChildID = (uint32_t)child;
+					if (idMap.count(oldChildID))
+					{
+						child = idMap[oldChildID];
+					}
+				}
+			}
+
+			// 3. 元の親（削除されずに残っていた親）に、復元したターゲットを再接続
+			if (m_parentOfTarget != NullEntity && reg.valid(m_parentOfTarget))
+			{
+				if (!reg.has<Relationship>(m_parentOfTarget))
+					reg.emplace<Relationship>(m_parentOfTarget);
+
+				auto& parentRel = reg.get<Relationship>(m_parentOfTarget);
+				// 重複チェックして追加
+				if (std::find(parentRel.children.begin(), parentRel.children.end(), m_targetEntity) == parentRel.children.end())
+				{
+					parentRel.children.push_back(m_targetEntity);
+				}
+
+				// ターゲット側の親も確実に設定
+				if (!reg.has<Relationship>(m_targetEntity)) reg.emplace<Relationship>(m_targetEntity);
+				reg.get<Relationship>(m_targetEntity).parent = m_parentOfTarget;
 			}
 		}
 
 	private:
+		// 再帰的に子孫を集める（親 -> 子 の順でリストに追加）
+		void CollectDescendants(Registry& reg, Entity root)
+		{
+			// 自分のバックアップ
+			json data;
+			SceneSerializer::SerializeEntityToJson(reg, root, data);
+			m_backups.push_back({ (uint32_t)root, data });
+
+			// 子がいれば再帰
+			if (reg.has<Relationship>(root))
+			{
+				for (auto child : reg.get<Relationship>(root).children)
+				{
+					CollectDescendants(reg, child);
+				}
+			}
+		}
+
+	private:
+		struct EntityBackupData
+		{
+			uint32_t originalID;	// 元のID
+			json data;				// シリアライズデータ
+		};
+
 		World& m_world;
-		Entity m_entity;	// 削除対象
-		json m_backup;		// 復元用データ
-		Entity m_parent;	// 親ID
+		Entity m_targetEntity; // 削除対象（ルート）
+		Entity m_parentOfTarget; // 削除対象の親ID（Undo復帰用）
+
+		// 復元用データリスト
+		std::vector<EntityBackupData> m_backups;
 	};
 
 	// エンティティ生成コマンド
@@ -134,10 +248,10 @@ namespace Arche
 			if (!reg.valid(child)) return;
 
 			// 1. 旧親から離脱
-			if (!reg.has<Relationship>(child))
+			if (reg.has<Relationship>(child))
 			{
 				Entity currParent = reg.get<Relationship>(child).parent;
-				if (currParent != NullEntity && reg.valid(currParent) && reg.has<Relationship>(currParent));
+				RemoveChildFromParent(reg, currParent, child);
 			}
 
 			// 2. 新規へ所属
@@ -147,7 +261,12 @@ namespace Arche
 			if (parent != NullEntity && reg.valid(parent))
 			{
 				if (!reg.has<Relationship>(parent)) reg.emplace<Relationship>(parent);
-				reg.get<Relationship>(parent).children.push_back(child);
+				// 重複防止
+				auto& children = reg.get<Relationship>(parent).children;
+				if (std::find(children.begin(), children.end(), child) == children.end())
+				{
+					children.push_back(child);
+				}
 			}
 		}
 
@@ -274,6 +393,38 @@ namespace Arche
 		std::string m_componentName;
 		json m_oldState;
 		json m_newState;
+	};
+
+	// コンポーネント順序変更コマンド
+	// ------------------------------------------------------------
+	class ReorderComponentCommand
+		: public ICommand
+	{
+	public:
+		ReorderComponentCommand(World& world, Entity entity, const std::vector<std::string>& oldOrder, const std::vector<std::string>& newOrder)
+			: m_world(world), m_entity(entity), m_oldOrder(oldOrder), m_newOrder(newOrder) {}
+
+		void Execute() override
+		{
+			if (m_world.getRegistry().has<Tag>(m_entity))
+			{
+				m_world.getRegistry().get<Tag>(m_entity).componentOrder = m_newOrder;
+			}
+		}
+
+		void Undo() override
+		{
+			if (m_world.getRegistry().has<Tag>(m_entity))
+			{
+				m_world.getRegistry().get<Tag>(m_entity).componentOrder = m_oldOrder;
+			}
+		}
+
+	private:
+		World& m_world;
+		Entity m_entity;
+		std::vector<std::string> m_oldOrder;
+		std::vector<std::string> m_newOrder;
 	};
 
 }	// namespace Arche

@@ -44,6 +44,9 @@ namespace Arche
 		}
 	};
 
-}
+}	// namespace Arche
+
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::TextRenderSystem, "Text Render System")
 
 #endif // !___TEXT_RENDER_SYSTEM_H___

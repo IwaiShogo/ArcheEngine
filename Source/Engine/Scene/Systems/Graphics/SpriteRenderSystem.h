@@ -73,4 +73,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::SpriteRenderSystem, "Sprite Render System")
+
 #endif // !___SPRITE_RENDERER_SYSTEM_H___

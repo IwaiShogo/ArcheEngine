@@ -1,92 +1,97 @@
 {
-    "entities": [
+    "Entities": [
         {
-            "AudioListener": {},
+            "ID": 0
+        },
+        {
+            "ID": 1
+        },
+        {
+            "ID": 2
+        },
+        {
+            "ID": 3
+        },
+        {
+            "ID": 4
+        },
+        {
+            "ID": 5
+        },
+        {
+            "ID": 6
+        },
+        {
+            "ID": 7
+        },
+        {
+            "ID": 8
+        },
+        {
+            "ID": 9
+        },
+        {
+            "ID": 10
+        },
+        {
+            "ID": 11
+        },
+        {
+            "ID": 12
+        },
+        {
+            "AudioListener": {
+                "enabled": true
+            },
             "Camera": {
-                "aspect": 1.7186760902404785,
-                "far": 1000.0,
+                "aspect": 1.7777777910232544,
+                "enabled": true,
+                "farZ": 1000.0,
                 "fov": 0.7853981852531433,
-                "near": 0.10000000149011612
+                "nearZ": 0.10000000149011612
             },
-            "Tag": {
-                "name": "MainCamera"
-            },
-            "Transform": {
-                "pos": [
-                    9.575193405151367,
-                    8.903937339782715,
-                    -13.788150787353516
-                ],
-                "rot": [
-                    0.5800001621246338,
-                    -0.544999897480011,
-                    0.0
-                ],
-                "scl": [
+            "Collider": {
+                "boxSize": [
                     1.0,
                     1.0,
                     1.0
-                ]
-            }
-        },
-        {
-            "Collider": {
-                "height": 2.0,
+                ],
+                "enabled": true,
+                "height": 1.0,
                 "isTrigger": false,
-                "layer": 2,
-                "mask": 4294967295,
+                "layer": 1,
                 "offset": [
                     0.0,
                     0.0,
                     0.0
                 ],
                 "radius": 0.5,
-                "type": 2
+                "type": 1
             },
-            "MeshComponent": {
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "key": "hero",
-                "scale": [
-                    0.10000000149011612,
-                    0.10000000149011612,
-                    0.10000000149011612
-                ]
-            },
-            "PlayerInput": {
-                "jump": 5.0,
-                "speed": 3.0
-            },
-            "Rigidbody": {
-                "drag": 0.10000000149011612,
-                "grav": true,
-                "mass": 1.0,
-                "type": 1,
-                "vel": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
+            "ID": 13,
             "Tag": {
-                "name": "Player"
+                "componentOrder": [
+                    "AudioListener",
+                    "Camera",
+                    "Collider",
+                    "Tag",
+                    "Transform"
+                ],
+                "name": "MainCamera"
             },
             "Transform": {
-                "pos": [
+                "enabled": true,
+                "position": [
+                    2.0,
+                    10.0,
+                    -10.0
+                ],
+                "rotation": [
+                    0.7799999713897705,
                     0.0,
-                    1.4628474712371826,
                     0.0
                 ],
-                "rot": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scl": [
+                "scale": [
                     1.0,
                     1.0,
                     1.0
@@ -100,68 +105,71 @@
                     1.0,
                     1.0
                 ],
+                "enabled": true,
+                "height": 2.0,
                 "isTrigger": false,
-                "layer": 1,
-                "mask": 4294967295,
+                "layer": 2,
                 "offset": [
                     0.0,
                     0.0,
                     0.0
                 ],
-                "type": 0
+                "radius": 0.5,
+                "type": 2
             },
-            "Tag": {
-                "name": "Enemy"
-            },
-            "Transform": {
-                "pos": [
-                    5.0,
-                    0.0,
-                    0.0
-                ],
-                "rot": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scl": [
+            "ID": 14,
+            "MeshComponent": {
+                "color": [
+                    1.0,
                     1.0,
                     1.0,
                     1.0
+                ],
+                "enabled": true,
+                "modelKey": "hero",
+                "scaleOffset": [
+                    0.10000000149011612,
+                    0.10000000149011612,
+                    0.10000000149011612
                 ]
-            }
-        },
-        {
-            "SpriteComponent": {
-                "col": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "h": 64.0,
-                "key": "test",
-                "piv": [
-                    0.0,
-                    0.0
-                ],
-                "w": 64.0
+            },
+            "PlayerInput": {
+                "enabled": true,
+                "jumpPower": 5.0,
+                "speed": 3.0
+            },
+            "Rigidbody": {
+                "drag": 0.10000000149011612,
+                "enabled": true,
+                "mass": 1.0,
+                "type": 1,
+                "useGravity": true
             },
             "Tag": {
-                "name": "UI"
+                "componentOrder": [
+                    "Collider",
+                    "MeshComponent",
+                    "PlayerInput",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform",
+                    "NativeScriptComponent"
+                ],
+                "name": "Player"
             },
             "Transform": {
-                "pos": [
-                    50.0,
-                    50.0,
+                "enabled": true,
+                "position": [
+                    0.0,
+                    4.168966293334961,
                     0.0
                 ],
-                "rot": [
+                "rotation": [
                     0.0,
-                    0.0,
+                    -0.0,
                     0.0
                 ],
-                "scl": [
+                "scale": [
                     1.0,
                     1.0,
                     1.0
@@ -170,48 +178,344 @@
         },
         {
             "Collider": {
+                "boxSize": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "enabled": true,
+                "height": 1.0,
                 "isTrigger": false,
                 "layer": 1,
-                "mask": 4294967295,
                 "offset": [
                     0.0,
                     0.0,
                     0.0
                 ],
-                "type": 3
+                "radius": 0.5,
+                "type": 0
             },
+            "ID": 15,
             "Rigidbody": {
                 "drag": 0.10000000149011612,
-                "grav": true,
+                "enabled": true,
                 "mass": 1.0,
-                "type": 0,
-                "vel": [
-                    0.0,
-                    -14.677114486694336,
-                    0.0
-                ]
+                "type": 1,
+                "useGravity": true
             },
             "Tag": {
-                "name": "Ground"
+                "componentOrder": [
+                    "Collider",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform"
+                ],
+                "name": "Enemy"
             },
             "Transform": {
-                "pos": [
-                    0.0,
-                    -0.03715252876281738,
+                "enabled": true,
+                "position": [
+                    2.8211817741394043,
+                    2.3565568923950195,
                     0.0
                 ],
-                "rot": [
+                "rotation": [
                     0.0,
                     -0.0,
                     0.0
                 ],
-                "scl": [
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Collider": {
+                "boxSize": [
                     10.0,
                     1.0,
                     10.0
+                ],
+                "enabled": true,
+                "height": 1.0,
+                "isTrigger": false,
+                "layer": 1,
+                "offset": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "radius": 0.5,
+                "type": 0
+            },
+            "ID": 16,
+            "Rigidbody": {
+                "drag": 0.10000000149011612,
+                "enabled": true,
+                "mass": 1.0,
+                "type": 0,
+                "useGravity": false
+            },
+            "Tag": {
+                "componentOrder": [
+                    "Collider",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform"
+                ],
+                "name": "Floor"
+            },
+            "Transform": {
+                "enabled": true,
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Canvas": {
+                "enabled": true,
+                "isScreenSpace": true,
+                "referenceSize": [
+                    1280.0,
+                    720.0
+                ]
+            },
+            "ID": 17,
+            "Relationship": {
+                "children": [
+                    18,
+                    19
+                ],
+                "enabled": true,
+                "parent": 4294967295
+            },
+            "Tag": {
+                "componentOrder": [],
+                "name": "Canvas"
+            },
+            "Transform2D": {
+                "anchorMax": [
+                    0.5,
+                    0.5
+                ],
+                "anchorMin": [
+                    0.5,
+                    0.5
+                ],
+                "enabled": true,
+                "pivot": [
+                    0.5,
+                    0.5
+                ],
+                "position": [
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0
+                ],
+                "size": [
+                    1280.0,
+                    720.0
+                ]
+            }
+        },
+        {
+            "ID": 18,
+            "Relationship": {
+                "children": [],
+                "enabled": true,
+                "parent": 17
+            },
+            "Tag": {
+                "componentOrder": [
+                    "Relationship",
+                    "Tag",
+                    "TextComponent",
+                    "Transform2D"
+                ],
+                "name": "Text"
+            },
+            "TextComponent": {
+                "centerAlign": false,
+                "color": [
+                    1.0,
+                    0.5,
+                    0.5,
+                    1.0
+                ],
+                "enabled": true,
+                "fontKey": "Oradano-mincho-GSRR",
+                "fontSize": 80.0,
+                "isBold": false,
+                "isItalic": false,
+                "offset": [
+                    0.0,
+                    0.0
+                ],
+                "text": "Text (テキスト)"
+            },
+            "Transform2D": {
+                "anchorMax": [
+                    0.5,
+                    0.5
+                ],
+                "anchorMin": [
+                    0.5,
+                    0.5
+                ],
+                "enabled": true,
+                "pivot": [
+                    0.5,
+                    0.5
+                ],
+                "position": [
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0
+                ],
+                "size": [
+                    1000.0,
+                    80.0
+                ]
+            }
+        },
+        {
+            "ID": 19,
+            "Relationship": {
+                "children": [],
+                "enabled": true,
+                "parent": 17
+            },
+            "SpriteComponent": {
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "enabled": true,
+                "textureKey": "test"
+            },
+            "Tag": {
+                "componentOrder": [],
+                "name": "Text"
+            },
+            "Transform2D": {
+                "anchorMax": [
+                    0.5,
+                    0.5
+                ],
+                "anchorMin": [
+                    0.5,
+                    0.5
+                ],
+                "enabled": true,
+                "pivot": [
+                    0.5,
+                    0.5
+                ],
+                "position": [
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0
+                ],
+                "size": [
+                    100.0,
+                    100.0
                 ]
             }
         }
     ],
-    "name": "Untitled Scene"
+    "Physics": {
+        "LayerCollision": []
+    },
+    "SceneName": "Untitled Scene",
+    "Systems": [
+        {
+            "Group": 0,
+            "Name": "Input System"
+        },
+        {
+            "Group": 1,
+            "Name": "Physics System"
+        },
+        {
+            "Group": 1,
+            "Name": "Collision System"
+        },
+        {
+            "Group": 0,
+            "Name": "UI System"
+        },
+        {
+            "Group": 1,
+            "Name": "Lifetime System"
+        },
+        {
+            "Group": 0,
+            "Name": "Hierarchy System"
+        },
+        {
+            "Group": 0,
+            "Name": "Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Model Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Billboard System"
+        },
+        {
+            "Group": 0,
+            "Name": "Sprite Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Text Render System"
+        },
+        {
+            "Group": 0,
+            "Name": "Audio System"
+        }
+    ]
 }

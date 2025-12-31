@@ -27,9 +27,7 @@
 #include "Editor/Core/Editor.h"
 #include "Engine/Core/Time/Time.h"
 #include "Engine/Core/Context.h"
-#include "Engine/Core/Window/Input.h"
-#include "Engine/Scene/Core/SceneManager.h"
-#include "Engine/Scene/Serializer/SceneSerializer.h"
+#include "Engine/Scene/Serializer/SystemRegistry.h"
 
 namespace Arche
 {
@@ -42,88 +40,261 @@ namespace Arche
 		{
 			Registry& reg = world.getRegistry();
 
-			ImGui::Begin("System");	// ウィンドウ作成
+			ImGui::Begin("System Monitor");	// ウィンドウ作成
 
-			ImGui::Checkbox("Show FPS", &ctx.debugSettings.showFps);
+			// 1. FPS / 統計情報
+			// ------------------------------------------------------------
+			//if (ctx.debugSettings.showFps)
+			//{
+			//	// ------------------------------------------------------------
+			//	// FPS Graph
+			//	// ------------------------------------------------------------
+			//	static float values[90] = {};
+			//	static int values_offset = 0;
+			//	static float refresh_time = 0.0f;
 
-			// 1. FPSと時間
-			if (ctx.debugSettings.showFps)
+			//	// 高速更新しすぎると見にくいので少し間引く
+			//	if (refresh_time == 0.0f) refresh_time = static_cast<float>(ImGui::GetTime());
+			//	while (refresh_time < ImGui::GetTime())
+			//	{
+			//		values[values_offset] = ImGui::GetIO().Framerate;
+			//		values_offset = (values_offset + 1) % IM_ARRAYSIZE(values);
+			//		refresh_time += 1.0f / 60.0f;
+			//	}
+
+			//	// グラフ描画
+			//	// (ラベル, 配列, 数, オフセット, オーバーレイ文字, 最小Y, 最大Y, サイズ）
+			//	ImGui::PlotLines("FPS", values, IM_ARRAYSIZE(values), values_offset, nullptr, 0.0f, 200.0f, ImVec2(0, 80));
+			//	ImGui::Text("Avg: %.1f", ImGui::GetIO().Framerate);
+
+			//	ImGui::Separator();
+
+			//	ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+			//}
+			ImGui::Text("FPS: %.1f  (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+			ImGui::SameLine(200);
+			ImGui::Text("Time: %.2f s", Time::TotalTime());
+			ImGui::Separator();
+
+			// 2. システム管理リスト
+			// ------------------------------------------------------------
+			ImGui::Text("Active System: ");
+
+			// 追加ボタン
+			ImGui::SameLine(ImGui::GetWindowWidth() - 110);
+			if (ImGui::Button("Add System..."))
 			{
-				// ------------------------------------------------------------
-				// FPS Graph
-				// ------------------------------------------------------------
-				static float values[90] = {};
-				static int values_offset = 0;
-				static float refresh_time = 0.0f;
+				ImGui::OpenPopup("AddSystemPopup");
+			}
 
-				// 高速更新しすぎると見にくいので少し間引く
-				if (refresh_time == 0.0f) refresh_time = static_cast<float>(ImGui::GetTime());
-				while (refresh_time < ImGui::GetTime())
+			// システム追加ポップアップ
+			if (ImGui::BeginPopup("AddSystemPopup"))
+			{
+				ImGui::TextDisabled("Available Systems");
+				ImGui::Separator();
+
+				// 登録済み全システムを表示
+				for (auto& [name, creator] : SystemRegistry::Instance().GetCreators())
 				{
-					values[values_offset] = ImGui::GetIO().Framerate;
-					values_offset = (values_offset + 1) % IM_ARRAYSIZE(values);
-					refresh_time += 1.0f / 60.0f;
+					// 既に存在するかチェック
+					bool exists = false;
+					for (const auto& sys : world.getSystems()) if (sys->m_systemName == name) exists = true;
+
+					if (!exists)
+					{
+						if (ImGui::Selectable(name.c_str()))
+						{
+							SystemRegistry::Instance().CreateSystem(world, name, SystemGroup::PlayOnly);
+						}
+					}
 				}
-
-				// グラフ描画
-				// (ラベル, 配列, 数, オフセット, オーバーレイ文字, 最小Y, 最大Y, サイズ）
-				ImGui::PlotLines("FPS", values, IM_ARRAYSIZE(values), values_offset, nullptr, 0.0f, 200.0f, ImVec2(0, 80));
-				ImGui::Text("Avg: %.1f", ImGui::GetIO().Framerate);
-
-				ImGui::Separator();
-
-				ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+				ImGui::EndPopup();
 			}
-			ImGui::Text("Total Time: %.2f s", Time::TotalTime());
+
 			ImGui::Separator();
 
-			// シーン操作
-			ImGui::Separator();
-			ImGui::Text("Scene Management");
-
-			static char sceneNameBuf[64] = "Scene01";
-			ImGui::InputText("Filename", sceneNameBuf, sizeof(sceneNameBuf));
-
-			if (ImGui::Button("Save Scene"))
+			// システム一覧表示（テーブル）
+			if (ImGui::BeginTable("SystemsTable", 3, ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg))
 			{
-				std::string path = "Resources/Game/Scenes/" + std::string(sceneNameBuf) + ".json";
-				// ディレクトリ作成
-				std::filesystem::create_directories("Resources/Game/Scenes");
-				SceneSerializer::SaveScene(world, path);
+				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableSetupColumn("Group", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+				ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+				ImGui::TableHeadersRow();
+
+				for (const auto& sys : world.getSystems())
+				{
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+
+					// 名前
+					ImGui::Text("%s", sys->m_systemName.c_str());
+
+					// コンテキストメニュー（削除）
+					if (ImGui::BeginPopupContextItem(sys->m_systemName.c_str()))
+					{
+						if (ImGui::MenuItem("Remove System"))
+						{
+							Logger::LogWarning("Removing systems at runtime requires restart/reload to be safe.");
+							// TODO: 本来はここで削除処理を入れるが、vector<unique_ptr>からの削除は慎重に行う必要がある
+							// 標準システムは削除しない
+						}
+						ImGui::EndPopup();
+					}
+
+					ImGui::TableNextColumn();
+					// グループ
+					if (sys->m_group == SystemGroup::Always) ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Always");
+					else if (sys->m_group == SystemGroup::PlayOnly) ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "PlayOnly");
+					else ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "EditOnly");
+
+					ImGui::TableNextColumn();
+					// 処理時間
+					float timeMs = (float)sys->m_lastExecutionTime;
+					ImVec4 timeCol = (timeMs > 2.0f) ? ImVec4(1, 0.5f, 0, 1) : ImVec4(1, 1, 1, 1);
+					ImGui::TextColored(timeCol, "%.2f ms", timeMs);
+				}
+				ImGui::EndTable();
 			}
 
-			ImGui::SameLine();
-
-			if (ImGui::Button("Load Scene"))
+			// Content BrowserからのD&Dによるシステム追加
+			if (ImGui::BeginDragDropTarget())
 			{
-				std::string path = "Resources/Game/Scenes/" + std::string(sceneNameBuf) + ".json";
-				SceneSerializer::LoadScene(world, path);
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					std::string path = (const char*)payload->Data;
+					std::filesystem::path fpath(path);
+					std::string name = fpath.stem().string(); // "PhysicsSystem.h" -> "PhysicsSystem"
+
+					// 登録名と一致するかチェック（スペースの有無などに注意）
+					// 簡易的に、登録名の中にファイル名が含まれていればOKとする等の柔軟性を持たせても良い
+					// ここでは完全一致または " System" 付加で試行
+					if (SystemRegistry::Instance().CreateSystem(world, name, SystemGroup::PlayOnly))
+					{
+						Logger::Log("Added System: " + name);
+					}
+					else if (SystemRegistry::Instance().CreateSystem(world, name + " System", SystemGroup::PlayOnly))
+					{
+						Logger::Log("Added System: " + name + " System");
+					}
+					else
+					{
+						Logger::LogWarning("Could not find registered system for: " + name);
+					}
+				}
+				ImGui::EndDragDropTarget();
 			}
 
-			// 2. 表示切替
-			if (ImGui::CollapsingHeader("Display Settings", ImGuiTreeNodeFlags_DefaultOpen))
+			// 3. ゲームコントロール（Play中のみ表示）
+			// ------------------------------------------------------------
+			if (ctx.editorState == EditorState::Play)
 			{
 				ImGui::Separator();
+				if (ImGui::CollapsingHeader("Game Control", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					// タイムスケール
+					ImGui::SliderFloat("Time Scale", &Time::timeScale, 0.0f, 20.0f, "%.1fx");
+
+					// 一時停止
+					if (Time::isPaused) {
+						if (ImGui::Button("Resume")) Time::isPaused = false;
+						ImGui::SameLine();
+						if (ImGui::Button("Step")) Time::StepFrame();
+					}
+					else {
+						if (ImGui::Button("Pause")) Time::isPaused = true;
+					}
+				}
+			}
+
+			// 4. デバッグ表示設定
+			// ------------------------------------------------------------
+			if (ImGui::CollapsingHeader("Debug View"))
+			{
 				ImGui::Checkbox("Show Grid", &ctx.debugSettings.showGrid);
 				ImGui::Checkbox("Show Axis", &ctx.debugSettings.showAxis);
-				ImGui::Checkbox("Show Sound Events", &ctx.debugSettings.showSoundLocation);
-				ImGui::Checkbox("Enable Mouse Picking", &ctx.debugSettings.enableMousePicking);
-
-				ImGui::Separator();
-				ImGui::Checkbox("Debug Camera Mode", &ctx.debugSettings.useDebugCamera);
 				ImGui::Checkbox("Show Colliders", &ctx.debugSettings.showColliders);
-				// コライダー表示中のみ有効なサブ設定
 				if (ctx.debugSettings.showColliders)
 				{
-					ImGui::Indent();
-					if (ImGui::RadioButton("Wireframe", ctx.debugSettings.wireframeMode)) ctx.debugSettings.wireframeMode = true;
 					ImGui::SameLine();
-					if (ImGui::RadioButton("Solid", !ctx.debugSettings.wireframeMode)) ctx.debugSettings.wireframeMode = false;
-					ImGui::Unindent();
+					ImGui::Checkbox("Wireframe", &ctx.debugSettings.wireframeMode);
 				}
+				ImGui::Checkbox("Show Input Visualizer", &m_showInputDebug);
 			}
 
-			// 入力デバッグ情報の表示
+			// --------------------------------------------------------
+			// スクリプト プロファイラー
+			// --------------------------------------------------------
+			/*if (ImGui::CollapsingHeader("Script Profiler", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				if (NativeScriptSystem::s_scriptExecutionTimes.empty())
+				{
+					ImGui::TextDisabled("No scripts running.");
+				}
+				else
+				{
+					ImGui::Columns(2, "scripts");
+					ImGui::Text("Script Name"); ImGui::NextColumn();
+					ImGui::Text("Time (ms)"); ImGui::NextColumn();
+					ImGui::Separator();
+
+					for (auto& [name, time] : NativeScriptSystem::s_scriptExecutionTimes)
+					{
+						ImGui::Text("%s", name.c_str());
+						ImGui::NextColumn();
+						ImGui::Text("%.4f ms", time);
+						ImGui::NextColumn();
+					}
+					ImGui::Columns(1);
+				}
+			}*/
+
+			// 5. InputVisualizer
+			if (m_showInputDebug)
+			{
+				DrawInputVisualizer();
+			}
+			ImGui::End();
+
+			// --------------------------------------------------------
+			// システム稼働状況 (System Monitor)
+			// --------------------------------------------------------
+			//if (ImGui::CollapsingHeader("System Monitor", ImGuiTreeNodeFlags_DefaultOpen))
+			//{
+			//	ImGui::Columns(2, "systems");
+			//	ImGui::Text("System Name"); ImGui::NextColumn();
+			//	ImGui::Text("Load (16ms)"); ImGui::NextColumn();
+			//	ImGui::Separator();
+
+			//	// world.getSystems() でシステム一覧を取得
+			//	for (const auto& sys : world.getSystems())
+			//	{
+			//		ImGui::Text("%s", sys->m_systemName.c_str());
+			//		ImGui::NextColumn();
+
+			//		float timeMs = (float)sys->m_lastExecutionTime;
+			//		float fraction = timeMs / 16.0f;
+			//		char buf[32];
+			//		sprintf_s(buf, "%.3f ms", timeMs);
+
+			//		ImVec4 col = ImVec4(0.0f, 0.8f, 0.0f, 1.0f);
+			//		if (timeMs > 2.0f) col = ImVec4(1.0f, 0.8f, 0.0f, 1.0f);
+			//		if (timeMs > 10.0f) col = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+			//		ImGui::PushStyleColor(ImGuiCol_PlotHistogram, col);
+			//		ImGui::ProgressBar(fraction, ImVec2(-1, 0), buf);
+			//		ImGui::PopStyleColor();
+
+			//		ImGui::NextColumn();
+			//	}
+			//	ImGui::Columns(1);
+			//}
+		}
+
+	private:
+		bool m_showInputDebug = false;
+
+		void DrawInputVisualizer()
+		{
 			if (ImGui::CollapsingHeader("Input Visualizer", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				// 1. 接続状態
@@ -201,147 +372,6 @@ namespace Arche
 					ImGui::NewLine();
 				}
 			}
-
-			// 3. ゲーム進行制御
-			if (ImGui::CollapsingHeader("Game Control", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				// タイムスケール操作
-				ImGui::Text("Time Scale");
-				ImGui::SliderFloat("##TimeScale", &Time::timeScale, 0.0f, 15.0f, "%.1fx");
-
-				// --- 一時停止 / 再開 ---
-				if (Time::isPaused)
-				{
-					// 停止中なので「再開」ボタン
-					if (ImGui::Button("Resume"))
-					{
-						Time::isPaused = false;
-					}
-					ImGui::SameLine();
-
-					// --- コマ送り（停止中のみ表示）---
-					if (ImGui::Button("Step Frame (+1F)"))
-					{
-						Time::StepFrame();
-					}
-				}
-				else
-				{
-					// 動作中なので「一時停止」ボタン
-					if (ImGui::Button("Pause"))
-					{
-						Time::isPaused = true;
-					}
-				}
-
-				ImGui::SameLine();
-				if (ImGui::Button("Reset Speed"))
-				{
-					Time::timeScale = 1.0f;
-				}
-
-				// リスタート
-				if (ImGui::Button("Restart Scene", ImVec2(-1, 0)))
-				{
-					auto sceneManager = SceneManager::Instance();
-					sceneManager.ChangeScene(sceneManager.GetCurrentSceneName());
-				}
-			}
-
-			// 4. シーン遷移
-			if (ImGui::CollapsingHeader("Scene Transition"))
-			{
-				if (ImGui::Button("Title", ImVec2(100, 0)))
-				{
-					SceneManager::Instance().ChangeScene("Title");
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Game", ImVec2(100, 0)))
-				{
-					SceneManager::Instance().ChangeScene("Game");
-				}
-			}
-
-			ImGui::Separator();
-
-			// --------------------------------------------------------
-			// システム稼働状況 (System Monitor)
-			// --------------------------------------------------------
-			if (ImGui::CollapsingHeader("System Monitor", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::Columns(2, "systems");
-				ImGui::Text("System Name"); ImGui::NextColumn();
-				ImGui::Text("Load (16ms)"); ImGui::NextColumn();
-				ImGui::Separator();
-
-				// world.getSystems() でシステム一覧を取得
-				for (const auto& sys : world.getSystems())
-				{
-					ImGui::Text("%s", sys->m_systemName.c_str());
-					ImGui::NextColumn();
-
-					float timeMs = (float)sys->m_lastExecutionTime;
-					float fraction = timeMs / 16.0f;
-					char buf[32];
-					sprintf_s(buf, "%.3f ms", timeMs);
-
-					ImVec4 col = ImVec4(0.0f, 0.8f, 0.0f, 1.0f);
-					if (timeMs > 2.0f) col = ImVec4(1.0f, 0.8f, 0.0f, 1.0f);
-					if (timeMs > 10.0f) col = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-
-					ImGui::PushStyleColor(ImGuiCol_PlotHistogram, col);
-					ImGui::ProgressBar(fraction, ImVec2(-1, 0), buf);
-					ImGui::PopStyleColor();
-
-					ImGui::NextColumn();
-				}
-				ImGui::Columns(1);
-			}
-
-			// --------------------------------------------------------
-			// エンティティリスト (Entity List - Flat View)
-			// ※階層構造(Hierarchy)があるので必須ではないですが、デバッグ用に残します
-			// --------------------------------------------------------
-			if (ImGui::CollapsingHeader("Entity List (Flat)", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				int count = 0;
-				reg.view<Tag>().each([&](Entity e, Tag& tag) {
-					count++;
-					// クリックで選択可能にする
-					if (ImGui::Selectable((std::to_string(e) + ": " + tag.name.c_str()).c_str(), selected == e)) {
-						selected = e;
-					}
-					});
-				ImGui::Separator();
-				ImGui::Text("Total Entities: %d", count);
-			}
-
-			// --------------------------------------------------------
-			// プレイヤー詳細情報 (Player Watcher)
-			// --------------------------------------------------------
-			if (ImGui::CollapsingHeader("Player Watcher", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				bool playerFound = false;
-				reg.view<Tag>().each([&](Entity e, Tag& tag) {
-					if (!playerFound && tag.name == "Player") {
-						playerFound = true;
-
-						ImGui::Text("ID: %d", e);
-						if (reg.has<Transform>(e)) {
-							auto& t = reg.get<Transform>(e);
-							ImGui::Text("Pos: (%.2f, %.2f, %.2f)", t.position.x, t.position.y, t.position.z);
-						}
-						if (reg.has<Rigidbody>(e)) {
-							auto& rb = reg.get<Rigidbody>(e);
-							float speed = std::sqrt(rb.velocity.x * rb.velocity.x + rb.velocity.z * rb.velocity.z);
-							ImGui::ProgressBar(speed / 10.0f, ImVec2(0, 0), "Speed");
-						}
-					}
-					});
-
-				if (!playerFound) ImGui::TextDisabled("Player Not Found");
-			}
-			ImGui::End();
 		}
 	};
 

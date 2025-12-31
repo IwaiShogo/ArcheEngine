@@ -13,6 +13,7 @@
 // Windows APIの軽量化（不要なAPIを除外）
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <shellapi.h>
 
 // Timeクラスで使用するマルチメディアタイマーAPI用
 #include <mmsystem.h>

@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date   2025/11/27	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___HIERARCHY_WINDOW_H___
@@ -28,6 +20,7 @@
 #include "Editor/Core/EditorCommands.h"
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Resource/ResourceManager.h"
+#include "Engine/Scene/Serializer/SceneSerializer.h"
 
 namespace Arche
 {
@@ -42,6 +35,28 @@ namespace Arche
 			// Hierarchy Window
 			// ------------------------------------------------------------
 			ImGui::Begin("Hierarchy");
+
+			// 選択変更検知と親ノードの収集
+			// ------------------------------------------------------------
+			if (selected != m_lastSelected)
+			{
+				m_nodesToOpen.clear();
+				if (selected != NullEntity && world.getRegistry().valid(selected))
+				{
+					// 親を辿って全てセットに追加
+					Entity current = selected;
+					Registry& reg = world.getRegistry();
+					while (reg.has<Relationship>(current))
+					{
+						Entity parent = reg.get<Relationship>(current).parent;
+						if (parent == NullEntity) break;
+
+						m_nodesToOpen.insert(parent);
+						current = parent;
+					}
+				}
+				m_lastSelected = selected;
+			}
 
 			// Deleteキーでの削除処理
 			if (ImGui::IsWindowFocused() && selected != NullEntity)
@@ -83,7 +98,7 @@ namespace Arche
 			}
 
 			// 右クリック: 新規作成など
-			if (ImGui::BeginPopupContextWindow(0, 1))
+			if (ImGui::BeginPopupContextWindow(nullptr, ImGuiMouseButton_Right | ImGuiPopupFlags_NoOpenOverItems))
 			{
 				if (ImGui::MenuItem("Create Empty"))
 				{
@@ -106,11 +121,22 @@ namespace Arche
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					// 1. パスの取得と補完
-					const char* droppedRelativePath = (const char*)payload->Data;
-					std::string rootPath = "Resources/Game/";
-					std::string fullPath = rootPath + droppedRelativePath; // 例: Resources/Game/Textures/hero.png
+					const char* droppedPath = (const char*)payload->Data;
+					std::string relativePath = droppedPath;
+					std::string rootPath = "Resources\\Game\\";
 
-					// パスの整形（Windowsの\を/に）
+					std::string fullPath;
+					// パスが既に "Resources/Game/" で始まっているかチェック
+					if (relativePath.find(rootPath) == 0)
+					{
+						fullPath = relativePath;	// そのまま使う
+					}
+					else
+					{
+						fullPath = rootPath + relativePath;	// 結合する
+					}
+
+					// バックスラッシュをスラッシュに統一
 					std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
 
 					// 2. 拡張子の取得
@@ -119,57 +145,52 @@ namespace Arche
 					// 小文字に統一して判定しやすくする（簡易実装）
 					std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-					// 3. エンティティ生成
-					Entity newEntity = world.create_entity().id();
-
-					// 名前設定 (ファイル名をエンティティ名に)
-					std::string entityName = fpath.stem().string();
-					world.getRegistry().emplace<Tag>(newEntity, entityName);
-					world.getRegistry().emplace<Transform>(newEntity);
-
 					// --- 拡張子による分岐 ---
 
-					// A. モデル (.fbx, .obj, .gltf)
-					if (ext == ".fbx" || ext == ".obj" || ext == ".gltf" || ext == ".glb")
+					// パターンA: プレファブ (.json)
+					if (ext == ".json")
 					{
-						// リソース登録
-						StringId key(fullPath);
-						ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Model);
+						// シリアライザを使って丸ごと復元
+						Entity prefabRoot = SceneSerializer::LoadPrefab(world, fullPath);
 
-						// MeshComponent追加
-						world.getRegistry().emplace<MeshComponent>(newEntity, key);
-						OutputDebugStringA(("Created Model Entity: " + entityName + "\n").c_str());
+						if (prefabRoot != NullEntity)
+						{
+							// 必要なら名前を更新したり、選択状態にする
+							selected = prefabRoot;
+						}
 					}
-					// B. テクスチャ (.png, .jpg, .bmp, .tga) -> Sprite
-					else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga")
-					{
-						StringId key(fullPath);
-						ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Texture);
-
-						// SpriteComponent追加
-						world.getRegistry().emplace<SpriteComponent>(newEntity, key);
-						OutputDebugStringA(("Created Sprite Entity: " + entityName + "\n").c_str());
-					}
-					// C. サウンド (.wav, .mp3) -> AudioSource
-					else if (ext == ".wav" || ext == ".mp3")
-					{
-						StringId key(fullPath);
-						ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Sound);
-
-						// AudioSource追加
-						world.getRegistry().emplace<AudioSource>(newEntity, key);
-						OutputDebugStringA(("Created Audio Entity: " + entityName + "\n").c_str());
-					}
-					// D. プレハブ (.json) -> 将来対応
-					else if (ext == ".json")
-					{
-						// SceneSerializer::DeserializeEntity(...) を呼べば復元できます
-						OutputDebugStringA("Prefab dropping is not implemented yet.\n");
-					}
+					// パターンB: 通常のアセット (モデル/画像/音)
 					else
 					{
-						// 未対応ファイルは、空のエンティティとして残すか、削除する
-						OutputDebugStringA(("Unknown file type dropped: " + fullPath + "\n").c_str());
+						// 空のエンティティを新規作成
+						Entity newEntity = world.create_entity().id();
+
+						// 基本コンポーネント追加
+						std::string entityName = fpath.stem().string();
+						world.getRegistry().emplace<Tag>(newEntity, entityName);
+						world.getRegistry().emplace<Transform>(newEntity);
+
+						// アセットに応じたコンポーネント追加
+						if (ext == ".fbx" || ext == ".obj" || ext == ".gltf" || ext == ".glb")
+						{
+							StringId key(fullPath);
+							ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Model);
+							world.getRegistry().emplace<MeshComponent>(newEntity, key);
+						}
+						else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga")
+						{
+							StringId key(fullPath);
+							ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Texture);
+							world.getRegistry().emplace<SpriteComponent>(newEntity, key);
+						}
+						else if (ext == ".wav" || ext == ".mp3")
+						{
+							StringId key(fullPath);
+							ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Sound);
+							world.getRegistry().emplace<AudioSource>(newEntity, key);
+						}
+
+						selected = newEntity;
 					}
 				}
 
@@ -267,6 +288,11 @@ namespace Arche
 			}
 			if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf; // 子がなければリーフ
 
+			if (m_nodesToOpen.count(e))
+			{
+				ImGui::SetNextItemOpen(true);
+			}
+
 			// --- ノード描画 ---
 			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)e, flags, "%s (ID:%d)", tag.name.c_str(), e);
 
@@ -275,9 +301,10 @@ namespace Arche
 				selected = e;
 			}
 
-			// 右クリックメニュー（Delete）
+			// 右クリックメニュー
 			if (ImGui::BeginPopupContextItem())
 			{
+				// エンティティ削除
 				if (ImGui::MenuItem("Delete Entity"))
 				{
 					CommandHistory::Execute(std::make_shared<DeleteEntityCommand>(world, e));
@@ -286,6 +313,26 @@ namespace Arche
 					if (opened) ImGui::TreePop();	// ツリーが開いていた場合の整合性
 					return;
 				}
+
+				// プレファブ保存
+				if (ImGui::MenuItem("Save as Prefab"))
+				{
+					// 保存先ディレクトリ確保
+					std::filesystem::create_directories("Resources/Game/Prefabs");
+
+					// ファイル名決定（エンティティ名.json）
+					std::string filename = "Entity";
+					if (reg.has<Tag>(e))
+					{
+						filename = reg.get<Tag>(e).name.c_str();
+					}
+
+					std::string path = "Resources/Game/Prefabs/" + filename + ".json";
+
+					// 保存実行
+					SceneSerializer::SavePrefab(reg, e, path);
+				}
+
 				ImGui::EndPopup();
 			}
 
@@ -295,7 +342,7 @@ namespace Arche
 			if (ImGui::BeginDragDropSource())
 			{
 				ImGui::SetDragDropPayload("ENTITY_ID", &e, sizeof(Entity));
-				ImGui::Text("Move %s", tag.name);
+				ImGui::Text("Move %s", tag.name.c_str());
 				ImGui::EndDragDropSource();
 			}
 
@@ -325,6 +372,11 @@ namespace Arche
 				ImGui::TreePop();
 			}
 		}
+
+	private:
+		// 自動展開するノードIDを一時保存するセット
+		std::set<Entity> m_nodesToOpen;
+		Entity m_lastSelected = NullEntity;
 	};
 
 }	// namespace Arche

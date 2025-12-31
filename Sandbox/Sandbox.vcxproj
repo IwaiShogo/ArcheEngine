@@ -166,14 +166,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Source\Sandbox\main.cpp" />
-    <ClCompile Include="..\Source\Sandbox\Scenes\SceneGame.cpp" />
-    <ClCompile Include="..\Source\Sandbox\Scenes\SceneTitle.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Source\Sandbox\Components\GameComponents.h" />
+    <ClInclude Include="..\Source\Sandbox\Components\PlayerMoveData.h" />
     <ClInclude Include="..\Source\Sandbox\main.h" />
-    <ClInclude Include="..\Source\Sandbox\Scenes\SceneGame.h" />
-    <ClInclude Include="..\Source\Sandbox\Scenes\SceneTitle.h" />
+    <ClInclude Include="..\Source\Sandbox\Systems\PlayerMoveSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ArcheEngine\ArcheEngine.vcxproj">

@@ -125,4 +125,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::CollisionSystem, "Collision System")
+
 #endif // !___COLLISION_SYSTEM_H___

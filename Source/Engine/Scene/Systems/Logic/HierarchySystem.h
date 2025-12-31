@@ -93,4 +93,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::HierarchySystem, "Hierarchy System")
+
 #endif // !___HIERARCHY_SYSTEM_H___

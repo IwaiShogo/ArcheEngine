@@ -17,16 +17,18 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Editor/Core/Editor.h"
+#include "Engine/Scene/Serializer/SceneSerializer.h"
+#undef MoveFile
 
 namespace Arche
 {
-
 	class ContentBrowser
 		: public EditorWindow
 	{
 	public:
 		ContentBrowser()
-			: m_currentDirectory("Resources")	// 初期ディレクトリ
+			: m_rootDirectory(std::filesystem::current_path())
+			, m_currentDirectory(std::filesystem::current_path())	// 初期ディレクトリ: プロジェクトルート
 		{
 			// 必要ならテクスチャアイコンのロードなど
 		}
@@ -34,99 +36,536 @@ namespace Arche
 		{
 			ImGui::Begin("Content Browser");
 
-			// 1. 戻るボタン（ルートでなければ表示）
-			if (m_currentDirectory != std::filesystem::path("Resources"))
+			// レイアウト用のテーブル（2列: 左 = ツリー, 右 = グリッド）
+			if (ImGui::BeginTable("ContentBrowserLayout", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV))
+			{
+				// 左カラム: フォルダツリー
+				// ------------------------------------------------------------
+				ImGui::TableSetupColumn("Tree", ImGuiTableColumnFlags_WidthFixed, 200.0f);
+				ImGui::TableSetupColumn("Grid", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableNextColumn();
+
+				// ツリー描画
+				DrawDirectoryTree(m_rootDirectory);
+
+				// 右カラム: コンテンツ一覧（グリッド）
+				// ------------------------------------------------------------
+				ImGui::TableNextColumn();
+
+				DrawContentGrid(world);
+
+				ImGui::EndTable();
+			}
+
+			// --- ポップアップ類 ---
+			HandlePopups();
+
+			ImGui::End();
+		}
+
+	private:
+		enum class CreateMode { Component, System };
+		CreateMode m_createMode = CreateMode::Component;
+
+		// パス
+		std::filesystem::path m_rootDirectory;
+		std::filesystem::path m_currentDirectory;
+
+		// スクリプト作成用
+		bool m_showCreatePopup = false;
+
+		// リネーム用
+		bool m_isRenaming = false;
+		std::filesystem::path m_renamingPath;	// リネーム中のファイルパス
+		char m_renameBuf[128] = "";
+
+		// 削除用
+		bool m_showDeleteModal = false;
+		std::filesystem::path m_deletePath;
+
+		// ====================================================================================
+		// 左側: フォルダツリー描画 (再帰)
+		// ====================================================================================
+		void DrawDirectoryTree(const std::filesystem::path& path)
+		{
+			// 表示除外チェック
+			if (IsIgnored(path.filename().string())) return;
+
+			// フラグ設定
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+			// 現在選択中のディレクトリならハイライト
+			if (path == m_currentDirectory)
+			{
+				flags |= ImGuiTreeNodeFlags_Selected;
+			}
+
+			// サブフォルダがあるかチェック（リーフノード判定）
+			bool hasSubFolders = false;
+			try {
+				for (const auto& entry : std::filesystem::directory_iterator(path)) {
+					if (entry.is_directory() && !IsIgnored(entry.path().filename().string())) {
+						hasSubFolders = true;
+						break;
+					}
+				}
+			}
+			catch (...) {}
+
+			if (!hasSubFolders)
+			{
+				flags |= ImGuiTreeNodeFlags_Leaf;
+			}
+
+			// ルートフォルダは最初から開いておく
+			if (path == m_rootDirectory)
+			{
+				flags |= ImGuiTreeNodeFlags_DefaultOpen;
+			}
+
+			// ノード描画
+			// ファイル名を表示（ルートの場合は "Project" と表示しても良い）
+			std::string label = path.filename().string();
+			bool opened = ImGui::TreeNodeEx(path.string().c_str(), flags, "%s", label.c_str());
+
+			// クリックで選択ディレクトリ変更
+			if (ImGui::IsItemClicked())
+			{
+				m_currentDirectory = path;
+			}
+
+			// フォルダへのD&D（移動）対応
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					std::filesystem::path srcItemPath = (const char*)payload->Data;
+					if (std::filesystem::absolute(srcItemPath) != std::filesystem::absolute(path))
+					{
+						MoveFile(srcItemPath, path / srcItemPath.filename());
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			// 再帰的に子フォルダを描画
+			if (opened)
+			{
+				if (hasSubFolders)
+				{
+					for (const auto& entry : std::filesystem::directory_iterator(path))
+					{
+						if (entry.is_directory())
+						{
+							DrawDirectoryTree(entry.path());
+						}
+					}
+				}
+				ImGui::TreePop();
+			}
+		}
+
+		// ====================================================================================
+		// 右側: グリッド表示 (元のDrawの中身を移動)
+		// ====================================================================================
+		void DrawContentGrid(World& world)
+		{
+			// 1. ヘッダー（戻るボタンと現在パス）
+			if (m_currentDirectory != m_rootDirectory)
 			{
 				if (ImGui::Button("<-"))
 				{
 					m_currentDirectory = m_currentDirectory.parent_path();
 				}
+				// 親フォルダへのドロップ（移動）
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						std::filesystem::path itemPath = (const char*)payload->Data;
+						MoveFile(itemPath, m_currentDirectory.parent_path() / itemPath.filename());
+					}
+					ImGui::EndDragDropTarget();
+				}
 				ImGui::SameLine();
 			}
-			ImGui::Text("Current: %s", m_currentDirectory.string().c_str());
+			ImGui::Text("Current: %s", m_currentDirectory.filename().string().c_str());
 			ImGui::Separator();
 
-			// 2. カラムレイアウト設定
+			// 2. コンテンツ一覧表示
 			float padding = 16.0f;
-			float thumbnailSize = 80.0f;
+			float thumbnailSize = 64.0f;
 			float cellSize = thumbnailSize + padding;
 
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			int columnCount = (int)(panelWidth / cellSize);
 			if (columnCount < 1) columnCount = 1;
 
-			ImGui::Columns(columnCount, 0, false);
+			// アイテムのインデックス用変数
+			int itemIndex = 0;
 
-			// 3. ファイル走査と描画
+			// ディレクトリ内を走査
 			for (auto& directoryEntry : std::filesystem::directory_iterator(m_currentDirectory))
 			{
 				const auto& path = directoryEntry.path();
 				std::string filename = path.filename().string();
 
-				// IDの衝突を防ぐ
+				// フィルタリング
+				if (IsIgnored(filename)) continue;
+
 				ImGui::PushID(filename.c_str());
 
-				// アイコン（フォルダ or ファイル で色分け）
+				// グリッド配置ロジック
+				if (itemIndex > 0 && (itemIndex % columnCount != 0))
+				{
+					ImGui::SameLine();
+				}
+
+				ImGui::BeginGroup();
+
+				// アイコン色分け
 				if (directoryEntry.is_directory())
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.6f, 0.2f, 1.0f)); // フォルダ色
-				}
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.7f, 0.2f, 1.0f)); // フォルダ
+				else if (path.extension() == ".h")
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.6f, 0.6f, 1.0f)); // ヘッダー
+				else if (path.extension() == ".cpp")
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.2f, 0.5f, 1.0f)); // ソース
+				else if (path.extension() == ".json")
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); // データ
 				else
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f)); // その他
+
+				// --- リネーム中 ---
+				if (m_isRenaming && m_renamingPath == path)
 				{
-					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f)); // ファイル色
+					ImGui::SetKeyboardFocusHere();
+					ImGui::PushItemWidth(thumbnailSize);
+					if (ImGui::InputText("##Rename", m_renameBuf, sizeof(m_renameBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+					{
+						std::filesystem::path newPath = m_currentDirectory / m_renameBuf;
+						RenameFile(path, newPath);
+						m_isRenaming = false;
+					}
+					if (!ImGui::IsItemActive() && (ImGui::IsMouseClicked(0) || ImGui::IsKeyPressed(ImGuiKey_Escape)))
+					{
+						m_isRenaming = false;
+					}
 				}
-
-				ImGui::Button(filename.c_str(), ImVec2(thumbnailSize, thumbnailSize));
-				ImGui::PopStyleColor();
-
-				// ドラッグ & ドロップ対応
-				// ------------------------------------------------------------
-				if (ImGui::BeginDragDropSource())
+				else // --- 通常表示 ---
 				{
-					// パスをペイロードとして渡す
-					std::string itemPath = path.string();
-					// ワイド文字変換
-					ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), itemPath.size() + 1);
-					ImGui::Text("%s", filename.c_str());
-					ImGui::EndDragDropSource();
-				}
+					ImGui::Button(filename.c_str(), ImVec2(thumbnailSize, thumbnailSize));
 
-				// ダブルクリック処理
-				// ------------------------------------------------------------
-				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-				{
+					// 右クリックメニュー
+					if (ImGui::BeginPopupContextItem())
+					{
+						if (ImGui::MenuItem("Rename", "F2")) StartRenaming(path);
+						if (ImGui::MenuItem("Delete", "Del")) { m_deletePath = path; m_showDeleteModal = true; }
+						ImGui::EndPopup();
+					}
+
+					// D&D Source
+					if (ImGui::BeginDragDropSource())
+					{
+						std::string itemPath = std::filesystem::relative(path, std::filesystem::current_path()).string();
+						ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), itemPath.size() + 1);
+						ImGui::Text("%s", filename.c_str());
+						ImGui::EndDragDropSource();
+					}
+
+					// D&D Target (フォルダへの移動)
 					if (directoryEntry.is_directory())
 					{
-						// フォルダなら移動
-						m_currentDirectory /= path.filename();
-					}
-					else
-					{
-						// ファイルなら拡張子判定
-						if (path.extension() == ".json")
+						if (ImGui::BeginDragDropTarget())
 						{
-							// シーンのロード実行
-							SceneSerializer::LoadScene(world, path.string());
-
-							// 選択解除
-							selected = NullEntity;
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								std::filesystem::path srcItemPath = (const char*)payload->Data;
+								if (std::filesystem::absolute(srcItemPath) != std::filesystem::absolute(path))
+								{
+									MoveFile(srcItemPath, path / srcItemPath.filename());
+								}
+							}
+							ImGui::EndDragDropTarget();
 						}
+					}
+
+					// ダブルクリック
+					if (ImGui::IsItemHovered())
+					{
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							if (directoryEntry.is_directory()) m_currentDirectory /= path.filename();
+							else OpenFile(world, path);
+						}
+						// ショートカット
+						if (ImGui::IsKeyPressed(ImGuiKey_F2)) StartRenaming(path);
+						if (ImGui::IsKeyPressed(ImGuiKey_Delete)) { m_deletePath = path; m_showDeleteModal = true; }
 					}
 				}
 
-				ImGui::TextWrapped("%s", filename.c_str());
+				ImGui::PopStyleColor();
 
-				ImGui::NextColumn();
+				// テキスト描画
+				ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + thumbnailSize);
+				ImGui::TextWrapped("%s", filename.c_str());
+				ImGui::EndGroup();
 				ImGui::PopID();
+
+				itemIndex++;
 			}
 
-			ImGui::Columns(1);
-			ImGui::End();
+			// 背景右クリック
+			if (ImGui::BeginPopupContextWindow(nullptr, ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+			{
+				if (ImGui::MenuItem("Create Folder"))
+				{
+					std::filesystem::create_directory(m_currentDirectory / "NewFolder");
+				}
+
+				ImGui::Separator();
+
+				// コンポーネント作成
+				if (ImGui::MenuItem("Create Component (Struct)"))
+				{
+					m_createMode = CreateMode::Component;
+					m_showCreatePopup = true;
+				}
+				// システム作成
+				if (ImGui::MenuItem("Create System (Logic)"))
+				{
+					m_createMode = CreateMode::System;
+					m_showCreatePopup = true;
+				}
+
+				if (ImGui::MenuItem("Open in Explorer")) ShellExecuteA(NULL, "open", m_currentDirectory.string().c_str(), NULL, NULL, SW_SHOW);
+				ImGui::EndPopup();
+			}
 		}
 
-	private:
-		// 現在開いているディレクトリのパス
-		std::filesystem::path m_currentDirectory;
+		// ====================================================================================
+		// ポップアップ制御 (バグ修正済み)
+		// ====================================================================================
+		void HandlePopups()
+		{
+			// スクリプト作成ポップアップ
+			if (m_showCreatePopup)
+			{
+				ImGui::OpenPopup("Create Script");
+				m_showCreatePopup = false;
+			}
+
+			if (ImGui::BeginPopupModal("Create Script", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				static char buf[64] = "NewScript";
+				ImGui::InputText("Class Name", buf, sizeof(buf));
+
+				if (ImGui::Button("Create", ImVec2(120, 0)))
+				{
+					if (m_createMode == CreateMode::Component)
+					{
+						CreateComponentFile(buf);
+					}
+					else if (m_createMode == CreateMode::System)
+					{
+						CreateSystemFile(buf);
+					}
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0)))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
+			// 削除確認ポップアップ
+			if (m_showDeleteModal) ImGui::OpenPopup("Delete?");
+			if (ImGui::BeginPopupModal("Delete?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("Are you sure you want to delete this?\nThis action cannot be undone.");
+				ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", m_deletePath.filename().string().c_str());
+				ImGui::Separator();
+
+				if (ImGui::Button("Delete", ImVec2(120, 0)))
+				{
+					try {
+						if (std::filesystem::exists(m_deletePath)) std::filesystem::remove_all(m_deletePath);
+					}
+					catch (const std::exception& e) {
+						Logger::LogError("Failed to delete: " + std::string(e.what()));
+					}
+					m_showDeleteModal = false;
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel", ImVec2(120, 0)))
+				{
+					m_showDeleteModal = false;
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+		}
+
+		// --------------------------------------------------------
+		// ユーティリティ関数
+		// --------------------------------------------------------
+		// 表示除外フィルタ
+		bool IsIgnored(const std::string& name)
+		{
+			static const std::set<std::string> ignored =
+			{
+				".git", ".vs", ".editorconfig", ".gitattributes", ".gitignore",
+				"x64", "Debug", "Release", "Intermediate", "Library", "Temp",
+				"imgui.ini", ".sln", ".vcxproj", ".filters", ".user"
+			};
+			return ignored.find(name) != ignored.end();
+		}
+
+		// ファイルタイプに応じたオープン処理
+		void OpenFile(World& world, const std::filesystem::path& path)
+		{
+			std::string ext = path.extension().string();
+
+			// コードやソリューションならOSに関連付けられたアプリ(VS等)で開く
+			if (ext == ".h" || ext == ".cpp" || ext == ".sln" || ext == ".cs")
+			{
+				ShellExecuteA(NULL, "open", path.string().c_str(), NULL, NULL, SW_SHOW);
+			}
+			// シーンファイルならロード
+			else if (ext == ".json")
+			{
+				std::string pathStr = path.string();
+				if (pathStr.find("Scene") != std::string::npos || pathStr.find("scene") != std::string::npos)
+				{
+					SceneSerializer::LoadScene(world, pathStr);
+				}
+			}
+		}
+
+		// データコンポーネント（struct）の生成
+		void CreateComponentFile(const std::string& componentName)
+		{
+			// ファイルパス: "CurrentDir/ComponentName.h"
+			std::string hPath = (m_currentDirectory / (componentName + ".h")).string();
+
+			std::ofstream hFile(hPath);
+			if (hFile.is_open())
+			{
+				// 1. ヘッダーガードなど
+				hFile << "#pragma once\n";
+				hFile << "// 必須インクルード（マクロ使用のため）\n";
+				hFile << "#include \"Engine/Scene/Components/Components.h\"\n\n";
+
+				hFile << "namespace Arche {\n\n";
+
+				// 2. 構造体定義
+				hFile << "\t/**\n";
+				hFile << "\t * @struct " << componentName << "\n";
+				hFile << "\t * @brief  ユーザー定義データ\n";
+				hFile << "\t */\n";
+				hFile << "\tstruct " << componentName << "\n";
+				hFile << "\t{\n";
+				hFile << "\t\t// 変数はここに定義\n";
+				hFile << "\t\tfloat value = 10.0f;\n";
+				hFile << "\t};\n\n";
+
+				// 3. エンジンへの登録マクロ (これが重要！)
+				// これを書くことで、自動的にInspectorに表示され、JSON保存もされます
+				hFile << "\tARCHE_COMPONENT(" << componentName << ",\n";
+				hFile << "\t\tREFLECT_VAR(value) // ここに変数を追加していく\n";
+				hFile << "\t)\n";
+
+				hFile << "}\n";
+
+				hFile.close();
+				Logger::Log("Created Component: " + hPath);
+			}
+		}
+
+		// スクリプトテンプレート生成
+		void CreateSystemFile(const std::string& className)
+		{
+			std::string hPath = (m_currentDirectory / (className + ".h")).string();
+
+			// ヘッダーファイル生成
+			std::ofstream hFile(hPath);
+			if (hFile.is_open())
+			{
+				hFile << "#pragma once\n\n";
+				hFile << "// ===== インクルード =====\n";
+				hFile << "#include \"Engine/Scene/Core/ECS/ECS.h\"\n";
+				hFile << "#include \"Engine/Scene/Components/Components.h\"\n";
+				hFile << "#include \"Engine/Core/Window/Input.h\"\n\n";
+
+				hFile << "namespace Arche\n{\n";
+
+				hFile << "\tclass " << className << " : public ISystem\n";
+				hFile << "\t{\n";
+				hFile << "\tpublic:\n";
+				hFile << "\t\t" << className << "()\n";
+				hFile << "\t\t{\n";
+				hFile << "\t\t\tm_systemName = \"" << className << "\";\n";
+				hFile << "\t\t}\n\n";
+
+				hFile << "\t\tvoid Update(Registry& registry) override\n";
+				hFile << "\t\t{\n";
+				hFile << "\t\t\t// ここにロジックを記述\n";
+				hFile << "\t\t\t// auto view = registry.view<Transform, ...>();\n";
+				hFile << "\t\t}\n";
+				hFile << "\t};\n";
+				hFile << "}\t// namespace Arche\n\n";
+
+				// 自動登録マクロ（これがないとSystemRegistryに登録されません）
+				hFile << "#include \"Engine/Scene/Serializer/SystemRegistry.h\"\n";
+				hFile << "ARCHE_REGISTER_SYSTEM(Arche::" << className << ", \"" << className << "\")\n";
+
+				hFile.close();
+				Logger::Log("Created System: " + hPath);
+			}
+		}
+
+		// リネーム開始
+		void StartRenaming(const std::filesystem::path& path)
+		{
+			m_isRenaming = true;
+			m_renamingPath = path;
+			strcpy_s(m_renameBuf, path.filename().string().c_str());
+		}
+
+		// リネーム実行
+		void RenameFile(const std::filesystem::path& oldPath, const std::filesystem::path& newPath)
+		{
+			try
+			{
+				if (std::filesystem::exists(newPath))
+				{
+					Logger::LogError("File already exists: " + newPath.string());
+					return;
+				}
+				std::filesystem::rename(oldPath, newPath);
+				Logger::Log("Renamed to: " + newPath.string());
+			}
+			catch (const std::exception& e)
+			{
+				Logger::LogError("Rename failed: " + std::string(e.what()));
+			}
+		}
+
+		// 移動実行
+		void MoveFile(const std::filesystem::path& srcPath, const std::filesystem::path& dstPath)
+		{
+			try
+			{
+				std::filesystem::rename(srcPath, dstPath);
+				Logger::Log("Moved: " + srcPath.string() + " -> " + dstPath.string());
+			}
+			catch (const std::exception& e)
+			{
+				Logger::LogError("Move failed: " + std::string(e.what()));
+			}
+		}
 	};
 
 }	// namespace Arche

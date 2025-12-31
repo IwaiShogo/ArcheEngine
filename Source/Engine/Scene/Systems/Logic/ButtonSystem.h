@@ -116,5 +116,9 @@ namespace Arche
 		//		});
 		//}
 	};
-}
+}	// namespace Arche
+
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::ButtonSystem, "ButtonSystem")
+
 #endif // !___BUTTON_SYSTEM_H___

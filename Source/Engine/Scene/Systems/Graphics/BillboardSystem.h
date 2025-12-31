@@ -29,7 +29,8 @@
 namespace Arche
 {
 
-	class BillboardSystem : public ISystem {
+	class BillboardSystem : public ISystem
+	{
 	public:
 		BillboardSystem()
 		{
@@ -74,5 +75,8 @@ namespace Arche
 	};
 
 }	// namespace Arche
+
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::BillboardSystem, "Billboard System")
 
 #endif // !___BILLBOARD_SYSTEM_H___

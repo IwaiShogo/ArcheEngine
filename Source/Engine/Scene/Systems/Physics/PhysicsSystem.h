@@ -60,4 +60,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::PhysicsSystem, "Physics System")
+
 #endif // !___PHYSICS_SYSTEM_H___

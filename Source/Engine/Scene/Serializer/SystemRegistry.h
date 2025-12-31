@@ -65,8 +65,19 @@ namespace Arche
 		std::unordered_map<std::string, SystemCreator> m_creators;
 	};
 
-	// 登録用ヘルパーマクロ
-	// 使い方: Arche::SystemRegistry::Instance().Register<PhysicsSystem>("PhysicsSystem");
+	// マクロ用のヘルパー
+	#define ARCHE_CONCAT_IMPL(x, y) x##y
+	#define ARCHE_CONCAT(x, y) ARCHE_CONCAT_IMPL(x, y)
+
+	// 自動登録用マクロ
+	// 使い方: ヘッダーまたはcppの最後で ARCHE_REGISTER_SYSTEM(MySystem) と書く
+	#define ARCHE_REGISTER_SYSTEM(Type, Name) \
+		namespace { \
+			static const bool ARCHE_CONCAT(SystemRegistered_, __COUNTER__) = [](){ \
+				Arche::SystemRegistry::Instance().Register<Type>(Name); \
+				return true; \
+			}(); \
+		}
 
 }	// namespace Arche
 

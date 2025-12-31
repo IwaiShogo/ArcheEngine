@@ -63,4 +63,7 @@ namespace Arche
 
 }	// namespace Arche
 
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+ARCHE_REGISTER_SYSTEM(Arche::LifetimeSystem, "Lifetime System")
+
 #endif // !___LIFETIME_SYSTEM_H___

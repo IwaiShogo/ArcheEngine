@@ -80,6 +80,7 @@ namespace Arche
 			std::function<void(Registry&, Entity)> remove;
 			std::function<bool(Registry&, Entity)> has;
 			std::function<void(Registry&, Entity, CommandCallback)> drawInspector;
+			std::function<void(Registry&, Entity, int, std::function<void(int, int)>, std::function<void()>, CommandCallback)> drawInspectorDnD;
 		};
 
 		static ComponentRegistry& Instance() { static ComponentRegistry s; return s; }
@@ -137,22 +138,26 @@ namespace Arche
 			};
 
 			// DrawInspector（Debugのみ有効）
-			iface.drawInspector = [nameStr, iface](Registry& reg, Entity e, CommandCallback onCommand)
+			iface.drawInspectorDnD = [nameStr, iface](Registry& reg, Entity e, int index, std::function<void(int, int)> onReorder, std::function<void()> onRemove, CommandCallback onCommand)
 			{
 #ifdef _DEBUG
 				if(reg.has<T>(e))
 				{
-					// シリアライズ用の関数を作成
+					bool removed = false;
+
+					// Visitorに必要なシリアライズ用関数を作成
 					auto serializeFunc = [&](json& outJson)
 					{
-						json root;
-						iface.serialize(reg, e, root);
-						if (root.contains(nameStr)) outJson = root[nameStr];
+						iface.serialize(reg, e, outJson);
 					};
 
-					// Visitorを作成してVisit
-					InspectorGuiVisitor visitor(serializeFunc, onCommand);
-					Arche::Reflection::VisitMembers(reg.get<T>(e), visitor);
+					// シリアライズ用の関数を作成
+					DrawComponent(nameStr.c_str(), reg.get<T>(e), removed, serializeFunc, onCommand, index, onReorder);
+
+					if (removed && onRemove)
+					{
+						onRemove();
+					}
 				}
 #endif // _DEBUG
 			};
