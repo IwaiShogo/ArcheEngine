@@ -17,6 +17,7 @@
 #include "Engine/Core/Base/Logger.h"
 #include "Engine/Core/Core.h"
 
+#include "Sandbox/GameLoader.h"
 
 namespace Arche
 {

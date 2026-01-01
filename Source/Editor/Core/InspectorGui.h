@@ -31,6 +31,10 @@
 
 namespace Arche
 {
+	ARCHE_API void Inspector_Snapshot(ImGuiID id, std::function<void(json&)> saveFn);
+	ARCHE_API void Inspector_Commit(ImGuiID id, std::function<void(json&)> saveFn, std::function<void(const json&, const json&)> cmdFn);
+	ARCHE_API bool Inspector_HasState(ImGuiID id);
+
 	// ------------------------------------------------------------
 	// InspectorGuiVisitor
 	// 型に応じたImGuiウィジェットを描画する
@@ -38,10 +42,10 @@ namespace Arche
 	struct InspectorGuiVisitor
 	{
 		std::function<void(json&)> serializeFunc;
-		std::function<void(json, json)> commandFunc;
+		std::function<void(const json&, const json&)> commandFunc;
 
 		// 編集開始時の状態を保持する
-		static inline std::map<ImGuiID, json> s_startStates;
+		//static inline std::map<ImGuiID, json> s_startStates;
 
 		InspectorGuiVisitor(std::function<void(json&)> sFunc, std::function<void(json, json)> cFunc)
 			: serializeFunc(sFunc), commandFunc(cFunc) {}
@@ -68,52 +72,34 @@ namespace Arche
 			// 2. ウィジェット描画実行
 			func();
 
-			// 3. 編集開始検知（Activated）
-			if (ImGui::IsItemActivated() || (ImGui::IsItemActive() && s_startStates.find(id) == s_startStates.end()))
+			// 3. 編集開始検知
+			if (ImGui::IsItemActivated() || (ImGui::IsItemActive() && !Inspector_HasState(id)))
 			{
-				// まだ保存していなければ保存
-				if (s_startStates.find(id) == s_startStates.end())
+				if (!Inspector_HasState(id))
 				{
 					if (IsChanged(oldVal, currentVal))
 					{
-						// 一旦値を戻す
 						T temp = currentVal;
 						currentVal = oldVal;
 
-						// 変更前の状態でシリアライズ
-						json state;
-						serializeFunc(state);
-						s_startStates[ImGui::GetID(label)] = state;
+						// Engine側でスナップショット作成
+						Inspector_Snapshot(id, serializeFunc);
 
-						// 値を最新に戻す
 						currentVal = temp;
 					}
 					else
 					{
-						// 変わっていないならそのままシリアライズ
-						json state;
-						serializeFunc(state);
-						s_startStates[ImGui::GetID(label)] = state;
+						Inspector_Snapshot(id, serializeFunc);
 					}
 				}
 			}
 
-			// 4. 編集終了検知（DeactivatedAfterEdit）
+			// 4. 編集終了検知
 			if (ImGui::IsItemDeactivatedAfterEdit())
 			{
-				if (s_startStates.count(id))
+				if (Inspector_HasState(id))
 				{
-					json oldState = s_startStates[id];
-					json newState;
-					serializeFunc(newState);
-
-					// 値が変わっていればコマンド発行
-					if (oldState != newState)
-					{
-						// コマンド発行
-						commandFunc(oldState, newState);
-					}
-					s_startStates.erase(id);
+					Inspector_Commit(id, serializeFunc, commandFunc);
 				}
 			}
 
@@ -414,7 +400,7 @@ namespace Arche
 		T& component,
 		bool& removed,
 		std::function<void(json&)> serializeFunc,			// ★追加: 保存用関数
-		std::function<void(json, json)> commandFunc,		// ★追加: コマンド発行用関数
+		std::function<void(const json&, const json&)> commandFunc,		// ★追加: コマンド発行用関数
 		int index = -1,
 		std::function<void(int, int)> onReorder = nullptr
 	)

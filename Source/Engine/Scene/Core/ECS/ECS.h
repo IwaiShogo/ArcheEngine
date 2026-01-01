@@ -35,12 +35,17 @@
 
 namespace Arche
 {
-
 	// ------------------------------------------------------------
 	// 基本定義
 	// ------------------------------------------------------------
 	using Entity = uint32_t;
 	constexpr Entity NullEntity = 0xFFFFFFFF;
+
+	class ARCHE_API ComponentTypeManager
+	{
+	public:
+		static std::size_t GetID(const char* typeName);
+	};
 
 	class ComponentFamily
 	{
@@ -54,7 +59,7 @@ namespace Arche
 		template<typename T>
 		static std::size_t type()
 		{
-			static const std::size_t value = identifier();
+			static const std::size_t value = ComponentTypeManager::GetID(typeid(T).name());
 			return value;
 		}
 	};

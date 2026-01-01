@@ -2,6 +2,7 @@
 #include <iostream>
 #include <filesystem>
 #include <thread>
+#include <objbase.h>
 #include "Engine/Core/Application.h"
 
 // 関数ポインタの型定義
@@ -11,6 +12,8 @@ typedef Arche::Application* (*CreateAppFunc)();
 HMODULE g_sandboxModule = nullptr;
 Arche::Application* g_app = nullptr;
 std::filesystem::file_time_type g_lastWriteTime;	// 最終更新日時
+int g_reloadCount = 0;	// リロード回数カウンタ
+std::filesystem::path g_currentDllPath;
 
 // パス設定
 const std::string DLL_NAME = "Sandbox.dll";
@@ -27,6 +30,36 @@ std::filesystem::path GetExeDirectory()
 	return std::filesystem::path(buffer).parent_path();
 }
 
+// ゴミファイルのお掃除関数
+void CleanUpOldDLLs()
+{
+	std::filesystem::path exeDir = GetExeDirectory();
+
+	try
+	{
+		for (const auto& entry : std::filesystem::directory_iterator(exeDir))
+		{
+			// ファイル名を取得
+			std::string filename = entry.path().filename().string();
+
+			// "Sandbox_Loaded_" で始まり、かつ ".dll" または ".pdb" で終わるファイルを探す
+			if (filename.find("Sandbox_Loaded_") != std::string::npos)
+			{
+				if (filename.find(".dll") != std::string::npos || filename.find(".pdb") != std::string::npos)
+				{
+					// 削除試行 (使用中のファイル等でエラーが出ても無視して続行)
+					try {
+						std::filesystem::remove(entry.path());
+						std::cout << "[Runner] Cleaned up: " << filename << std::endl;
+					}
+					catch (...) {}
+				}
+			}
+		}
+	}
+	catch (...) {}
+}
+
 // DLLのロード処理
 // ============================================================
 bool LoadGameDLL()
@@ -41,9 +74,14 @@ bool LoadGameDLL()
 	// パスの構築
 	std::filesystem::path exeDir = GetExeDirectory();
 	std::filesystem::path sourceDll = exeDir / DLL_NAME;
-	std::filesystem::path copyDll = exeDir / DLL_COPY_NAME;
 	std::filesystem::path sourcePdb = exeDir / PDB_NAME;
-	std::filesystem::path copyPdb = exeDir / PDB_COPY_NAME;
+
+	// コピー先のファイル名を毎回変える
+	std::string uniqueSuffix = "_Loaded_" + std::to_string(g_reloadCount++);
+	std::filesystem::path copyDll = exeDir / ("Sandbox" + uniqueSuffix + ".dll");
+	std::filesystem::path copyPdb = exeDir / ("Sandbox" + uniqueSuffix + ".pdb");
+
+	auto currentWriteTime = std::filesystem::last_write_time(sourceDll);
 
 	// 2. DLLをコピー
 	int retries = 0;
@@ -85,6 +123,7 @@ bool LoadGameDLL()
 		return false;
 	}
 
+	// 3. ロード
 	g_sandboxModule = LoadLibraryA(copyDll.string().c_str());
 	if (!g_sandboxModule) return false;
 
@@ -98,7 +137,16 @@ bool LoadGameDLL()
 
 	// 5. アプリ生成
 	g_app = createApp();
-	std::cout << "[Runner] Game Loaded Successfully!" << std::endl;
+
+	g_currentDllPath = copyDll;
+
+	std::cout << "[Runner] Game Loaded Successfully! (" << copyDll.filename() << ")" << std::endl;
+
+	if (g_reloadCount > 1)
+	{
+		std::cout << "[Runner] Reload #" << (g_reloadCount - 1) << " Completed." << std::endl;
+	}
+
 	return true;
 }
 
@@ -148,66 +196,96 @@ bool CheckForDllUpdate()
 // ============================================================
 int main()
 {
-	// 最初のロード
-	if (!LoadGameDLL()) return -1;
+	CleanUpOldDLLs();
+
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (FAILED(hr))
+	{
+		std::cerr << "Failed to initialize COM library." << std::endl;
+		return -1;
+	}
 
 	while (true)
 	{
+		// 1. DLLのロード（コピー＆ロード）
+		// 失敗したらループを抜けて終了
+		if (!LoadGameDLL()) {
+			break;
+		}
+
+		// 2. 監視スレッドの起動（変更検知用）
 		std::atomic<bool> stopWatcher = false;
-		std::thread watcher([&]()
-		{
-			while (!stopWatcher)
-			{
-				if (CheckForDllUpdate())
-				{
-					// 更新検知
-					if (g_app) g_app->RequestReload();
+		std::thread watcher([&]() {
+			while (!stopWatcher) {
+				// F5キー または 自動検知
+				if (CheckForDllUpdate() || (GetAsyncKeyState(VK_F5) & 0x8000)) {
+					if (g_app) g_app->RequestReload(); // ゲームループを終了させる
+					// 連続検知防止
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 					break;
 				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			}
-		});
+			});
 
-		MSG msg = {};
-		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			if (msg.message == WM_QUIT)
-			{
-				// 何もしない
-			}
-			else
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+		// 3. アプリケーション実行
+		// RequestReload() が呼ばれると Run() が終了して戻ってくる
+		if (g_app) {
+			g_app->Run();
 		}
 
-		// ゲーム実行（リロードされるまでここで止まる）
-		g_app->Run();
-
-		// Runから戻ってきたら監視スレッドを止める
+		// 4. 監視スレッドの終了待機
 		stopWatcher = true;
-		if (watcher.joinable()) watcher.join();
-
-		// リロード要求か、単なる終了か？
-		if (g_app && g_app->IsReloadRequested())
-		{
-			std::cout << "[Runner] Detected changes! Reloading..." << std::endl;
-
-			// アンロード (内部で SaveState される)
-			UnloadGameDLL();
-
-			// 再ロード
-			if (!LoadGameDLL()) break;
-
-			std::cout << "[Runner] Game Loaded Successfully!" << std::endl;
+		if (watcher.joinable()) {
+			watcher.join();
 		}
-		else
+
+		// 5. アプリケーションの破棄
+		// DLLを解放する前に、その中のクラスである g_app を削除する必要があります
+		bool isReloading = false;
+		if (g_app)
 		{
-			break; // 終了
+			isReloading = g_app->IsReloadRequested();
+			delete g_app;
+			g_app = nullptr;
 		}
+
+		if (!isReloading) break;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+		// 6. DLLの解放
+		// これを行わないと、次の LoadGameDLL で新しいファイルをロードできません
+		if (g_sandboxModule) {
+			if (!FreeLibrary(g_sandboxModule))
+			{
+				std::cout << "[Runner] Warning: FreeLibrary failed." << std::endl;
+			}
+			g_sandboxModule = nullptr;
+
+			// 解放した直後に、そのファイルを削除する
+			try {
+				if (std::filesystem::exists(g_currentDllPath)) {
+					std::filesystem::remove(g_currentDllPath);
+				}
+				// PDBも削除（Visual Studioが掴んでいて消せないことがあるのでtry-catch必須）
+				std::filesystem::path pdbPath = g_currentDllPath;
+				pdbPath.replace_extension(".pdb");
+				if (std::filesystem::exists(pdbPath)) {
+					std::filesystem::remove(pdbPath);
+				}
+			}
+			catch (...) {
+				// デバッガがPDBを掴んでいる場合などは削除に失敗するが、動作に支障はないので無視
+			}
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+		// ループの先頭に戻り、新しいDLLをロードする
 	}
 
+	CoUninitialize();
 	UnloadGameDLL();
 	return 0;
 }

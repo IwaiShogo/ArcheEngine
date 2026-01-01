@@ -18,18 +18,14 @@
 
 namespace Arche
 {
-	class SystemRegistry
+	class ARCHE_API SystemRegistry
 	{
 	public:
 		// システム生成関数の型定義
 		using SystemCreator = std::function<ISystem* (World&, SystemGroup)>;
 
 		// シングルトン取得
-		static SystemRegistry& Instance()
-		{
-			static SystemRegistry instance;
-			return instance;
-		}
+		static SystemRegistry& Instance();
 
 		/**
 		 * @brief	システムを型として登録する
@@ -39,7 +35,7 @@ namespace Arche
 		template<typename T>
 		void Register(const std::string& name)
 		{
-			m_creators[name] = [name](World& world, SystemGroup group) -> ISystem*
+			m_creators[name] = [](World& world, SystemGroup group) -> ISystem*
 			{
 				return world.registerSystem<T>(group);
 			};

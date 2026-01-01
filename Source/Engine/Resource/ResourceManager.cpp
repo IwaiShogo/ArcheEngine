@@ -234,8 +234,14 @@ namespace Arche
 
 	// 内部ロード関数
 	std::shared_ptr<Texture> ResourceManager::LoadTextureFromFile(const std::string& filepath) {
+		// 1. デバイスの生存チェック
+		if (!m_device) {
+			std::cout << "[ResourceManager] Error: Device is null. Cannot load texture.\n";
+			return nullptr;
+		}
+
 		if (!std::filesystem::exists(filepath)) {
-			OutputDebugStringA(("Texture Not Found: " + filepath + "\n").c_str());
+			std::cout << "[ResourceManager] Texture Not Found: " + filepath + "\n";
 			return nullptr;
 		}
 
@@ -244,20 +250,63 @@ namespace Arche
 		std::wstring wpath = ToWString(filepath);
 		std::string ext = std::filesystem::path(filepath).extension().string();
 
+		// 拡張子判定（小文字化などの厳密な処理は省略していますが、現状のままで）
 		if (ext == ".dds" || ext == ".DDS")
 			hr = DirectX::LoadFromDDSFile(wpath.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
 		else
 			hr = DirectX::LoadFromWICFile(wpath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, image);
 
-		if (FAILED(hr)) return nullptr;
+		if (FAILED(hr)) {
+			_com_error err(hr);
+			std::string errMsg = "[ResourceManager] Failed to Load Image: " + filepath + "\n";
+			errMsg += "Error Code: " + std::string(err.ErrorMessage()) + "\n";
+			std::cout << errMsg;
+
+			return nullptr;
+		}
 
 		auto texture = std::make_shared<Texture>();
-		texture->filepath = filepath; // ここで保存されたパスを使います
+		texture->filepath = filepath;
 		texture->width = static_cast<int>(image.GetMetadata().width);
 		texture->height = static_cast<int>(image.GetMetadata().height);
 
+		// 3. SRV作成
 		hr = DirectX::CreateShaderResourceView(m_device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), &texture->srv);
-		if (FAILED(hr)) return nullptr;
+
+		if (FAILED(hr)) {
+			std::cout << "[ResourceManager] Failed to Create SRV: " + filepath + "\n";
+			return nullptr;
+		}
+
+		return texture;
+	}
+
+	std::shared_ptr<Texture> ResourceManager::LoadTextureFromMemory(const void* data, size_t size)
+	{
+		if (!m_device) return nullptr;
+
+		ScratchImage image;
+		// メモリ上のデータ(PNG/JPG等)から読み込み
+		HRESULT hr = LoadFromWICMemory(static_cast<const uint8_t*>(data), size, WIC_FLAGS_NONE, nullptr, image);
+
+		if (FAILED(hr)) {
+			_com_error err(hr);
+			OutputDebugStringA(("[ResourceManager] Failed to Load Texture from Memory: " + std::string(err.ErrorMessage()) + "\n").c_str());
+			return nullptr;
+		}
+
+		auto texture = std::make_shared<Texture>();
+		// 埋め込みなのでパスは空か、適当な名前を入れる
+		texture->filepath = "[Embedded]";
+		texture->width = static_cast<int>(image.GetMetadata().width);
+		texture->height = static_cast<int>(image.GetMetadata().height);
+
+		hr = CreateShaderResourceView(m_device, image.GetImages(), image.GetImageCount(), image.GetMetadata(), &texture->srv);
+
+		if (FAILED(hr)) {
+			OutputDebugStringA("[ResourceManager] Failed to Create SRV from Memory\n");
+			return nullptr;
+		}
 
 		return texture;
 	}
@@ -400,8 +449,39 @@ namespace Arche
 			if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 				aiString str;
 				material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-				std::string texPath = directory + "/" + str.C_Str();
-				texture = LoadTextureFromFile(texPath);
+
+				std::string pathStr = str.C_Str();
+
+				// 1. 埋め込みテクスチャかどうかチェック
+				const aiTexture* embeddedTex = scene->GetEmbeddedTexture(pathStr.c_str());
+
+				if (embeddedTex) {
+					// 埋め込みテクスチャが見つかった場合
+					if (embeddedTex->mHeight == 0) {
+						// mHeightが0の場合は圧縮フォーマット(png, jpgなど)のバイナリデータ
+						texture = LoadTextureFromMemory(embeddedTex->pcData, embeddedTex->mWidth);
+					}
+					else {
+						// mHeight > 0 の場合は生のARGBデータ（今回は対応省略、必要なら実装を追加）
+						// DirectX::CreateTexture2D等でピクセルデータを転送する必要あり
+						OutputDebugStringA("[ResourceManager] Raw embedded texture format is not supported yet.\n");
+					}
+				}
+				else {
+					// 2. 外部ファイルの場合
+					// パスが絶対パスだったりする場合があるので、ファイル名だけ抽出して
+					// モデルと同じディレクトリにあると仮定して読み込む（安全策）
+					std::filesystem::path p(pathStr);
+					std::string filename = p.filename().string();
+					std::string texPath = directory + "/" + filename;
+
+					texture = LoadTextureFromFile(texPath);
+
+					// もし見つからなければ、そのままのパスでもトライしてみる（一応）
+					if (!texture) {
+						texture = LoadTextureFromFile(pathStr);
+					}
+				}
 			}
 		}
 

@@ -16,6 +16,19 @@
 
 namespace Arche
 {
+	std::size_t ComponentTypeManager::GetID(const char* typeName)
+	{
+		static std::unordered_map<std::string, std::size_t> types;
+		static std::size_t count = 0;
+
+		std::string key = typeName;
+		if (types.find(key) == types.end())
+		{
+			types[key] = count++;
+		}
+		return types[key];
+	}
+
 	EntityHandle& EntityHandle::setParent(Entity parentId)
 	{
 		// 1. 自分にRelationshipを追加

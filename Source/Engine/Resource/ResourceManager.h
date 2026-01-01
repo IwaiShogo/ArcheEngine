@@ -84,6 +84,7 @@ namespace Arche
 	private:
 		// 内部ロード関数（パス指定）
 		std::shared_ptr<Texture> LoadTextureFromFile(const std::string& filepath);
+		std::shared_ptr<Texture> LoadTextureFromMemory(const void* data, size_t size);
 		std::shared_ptr<Model> LoadModelFromFile(const std::string& filepath);
 		std::shared_ptr<Sound> LoadWav(const std::string& filepath);
 

@@ -26,7 +26,7 @@
 #include "Engine/Renderer/Text/TextRenderer.h"
 
 #include "Engine/EngineLoader.h"
-#include "Sandbox/GameLoader.h"
+//#include "Sandbox/GameLoader.h"
 
 #ifdef _DEBUG
 #include "Editor/Core/Editor.h"
@@ -161,10 +161,14 @@ namespace Arche
 		if (std::filesystem::exists(tempPath))
 		{
 			// ホットリロード復帰: 続きからロード
-			LoadState();
+			//LoadState();
+
+			std::string startScene = "Resources/Game/Scenes/GameScene.json";
+			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
 
 			// 読み込んだら消す（次回通常起動時に誤爆しないように）
 			std::filesystem::remove(tempPath);
+			Logger::Log("HotReload: State Reset (Debug).");
 		}
 		else
 		{

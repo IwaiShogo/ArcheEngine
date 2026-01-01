@@ -79,6 +79,7 @@
 #include <filesystem>
 #include <tuple>
 #include <deque>
+#include <comdef.h>
 
 #include "Engine/Core/Core.h"
 

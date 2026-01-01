@@ -201,6 +201,69 @@
     <ClCompile Include="..\Source\Engine\Scene\Core\ECS\ECS.cpp">
       <Filter>Source\Engine\Scene\Core\ECS</Filter>
     </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexHDR.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexImage.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexMipmaps.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexMisc.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexNormalMaps.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexPMAlpha.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexResize.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexTGA.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexUtil.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexWIC.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\BC.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\BC4BC5.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\BC6HBC7.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexCompress.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexConvert.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexD3D11.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexDDS.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\DirectXTex\DirectXTexFlipRotate.cpp">
+      <Filter>Library\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Serializer\SystemRegistry.cpp">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Serializer\ComponentRegistry.cpp">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Core\Time\Time.cpp">
+      <Filter>Source\Engine\Core\Time</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Editor\Core\Editor.h">
@@ -298,9 +361,6 @@
     </ClInclude>
     <ClInclude Include="..\Library\nlohmann\json.hpp">
       <Filter>Library\nlohmann</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Library\DirectXTex\DirectXTex.h">
-      <Filter>Library\DirectXTex</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Editor\Panels\ContentBrowser.h">
       <Filter>Source\Editor\Panels</Filter>
@@ -425,11 +485,29 @@
     <ClInclude Include="..\Source\Engine\Core\Core.h">
       <Filter>Source\Engine\Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\DirectXTexP.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\filters.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\scoped.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\BC.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\BCDirectCompute.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\DDS.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\DirectXTex\DirectXTex.h">
+      <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Library\DirectXTex\DirectXTex.inl">
-      <Filter>Library\DirectXTex</Filter>
-    </None>
     <None Include="..\Resources\Engine\Shaders\Billboard.hlsl">
       <Filter>Resources\Shaders</Filter>
     </None>
@@ -444,6 +522,9 @@
     </None>
     <None Include="..\Scripts\GenerateGameLoader.ps1">
       <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\Library\DirectXTex\DirectXTex.inl">
+      <Filter>Library\DirectXTex</Filter>
     </None>
   </ItemGroup>
 </Project>

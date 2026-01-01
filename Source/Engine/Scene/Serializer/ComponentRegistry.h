@@ -24,23 +24,64 @@
 
 namespace Arche
 {
+	// ------------------------------------------------------------
+	// ヘルパー関数の宣言（型を網羅する）
+	// ------------------------------------------------------------
+	ARCHE_API void JsonWrite(json& j, const char* key, int val);
+	ARCHE_API void JsonWrite(json& j, const char* key, long val);
+	ARCHE_API void JsonWrite(json& j, const char* key, long long val);
+	ARCHE_API void JsonWrite(json& j, const char* key, unsigned int val);	   // Entity等はここ
+	ARCHE_API void JsonWrite(json& j, const char* key, unsigned long val);
+	ARCHE_API void JsonWrite(json& j, const char* key, unsigned long long val); // size_tはここ
+	ARCHE_API void JsonWrite(json& j, const char* key, float val);
+	ARCHE_API void JsonWrite(json& j, const char* key, double val);
+	ARCHE_API void JsonWrite(json& j, const char* key, bool val);
+	ARCHE_API void JsonWrite(json& j, const char* key, char val);
+	ARCHE_API void JsonWrite(json& j, const char* key, unsigned char val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const std::string& val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const char* val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const StringId& val);
+
+	// Vector系
+	ARCHE_API void JsonWrite(json& j, const char* key, const DirectX::XMFLOAT2& val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const DirectX::XMFLOAT3& val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const DirectX::XMFLOAT4& val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const std::vector<std::string>& val);
+	ARCHE_API void JsonWrite(json& j, const char* key, const std::vector<Entity>& val);
+
+	ARCHE_API void SerializeComponentHelper(json& parent, const std::string& key, std::function<void(json&)> writer);
+
 	// シリアライズ用ビジター（保存）
 	// ------------------------------------------------------------
 	struct SerializeVisitor
 	{
 		json& j;
-		template<typename T>
-		void operator()(const T& val, const char* name) { j[name] = val; }
-		void operator()(const XMFLOAT2& v, const char* name) { j[name] = { v.x, v.y }; }
-		void operator()(const XMFLOAT3& v, const char* name) { j[name] = { v.x, v.y, v.z }; }
-		void operator()(const XMFLOAT4& v, const char* name) { j[name] = { v.x, v.y, v.z, v.w }; }
-		void operator()(const StringId& v, const char* name) { j[name] = v.c_str(); }
-		void operator()(const Entity& v, const char* name) { j[name] = (uint32_t)v; }
-		template<typename T> requires std::is_enum_v<T> void operator()(const T& v, const char* name) { j[name] = (int)v; }
-		void operator()(const std::vector<Entity>& v, const char* name)
-		{
-			std::vector<uint32_t> ids; for (auto e : v) ids.push_back((uint32_t)e); j[name] = ids;
-		}
+
+		// 基本型のマッピング
+		void operator()(int val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(long val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(long long val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(unsigned int val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(unsigned long val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(unsigned long long val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(float val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(double val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(bool val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(char val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(unsigned char val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const std::string& val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const char* val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const StringId& val, const char* name) { JsonWrite(j, name, val); }
+
+		// Vector系
+		void operator()(const XMFLOAT2& val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const XMFLOAT3& val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const XMFLOAT4& val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const std::vector<std::string>& val, const char* name) { JsonWrite(j, name, val); }
+		void operator()(const std::vector<Entity>& val, const char* name) { JsonWrite(j, name, val); }
+
+		template<typename T> requires std::is_enum_v<T>
+		void operator()(const T& val, const char* name) { JsonWrite(j, name, static_cast<int>(val)); }
 	};
 
 	// デシリアライズ用ビジター
@@ -53,7 +94,23 @@ namespace Arche
 		void operator()(DirectX::XMFLOAT2& v, const char* name) { if (j.contains(name)) { auto a = j[name]; if (a.size() >= 2) { v.x = a[0]; v.y = a[1]; } } }
 		void operator()(DirectX::XMFLOAT3& v, const char* name) { if (j.contains(name)) { auto a = j[name]; if (a.size() >= 3) { v.x = a[0]; v.y = a[1]; v.z = a[2]; } } }
 		void operator()(DirectX::XMFLOAT4& v, const char* name) { if (j.contains(name)) { auto a = j[name]; if (a.size() >= 4) { v.x = a[0]; v.y = a[1]; v.z = a[2]; v.w = a[3]; } } }
-		void operator()(StringId& v, const char* name) { if (j.contains(name)) v = StringId(j[name].get<std::string>().c_str()); }
+		void operator()(StringId& v, const char* name)
+		{
+			if (j.contains(name))
+			{
+				const auto& val = j[name];
+				if (val.is_number())
+				{
+					// 数値（ハッシュ）なら、直接ハッシュ値から復元
+					v = StringId(val.get<uint32_t>());
+				}
+				else if (val.is_string())
+				{
+					// 文字列なら、文字列からハッシュ化して復元（旧データや手書きJSON用）
+					v = StringId(val.get<std::string>().c_str());
+				}
+			}
+		}
 		void operator()(Entity& v, const char* name) { if (j.contains(name)) v = (Entity)j[name].get<uint32_t>(); }
 		template<typename T>requires std::is_enum_v<T>
 		void operator()(T& v, const char* name) { if (j.contains(name)) v = (T)j[name].get<int>(); }
@@ -65,11 +122,11 @@ namespace Arche
 
 	// コンポーネントレジストリ
 	// ------------------------------------------------------------
-	class ComponentRegistry
+	class ARCHE_API ComponentRegistry
 	{
 	public:
 		// コマンド発行用コールバック
-		using CommandCallback = std::function<void(json oldVal, json newVal)>;
+		using CommandCallback = std::function<void(const json&, const json&)>;
 
 		struct Interface
 		{
@@ -83,7 +140,7 @@ namespace Arche
 			std::function<void(Registry&, Entity, int, std::function<void(int, int)>, std::function<void()>, CommandCallback)> drawInspectorDnD;
 		};
 
-		static ComponentRegistry& Instance() { static ComponentRegistry s; return s; }
+		static ComponentRegistry& Instance();
 
 		// コンポーネント登録関数
 		template<typename T>
@@ -102,9 +159,10 @@ namespace Arche
 			{
 				if (reg.has<T>(e))
 				{
-					json compJ;
-					Reflection::VisitMembers(reg.get<T>(e), SerializeVisitor{ compJ });
-					j[nameStr] = compJ;
+					SerializeComponentHelper(j, nameStr, [&](json& compNode)
+					{
+						Reflection::VisitMembers(reg.get<T>(e), SerializeVisitor{ compNode });
+					});
 				}
 			};
 
