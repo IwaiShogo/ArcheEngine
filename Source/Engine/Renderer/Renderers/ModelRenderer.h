@@ -27,7 +27,7 @@
 namespace Arche
 {
 
-	class ModelRenderer
+	class ARCHE_API ModelRenderer
 	{
 	public:
 		/**
@@ -37,6 +37,8 @@ namespace Arche
 		 */
 		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
 
+		static void Shutdown();
+		
 		/**
 		 * @brief	描画開始（カメラ行列とライト情報をセット）
 		 * @param	view		ビュー行列

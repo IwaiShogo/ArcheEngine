@@ -116,6 +116,22 @@ namespace Arche
 		if (FAILED(hr)) throw std::runtime_error("Failed to create 2D DepthStencil State");
 	}
 
+	void SpriteRenderer::Shutdown()
+	{
+		s_vs.Reset();
+		s_ps.Reset();
+		s_inputLayout.Reset();
+		s_vertexBuffer.Reset();
+		s_constantBuffer.Reset();
+		s_rs2D.Reset();
+		s_ds2D.Reset();
+		s_blendState.Reset();
+		s_samplerState.Reset();
+
+		s_device = nullptr;
+		s_context = nullptr;
+	}
+
 	void SpriteRenderer::Begin()
 	{
 		// 2D用のパイプライン設定
@@ -150,7 +166,10 @@ namespace Arche
 	}
 
 	void SpriteRenderer::Draw(Texture* texture, const XMMATRIX& worldMatrix, const XMFLOAT4& color) {
-		if (!texture) return;
+		if (!texture)
+		{
+			return;
+		}
 
 		// 頂点データの更新 (4頂点)
 		D3D11_MAPPED_SUBRESOURCE ms;

@@ -44,11 +44,14 @@ namespace Arche
 		s_d2dFactory = FontManager::Instance().GetD2DFactory();
 	}
 
-	void TextRenderer::Finalize()
+	void TextRenderer::Shutdown()
 	{
 		s_d2dTargets.clear();
 		s_brush.Reset();
 		s_d2dFactory.Reset();
+
+		s_device = nullptr;
+		s_context = nullptr;
 	}
 
 	void TextRenderer::ClearCache()

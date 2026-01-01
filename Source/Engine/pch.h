@@ -80,6 +80,8 @@
 #include <tuple>
 #include <deque>
 
+#include "Engine/Core/Core.h"
+
 // --- Libraries ---
 #include <json.hpp>	// nlohmann/json
 #include "imgui.h"

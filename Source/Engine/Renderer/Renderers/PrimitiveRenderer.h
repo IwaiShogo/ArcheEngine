@@ -26,7 +26,7 @@
 namespace Arche
 {
 
-	class PrimitiveRenderer
+	class ARCHE_API PrimitiveRenderer
 	{
 	public:
 		/**
@@ -35,6 +35,8 @@ namespace Arche
 		 * @param	context	コンテキスト
 		 */
 		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
+
+		static void Shutdown();
 
 		/**
 		 * @brief	描画開始（カメラ行列をリセット）
@@ -98,10 +100,12 @@ namespace Arche
 		static ComPtr<ID3D11Buffer>		s_sphereIB;
 		static UINT						s_sphereIndexCount;
 		// 円柱用バッファ
-		static ComPtr<ID3D11Buffer> s_cylinderVB, s_cylinderIB;
+		static ComPtr<ID3D11Buffer> s_cylinderVB;
+		static ComPtr<ID3D11Buffer> s_cylinderIB;
 		static UINT s_cylinderIndexCount;
 		// カプセル用バッファ
-		static ComPtr<ID3D11Buffer> s_capsuleVB, s_capsuleIB;
+		static ComPtr<ID3D11Buffer> s_capsuleVB;
+		static ComPtr<ID3D11Buffer> s_capsuleIB;
 		static UINT s_capsuleIndexCount;
 
 		static ConstantBufferData	s_cbData;

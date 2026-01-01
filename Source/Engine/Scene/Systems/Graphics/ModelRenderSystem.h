@@ -80,7 +80,6 @@ namespace Arche
 
 			// 2. 描画開始
 			ModelRenderer::Begin(viewMatrix, projMatrix, lightDir);
-
 			// 3. MeshComponentとTransformを持つEntityを描画
 			registry.view<MeshComponent, Transform>().each([&](Entity e, MeshComponent& m, Transform& t)
 				{

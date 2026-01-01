@@ -85,6 +85,21 @@ namespace Arche
 		CreateWhiteTexture();
 	}
 
+	void ModelRenderer::Shutdown()
+	{
+		s_vs.Reset();
+		s_ps.Reset();
+		s_inputLayout.Reset();
+		s_constantBuffer.Reset();
+		s_samplerState.Reset();
+		s_rsSolid.Reset();
+
+		s_whiteTexture.Reset(); // これを忘れるとテクスチャが残ります
+
+		s_device = nullptr;
+		s_context = nullptr;
+	}
+
 	void ModelRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection, const XMFLOAT3& lightDir, const XMFLOAT3& lightColor)
 	{
 		s_context->IASetInputLayout(s_inputLayout.Get());

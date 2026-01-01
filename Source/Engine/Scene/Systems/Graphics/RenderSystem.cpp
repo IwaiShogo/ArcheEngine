@@ -142,39 +142,39 @@ namespace Arche
 		// -------------------------------------------------------
 		// 音源の可視化 (Billboard版)
 		// -------------------------------------------------------
-		if (context.debugSettings.showSoundLocation) {
+		//if (context.debugSettings.showSoundLocation) {
 
-			// ビルボード描画開始 (カメラ行列を渡す)
-			BillboardRenderer::Begin(viewMatrix, projMatrix);
+		//	// ビルボード描画開始 (カメラ行列を渡す)
+		//	BillboardRenderer::Begin(viewMatrix, projMatrix);
 
-			// アイコン画像を取得 (assets.json または LoadTexture で指定したキー)
-			// ※とりあえず "player" か、用意した "icon_sound" を指定
-			auto iconTex = ResourceManager::Instance().GetTexture("star");
+		//	// アイコン画像を取得 (assets.json または LoadTexture で指定したキー)
+		//	// ※とりあえず "player" か、用意した "icon_sound" を指定
+		//	auto iconTex = ResourceManager::Instance().GetTexture("star");
 
-			// 画像がなければ "player" などで代用
-			if (!iconTex) iconTex = ResourceManager::Instance().GetTexture("star");
+		//	// 画像がなければ "player" などで代用
+		//	if (!iconTex) iconTex = ResourceManager::Instance().GetTexture("star");
 
-			if (iconTex) {
-				// 記録されている音イベントをループ
-				for (const auto& evt : AudioManager::Instance().GetSoundEvents()) {
+		//	if (iconTex) {
+		//		// 記録されている音イベントをループ
+		//		for (const auto& evt : AudioManager::Instance().GetSoundEvents()) {
 
-					// ビルボードを描画
-					// 位置: evt.position
-					// サイズ: 1.0f x 1.0f (3D空間での1メートル四方)
-					// 色: 赤っぽくして目立たせる
-					BillboardRenderer::Draw(
-						iconTex.get(),
-						evt.position,
-						1.0f, 1.0f,
-						{ 1.0f, 0.5f, 0.5f, 1.0f }
-					);
-				}
-			}
+		//			// ビルボードを描画
+		//			// 位置: evt.position
+		//			// サイズ: 1.0f x 1.0f (3D空間での1メートル四方)
+		//			// 色: 赤っぽくして目立たせる
+		//			BillboardRenderer::Draw(
+		//				iconTex.get(),
+		//				evt.position,
+		//				1.0f, 1.0f,
+		//				{ 1.0f, 0.5f, 0.5f, 1.0f }
+		//			);
+		//		}
+		//	}
 
-			// ステートの後始末（深度書き込みなどを元に戻す必要がある場合）
-			// BillboardRendererは半透明(Blend)を使うので、最後にBlendStateを切ると安全です
-			PrimitiveRenderer::GetDeviceContext()->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-		}
+		//	// ステートの後始末（深度書き込みなどを元に戻す必要がある場合）
+		//	// BillboardRendererは半透明(Blend)を使うので、最後にBlendStateを切ると安全です
+		//	PrimitiveRenderer::GetDeviceContext()->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+		//}
 
 		// ------------------------------------------------------------
 		// 2. シーンギズモの描画

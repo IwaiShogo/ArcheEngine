@@ -16,6 +16,7 @@
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Core/Base/Logger.h"
+#include "Engine/Scene/Serializer/SceneSerializer.h"
 
 // Renderer（静的初期化用）
 #include "Engine/Renderer/Renderers/PrimitiveRenderer.h"
@@ -38,10 +39,22 @@ namespace Arche
 {
 	Application* Application::s_instance = nullptr;
 
+	HMODULE GetCurrentModuleHandle()
+	{
+		HMODULE hModule = nullptr;
+		GetModuleHandleEx(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+			(LPCTSTR)GetCurrentModuleHandle, // この関数(Application::Run)のアドレスを使ってDLLを特定
+			&hModule);
+		return hModule;
+	}
+
 	Application::Application(const std::string& title, uint32_t width, uint32_t height)
 		: m_title(title), m_width(width), m_height(height)
 	{
 		if (!s_instance) s_instance = this;
+
+		m_windowClassName = "ArcheEngineWindowClass_" + std::to_string((unsigned long long)this);
 
 		if (!InitializeWindow()) abort();
 		if (!InitializeGraphics()) abort();
@@ -107,8 +120,27 @@ namespace Arche
 #endif // _DEBUG
 		AudioManager::Instance().Finalize();
 
+		ResourceManager::Instance().Clear();
+
+		// レンダラーの静的リソース開放
+		SpriteRenderer::Shutdown();
+		BillboardRenderer::Shutdown();
+		PrimitiveRenderer::Shutdown();
+		ModelRenderer::Shutdown();
+		TextRenderer::Shutdown();
+
 		SceneManager* sm = &SceneManager::Instance();
 		if (sm) delete sm;
+
+		// ウィンドウ破棄
+		if (m_hwnd)
+		{
+			DestroyWindow(m_hwnd);
+			m_hwnd = nullptr;
+		}
+
+		// クラス登録解除
+		UnregisterClass(m_windowClassName.c_str(), GetCurrentModuleHandle());
 
 		s_instance = nullptr;
 	}
@@ -123,25 +155,45 @@ namespace Arche
 		GameCommands::RegisterAll(SceneManager::Instance().GetWorld(), ctx);
 #endif // _DEBUG
 
-		// スタートアップシーンのロード
-		std::string startScene = "Resources/Game/Scenes/GameScene.json";
-
-		// ファイルが存在するかチェック
-		std::ifstream f(startScene);
-		if (f.good())
+		// シーンロードの分岐
+		// 「一時ファイルがあるなら続きから、なければ通常起動」と判断します。
+		std::string tempPath = "temp_hotreload.json";
+		if (std::filesystem::exists(tempPath))
 		{
-			f.close();
-			// シーンロード（システム、エンティティ、レイヤー設定含む）
-			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
-			Logger::Log("Startup: Loaded: " + startScene);
+			// ホットリロード復帰: 続きからロード
+			LoadState();
+
+			// 読み込んだら消す（次回通常起動時に誤爆しないように）
+			std::filesystem::remove(tempPath);
 		}
 		else
 		{
-			Logger::LogWarning("Startup: Scene file not found. Created empty scene.");
+			// 通常起動: スタートアップシーンのロード
+			std::string startScene = "Resources/Game/Scenes/GameScene.json";
+			std::ifstream f(startScene);
+			if (f.good())
+			{
+				f.close();
+				SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
+				Logger::Log("Startup: Loaded: " + startScene);
+			}
+			else
+			{
+				Logger::LogWarning("Startup: Scene file not found.");
+			}
+		}
+
+		// 残留メッセージ
+		MSG cleanupMsg = {};
+		while (PeekMessage(&cleanupMsg, nullptr, 0, 0, PM_REMOVE))
+		{
+			if (cleanupMsg.message == WM_QUIT) continue;
+			TranslateMessage(&cleanupMsg);
+			DispatchMessage(&cleanupMsg);
 		}
 
 		MSG msg = {};
-		while (msg.message != WM_QUIT)
+		while (msg.message != WM_QUIT && !m_reloadRequested)
 		{
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 			{
@@ -303,15 +355,36 @@ namespace Arche
 	}
 #endif // _DEBUG
 
+	void Application::SaveState()
+	{
+		SceneSerializer::SaveScene(SceneManager::Instance().GetWorld(), "temp_hotreload.json");
+		Logger::Log("HotReload: State Saved.");
+	}
+
+	void Application::LoadState()
+	{
+		std::string tempPath = "temp_hotreload.json";
+		std::ifstream f(tempPath);
+		if (f.good())
+		{
+			f.close();
+			// 現在のシーンをクリアしてからロード
+			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), tempPath);
+			Logger::Log("HotReload: State Loaded.");
+		}
+	}
+
 	// ======================================================================
 	// ウィンドウ関連の実装
 	// ======================================================================
 	bool Application::InitializeWindow()
 	{
+		HINSTANCE hInstance = GetCurrentModuleHandle();
+
 		WNDCLASS wc = {};
 		wc.lpfnWndProc = StaticWndProc;
-		wc.hInstance = GetModuleHandle(nullptr);
-		wc.lpszClassName = "ArcheEngineWindowClass";
+		wc.hInstance = hInstance;
+		wc.lpszClassName = m_windowClassName.c_str();
 		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 		RegisterClass(&wc);
 
@@ -320,7 +393,7 @@ namespace Arche
 
 		// ウィンドウ作成
 		m_hwnd = CreateWindowEx(
-			0, "ArcheEngineWindowClass", m_title.c_str(),
+			0, m_windowClassName.c_str(), m_title.c_str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT,
 			rc.right - rc.left, rc.bottom - rc.top,
@@ -401,7 +474,11 @@ namespace Arche
 	LRESULT CALLBACK Application::StaticWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		// ImGui用ハンドラ
-		if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam)) return true;
+		if (s_instance && s_instance->m_isImguiInitialized)
+		{
+			extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+			if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam)) return true;
+		}
 
 		switch (msg)
 		{

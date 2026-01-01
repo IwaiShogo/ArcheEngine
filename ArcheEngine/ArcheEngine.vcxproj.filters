@@ -422,6 +422,9 @@
     <ClInclude Include="..\Source\Editor\Panels\ProjectSettingsWindow.h">
       <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Core.h">
+      <Filter>Source\Engine\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Library\DirectXTex\DirectXTex.inl">

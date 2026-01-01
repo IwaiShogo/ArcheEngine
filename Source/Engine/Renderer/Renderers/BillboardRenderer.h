@@ -19,10 +19,12 @@
 namespace Arche
 {
 
-	class BillboardRenderer
+	class ARCHE_API BillboardRenderer
 	{
 	public:
 		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
+
+		static void Shutdown();
 
 		static void Begin(const XMMATRIX& view, const XMMATRIX& projection);
 

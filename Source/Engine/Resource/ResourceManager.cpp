@@ -630,4 +630,11 @@ namespace Arche
 		ImGui::End();
 	}
 
+	void ResourceManager::Clear()
+	{
+		m_textures.clear();
+		m_models.clear();
+		m_sounds.clear();
+	}
+
 }	// namespace Arche

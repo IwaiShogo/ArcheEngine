@@ -34,6 +34,24 @@
             "ID": 10
         },
         {
+            "ID": 11
+        },
+        {
+            "ID": 12
+        },
+        {
+            "ID": 13
+        },
+        {
+            "ID": 14
+        },
+        {
+            "ID": 15
+        },
+        {
+            "ID": 16
+        },
+        {
             "AudioListener": {
                 "enabled": true
             },
@@ -62,7 +80,7 @@
                 "radius": 0.5,
                 "type": 1
             },
-            "ID": 11,
+            "ID": 17,
             "Tag": {
                 "componentOrder": [
                     "AudioListener",
@@ -111,7 +129,7 @@
                 "radius": 0.5,
                 "type": 2
             },
-            "ID": 12,
+            "ID": 18,
             "MeshComponent": {
                 "color": [
                     1.0,
@@ -132,6 +150,9 @@
                 "jumpPower": 5.0,
                 "speed": 3.0
             },
+            "PlayerMoveData": {
+                "speed": 5.0
+            },
             "Rigidbody": {
                 "drag": 0.10000000149011612,
                 "enabled": true,
@@ -147,7 +168,7 @@
                     "Rigidbody",
                     "Tag",
                     "Transform",
-                    "NativeScriptComponent"
+                    "PlayerMoveData"
                 ],
                 "name": "Player"
             },
@@ -156,7 +177,7 @@
                 "position": [
                     0.0,
                     4.168966293334961,
-                    0.0
+                    -1.9109609127044678
                 ],
                 "rotation": [
                     0.0,
@@ -189,7 +210,7 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 13,
+            "ID": 19,
             "Rigidbody": {
                 "drag": 0.10000000149011612,
                 "enabled": true,
@@ -244,7 +265,7 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 14,
+            "ID": 20,
             "Rigidbody": {
                 "drag": 0.10000000149011612,
                 "enabled": true,
@@ -289,11 +310,11 @@
                     720.0
                 ]
             },
-            "ID": 15,
+            "ID": 21,
             "Relationship": {
                 "children": [
-                    16,
-                    17
+                    22,
+                    23
                 ],
                 "enabled": true,
                 "parent": 4294967295
@@ -336,11 +357,11 @@
             }
         },
         {
-            "ID": 16,
+            "ID": 22,
             "Relationship": {
                 "children": [],
                 "enabled": true,
-                "parent": 15
+                "parent": 21
             },
             "Tag": {
                 "componentOrder": [
@@ -404,11 +425,11 @@
             }
         },
         {
-            "ID": 17,
+            "ID": 23,
             "Relationship": {
                 "children": [],
                 "enabled": true,
-                "parent": 15
+                "parent": 21
             },
             "SpriteComponent": {
                 "color": [
@@ -510,6 +531,10 @@
         {
             "Group": 0,
             "Name": "Audio System"
+        },
+        {
+            "Group": 1,
+            "Name": "PlayerMoveSystem"
         }
     ]
 }

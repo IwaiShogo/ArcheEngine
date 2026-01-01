@@ -36,8 +36,8 @@ namespace Arche
 				// Inputクラスを使って入力を取得
 				if (Input::GetKey(VK_LEFT))	 transform.position.x -= speed * dt;
 				if (Input::GetKey(VK_RIGHT)) transform.position.x += speed * dt;
-				if (Input::GetKey(VK_UP))	 transform.position.y += speed * dt;
-				if (Input::GetKey(VK_DOWN))	 transform.position.y -= speed * dt;
+				if (Input::GetKey(VK_UP))	 transform.position.z += speed * dt;
+				if (Input::GetKey(VK_DOWN))	 transform.position.z -= speed * dt;
 			}
 		}
 	};

@@ -235,6 +235,32 @@ namespace Arche
 		s_device->CreateRasterizerState(&rd, &s_rsSolid);
 	}
 
+	void PrimitiveRenderer::Shutdown()
+	{
+		s_vs.Reset();
+		s_ps.Reset();
+		s_inputLayout.Reset();
+		s_vertexBuffer.Reset();
+		s_indexBuffer.Reset();
+		s_constantBuffer.Reset();
+		s_lineVertexBuffer.Reset();
+		s_depthState.Reset();
+
+		// 形状ごとのバッファ
+		s_sphereVB.Reset();
+		s_sphereIB.Reset();
+		s_cylinderVB.Reset();
+		s_cylinderIB.Reset();
+		s_capsuleVB.Reset();
+		s_capsuleIB.Reset();
+
+		s_rsWireframe.Reset();
+		s_rsSolid.Reset();
+
+		s_device = nullptr;
+		s_context = nullptr;
+	}
+
 	void PrimitiveRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection)
 	{
 		// 共通設定

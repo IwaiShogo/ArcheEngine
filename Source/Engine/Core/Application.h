@@ -34,7 +34,7 @@ namespace Arche
 	 * @class	Application
 	 * @brief	エンジンの中核となるアプリケーションクラス
 	 */
-	class Application
+	class ARCHE_API Application
 	{
 	public:
 		/**
@@ -108,6 +108,16 @@ namespace Arche
 		void ResizeGameRenderTarget(float width, float height);
 #endif // _DEBUG
 		
+		// リロードが必要かどうか確認するフラグ
+		bool IsReloadRequested() const { return m_reloadRequested; }
+
+		// 外部からリロードを要求する関数
+		void RequestReload() { m_reloadRequested = true; }
+
+		// ホットリロード用の状態保存・復元
+		virtual void SaveState();
+		virtual void LoadState();
+
 	protected:
 		// 継承先でユーザー初期化処理を行いたい場合はオーバーライド
 		virtual void OnInitialize() {}
@@ -133,6 +143,7 @@ namespace Arche
 
 		// ウィンドウ設定
 		std::string m_title;
+		std::string m_windowClassName;
 		uint32_t m_width;
 		uint32_t m_height;
 		HWND m_hwnd = nullptr;
@@ -151,6 +162,8 @@ namespace Arche
 
 		bool m_isImguiInitialized = false;
 #endif // _DEBUG
+
+		bool m_reloadRequested = false;
 	};
 
 	/**

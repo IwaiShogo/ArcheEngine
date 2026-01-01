@@ -30,7 +30,7 @@
 namespace Arche
 {
 
-	class ResourceManager
+	class ARCHE_API ResourceManager
 	{
 	public:
 		// リソースの種類定義
@@ -78,6 +78,8 @@ namespace Arche
 
 		// デバッグ描画
 		void OnInspector();
+
+		void Clear();
 
 	private:
 		// 内部ロード関数（パス指定）

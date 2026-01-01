@@ -9,10 +9,13 @@
  * ------------------------------------------------------------
  *********************************************************************/
 
+#undef ARCHE_BUILD_DLL
+
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Base/Logger.h"
+#include "Engine/Core/Core.h"
 
 
 namespace Arche
@@ -24,21 +27,7 @@ namespace Arche
 	}
 }
 
-// Windows エントリーポイント
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
+extern "C" __declspec(dllexport) Arche::Application* CreateApplication()
 {
-	// メモリリークチェック
-#ifdef _DEBUG
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif // _DEBUG
-
-	// アプリ生成
-	auto app = Arche::CreateApplication();
-
-	// 実行
-	app->Run();
-
-	// 終了
-	delete app;
-	return 0;
+	return Arche::CreateApplication();
 }

@@ -103,6 +103,21 @@ namespace Arche
 		s_device->CreateBlendState(&blendDesc, &s_blendState);
 	}
 
+	void BillboardRenderer::Shutdown()
+	{
+		s_vs.Reset();
+		s_ps.Reset();
+		s_inputLayout.Reset();
+		s_constantBuffer.Reset();
+		s_vertexBuffer.Reset();
+		s_samplerState.Reset();
+		s_rsBillboard.Reset();
+		s_blendState.Reset();
+
+		s_device = nullptr;
+		s_context = nullptr;
+	}
+
 	void BillboardRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection) {
 		s_context->IASetInputLayout(s_inputLayout.Get());
 		s_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

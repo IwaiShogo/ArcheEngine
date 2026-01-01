@@ -21,6 +21,9 @@
     <ClCompile Include="..\Source\Engine\pch.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Sandbox\GameLoader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Sandbox\main.h">
@@ -31,6 +34,9 @@
     </ClInclude>
     <ClInclude Include="..\Source\Sandbox\Components\PlayerMoveData.h">
       <Filter>Source\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Sandbox\GameLoader.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

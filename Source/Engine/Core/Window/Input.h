@@ -50,7 +50,7 @@ namespace Arche
 		MaxCount	// ボタンの総数確認用
 	};
 
-	class Input
+	class ARCHE_API Input
 	{
 	public:
 		// 初期化

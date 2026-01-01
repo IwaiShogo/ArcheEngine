@@ -19,10 +19,13 @@
 namespace Arche
 {
 
-	class SpriteRenderer
+	class ARCHE_API SpriteRenderer
 	{
 	public:
 		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context, float screenW, float screenH);
+
+		// 終了処理
+		static void Shutdown();
 
 		// 描画開始
 		static void Begin();

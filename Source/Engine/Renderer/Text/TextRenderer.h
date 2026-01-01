@@ -28,7 +28,7 @@
 namespace Arche
 {
 
-	class TextRenderer
+	class ARCHE_API TextRenderer
 	{
 	public:
 		// インスタンス化禁止
@@ -44,7 +44,7 @@ namespace Arche
 		/**
 		 * @brief	終了処理（キャッシュ解放）
 		 */
-		static void Finalize();
+		static void Shutdown();
 
 		static void ClearCache();
 
