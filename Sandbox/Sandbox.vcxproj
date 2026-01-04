@@ -127,7 +127,7 @@
       <PreprocessorDefinitions>IMGUI_API=__declspec(dllimport);_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine\pch.h</PrecompiledHeaderFile>
@@ -152,7 +152,7 @@
       <PreprocessorDefinitions>IMGUI_API=__declspec(dllimport);NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine\pch.h</PrecompiledHeaderFile>
@@ -181,9 +181,6 @@
     <ClInclude Include="..\Source\Sandbox\Components\PlayerMoveData.h" />
     <ClInclude Include="..\Source\Sandbox\GameLoader.h" />
     <ClInclude Include="..\Source\Sandbox\Systems\PlayerMoveSystem.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Resources\Game\resources.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

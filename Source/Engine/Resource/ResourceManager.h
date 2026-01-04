@@ -27,21 +27,14 @@
 #include "Engine/Renderer/Data/Model.h"
 #include "Engine/Audio/Sound.h"
 
+#include "Engine/Audio/AudioManager.h"
+
 namespace Arche
 {
 
 	class ARCHE_API ResourceManager
 	{
 	public:
-		// リソースの種類定義
-		enum class ResourceType
-		{
-			Texture,
-			Model,
-			Sound,
-			Font
-		};
-
 		// シングルトン取得
 		static ResourceManager& Instance()
 		{
@@ -52,60 +45,59 @@ namespace Arche
 		// 初期化（Deviceが必要）
 		void Initialize(ID3D11Device* device);
 
-		// マニフェスト（JSON）を読み込んでパスを登録
-		void LoadManifest(const std::string& jsonPath);
-
-		void LoadAll();
-
-		// テクスチャを取得
-		std::shared_ptr<Texture> GetTexture(StringId key);
-		// モデル取得
-		std::shared_ptr<Model> GetModel(StringId key);
-		// 音声取得
-		std::shared_ptr<Sound> GetSound(StringId key);
-
-
-		// --- エディタ連携用機能 ---
-
-		// IDから元のファイルパスを取得（表示用）
-		std::string GetPathByKey(StringId key, ResourceType type);
-
-		// パスをキーとして動的に登録
-		void RegisterResource(StringId key, const std::string& path, ResourceType type);
-
-		// 指定した種類の登録済みパスリストを取得する
-		std::vector<std::string> GetResourceList(ResourceType type);
-
-		// デバッグ描画
-		void OnInspector();
-
+		// 終了処理
 		void Clear();
 
+		// リソース取得（ファイル名のみでOK、拡張子省略可）
+		// 例: GetTexture("Player") -> Resources/Game/Textures/Player.png
+		// ------------------------------------------------------------
+		std::shared_ptr<Texture> GetTexture(const std::string& keyName);
+		std::shared_ptr<Model>   GetModel(const std::string& keyName);
+		std::shared_ptr<Sound>   GetSound(const std::string& keyName);
+
+		// ユーティリティ
+		// ------------------------------------------------------------
+		// 現在ロードされているリソース情報の取得（Resource Inspector用）
+		const std::unordered_map<std::string, std::shared_ptr<Texture>>& GetTextureMap() const { return m_textures; }
+		const std::unordered_map<std::string, std::shared_ptr<Model>>& GetModelMap() const { return m_models; }
+		const std::unordered_map<std::string, std::shared_ptr<Sound>>& GetSoundMap() const { return m_sounds; }
+
+		// 強制リロード
+		void ReloadTexture(const std::string& keyName);
+
+		void AddResource(const std::string& key, std::shared_ptr<Texture> resource);
+
 	private:
-		// 内部ロード関数（パス指定）
-		std::shared_ptr<Texture> LoadTextureFromFile(const std::string& filepath);
-		std::shared_ptr<Texture> LoadTextureFromMemory(const void* data, size_t size);
-		std::shared_ptr<Model> LoadModelFromFile(const std::string& filepath);
-		std::shared_ptr<Sound> LoadWav(const std::string& filepath);
-
-		// Assimpのノードを再帰的に処理する関数
-		void ProcessNode(aiNode* node, const aiScene* scene, std::shared_ptr<Model> model, const std::string& directory);
-		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory);
-
 		ResourceManager() = default;	// コンストラクタ隠蔽
 		~ResourceManager() = default;
 
+		// 内部: システムテクスチャ生成
+		void CreateSystemTextures();
+
+		// 内部: パス解決ロジック
+		std::string ResolvePath(const std::string& keyName, const std::vector<std::string>& directories, const std::vector<std::string>& extensions);
+
+		// ロード関数群
+		std::shared_ptr<Texture> LoadTextureInternal(const std::string& path);
+		std::shared_ptr<Model>   LoadModelInternal(const std::string& path);
+		std::shared_ptr<Sound>   LoadSoundInternal(const std::string& path);
+
+	private:
 		ID3D11Device* m_device = nullptr;
 
-		// パス管理用（StringId -> FilePath）
-		std::unordered_map<StringId, std::string> m_texturePaths;
-		std::unordered_map<StringId, std::string> m_modelPaths;
-		std::unordered_map<StringId, std::string> m_soundPaths;
+		// リソースキャッシュ（Keyはファイル名 / 識別名）
+		std::unordered_map<std::string, std::shared_ptr<Texture>> m_textures;
+		std::unordered_map<std::string, std::shared_ptr<Model>>   m_models;
+		std::unordered_map<std::string, std::shared_ptr<Sound>>   m_sounds;
 
-		// リソース本体（StringId -> Resource）
-		std::unordered_map<StringId, std::shared_ptr<Texture>> m_textures;
-		std::unordered_map<StringId, std::shared_ptr<Model>> m_models;
-		std::unordered_map<StringId, std::shared_ptr<Sound>> m_sounds;
+		// 検索パス設定
+		const std::vector<std::string> m_textureDirs = { "Resources/Game/Textures/", "Resources/Engine/Textures/" };
+		const std::vector<std::string> m_modelDirs = { "Resources/Game/Models/",   "Resources/Engine/Models/" };
+		const std::vector<std::string> m_soundDirs = { "Resources/Game/Sounds/",   "Resources/Engine/Sounds/" };
+
+		const std::vector<std::string> m_imgExts = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".dds" };
+		const std::vector<std::string> m_modelExts = { ".fbx", ".obj", ".gltf", ".glb" };
+		const std::vector<std::string> m_soundExts = { ".wav", ".mp3", ".ogg" };
 	};
 
 }	// namespace Arche

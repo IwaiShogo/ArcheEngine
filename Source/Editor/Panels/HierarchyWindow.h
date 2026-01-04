@@ -35,166 +35,282 @@ namespace Arche
 			// Hierarchy Window
 			// ------------------------------------------------------------
 			ImGui::Begin("Hierarchy");
-
-			// 選択変更検知と親ノードの収集
-			// ------------------------------------------------------------
-			if (selected != m_lastSelected)
+			
+			if (Editor::Instance().GetMode() == Editor::EditorMode::Prefab)
 			{
-				m_nodesToOpen.clear();
-				if (selected != NullEntity && world.getRegistry().valid(selected))
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+				if (ImGui::Button("Save Prefab"))
 				{
-					// 親を辿って全てセットに追加
-					Entity current = selected;
-					Registry& reg = world.getRegistry();
-					while (reg.has<Relationship>(current))
-					{
-						Entity parent = reg.get<Relationship>(current).parent;
-						if (parent == NullEntity) break;
+					Editor::Instance().SavePrefabAndExit();
+				}
+				ImGui::PopStyleColor();
 
-						m_nodesToOpen.insert(parent);
-						current = parent;
+				ImGui::SameLine();
+				if (ImGui::Button("Exit"))
+				{
+					Editor::Instance().ExitPrefabMode();
+				}
+				ImGui::Separator();
+				ImGui::TextColored(ImVec4(1, 1, 0, 1), "Editing Prefab...");
+				ImGui::Separator();
+
+				// ワールド差し替え
+				World* prefabWorld = Editor::Instance().GetActiveWorld();
+				Registry& prefabReg = prefabWorld->getRegistry();
+
+				// プレファブワールドの内容を表示
+				prefabReg.each([&](auto entityID) {
+
+					Entity e = entityID;
+
+					// 1. Tagを持っていないならスキップ
+					if (!prefabReg.has<Tag>(e)) return;
+
+					// 2. 親がいるならスキップ
+					bool isRoot = true;
+					if (prefabReg.has<Relationship>(e))
+					{
+						if (prefabReg.get<Relationship>(e).parent != NullEntity) isRoot = false;
+					}
+					
+					if (isRoot)
+					{
+						DrawEntityNode(*prefabWorld, e, selected);
+					}
+					});
+			}
+			else
+			{
+				// 検索バー
+				ImGui::InputTextWithHint("##HierSearch", "Search Entity...", m_searchFilter, sizeof(m_searchFilter));
+				ImGui::Separator();
+
+				// 選択変更検知と親ノードの収集
+				// ------------------------------------------------------------
+				if (selected != m_lastSelected)
+				{
+					m_nodesToOpen.clear();
+					if (selected != NullEntity && world.getRegistry().valid(selected))
+					{
+						// 親を辿って全てセットに追加
+						Entity current = selected;
+						Registry& reg = world.getRegistry();
+						while (reg.has<Relationship>(current))
+						{
+							Entity parent = reg.get<Relationship>(current).parent;
+							if (parent == NullEntity) break;
+
+							m_nodesToOpen.insert(parent);
+							current = parent;
+						}
+					}
+					m_lastSelected = selected;
+				}
+
+				// Deleteキーでの削除処理
+				if (ImGui::IsWindowFocused() && selected != NullEntity)
+				{
+					if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+					{
+						CommandHistory::Execute(std::make_shared<DeleteEntityCommand>(world, selected));
+						selected = NullEntity;
 					}
 				}
-				m_lastSelected = selected;
-			}
 
-			// Deleteキーでの削除処理
-			if (ImGui::IsWindowFocused() && selected != NullEntity)
-			{
-				if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+				// ----------------------------------------------------------------
+				// エンティティ一覧描画
+				// ----------------------------------------------------------------
+
+				// 検索フィルターが空かどうかで分岐
+				bool isSearching = (m_searchFilter[0] != '\0');
+
+				if (isSearching)
 				{
-					CommandHistory::Execute(std::make_shared<DeleteEntityCommand>(world, selected));
+					// === 検索モード（フラット表示） ===
+					// 親子関係を無視して、名前にヒットするものを全てリストアップ
+
+					auto ContainsIC = [](const std::string& str, const std::string& query) {
+						auto it = std::search(
+							str.begin(), str.end(),
+							query.begin(), query.end(),
+							[](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+						);
+						return (it != str.end());
+						};
+
+					world.getRegistry().each([&](Entity e) {
+						if (!world.getRegistry().has<Tag>(e)) return;
+
+						Tag& tag = world.getRegistry().get<Tag>(e);
+
+						// 名前がヒットするか？
+						if (ContainsIC(tag.name.c_str(), m_searchFilter))
+						{
+							// フラット表示用の簡易ノード描画
+							ImGui::PushID((int)e);
+
+							// 選択状態
+							bool isSelected = (e == selected);
+
+							// Active状態
+							bool isActive = world.getRegistry().isActiveSelf(e);
+
+							// アイコンっぽく表示 (Leafノードとして描画)
+							ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth;
+							if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
+
+							// グレーアウト判定
+							if (!world.getRegistry().isActive(e)) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+
+							ImGui::TreeNodeEx((void*)(uint64_t)e, flags, "%s (ID:%d)", tag.name.c_str(), e);
+
+							if (!world.getRegistry().isActive(e)) ImGui::PopStyleColor();
+
+							if (ImGui::IsItemClicked()) selected = e;
+
+							// ダブルクリックフォーカス
+							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+							{
+								Editor::Instance().GetSceneViewPanel().FocusEntity(e, world);
+							}
+
+							ImGui::PopID();
+						}
+						});
+				}
+				else
+				{
+					// === 通常モード（ツリー表示） ===
+					// 「親を持たない（ルート）Entity」だけを起点に描画する
+					world.getRegistry().each([&](Entity e) {
+						if (!world.getRegistry().has<Tag>(e)) return;
+
+						bool isRoot = true;
+						if (world.getRegistry().has<Relationship>(e)) {
+							if (world.getRegistry().get<Relationship>(e).parent != NullEntity) isRoot = false;
+						}
+
+						if (isRoot) {
+							DrawEntityNode(world, e, selected);
+						}
+						});
+				}
+
+				// ウィンドウの余白部分へのドロップ（＝親子解除、ルート化）
+				if (ImGui::BeginDragDropTargetCustom(ImGui::GetCurrentWindow()->Rect(), ImGui::GetID("Hierarchy"))) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID")) {
+						Entity payloadEntity = *(const Entity*)payload->Data;
+						// 親をNullにする（ルートに戻す）
+						SetParent(world, payloadEntity, NullEntity);
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				// 余白クリックで選択解除
+				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+				{
 					selected = NullEntity;
 				}
-			}
 
-			// 「親を持たない（ルート）Entity」だけを起点に描画する
-			// これをしないと、子が二重に表示されてしまいます
-			world.getRegistry().view<Tag>().each([&](Entity e, Tag& tag) {
-				bool isRoot = true;
-				if (world.getRegistry().has<Relationship>(e)) {
-					if (world.getRegistry().get<Relationship>(e).parent != NullEntity) isRoot = false;
-				}
-
-				if (isRoot) {
-					DrawEntityNode(world, e, selected);
-				}
-				});
-
-			// ウィンドウの余白部分へのドロップ（＝親子解除、ルート化）
-			if (ImGui::BeginDragDropTargetCustom(ImGui::GetCurrentWindow()->Rect(), ImGui::GetID("Hierarchy"))) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID")) {
-					Entity payloadEntity = *(const Entity*)payload->Data;
-					// 親をNullにする（ルートに戻す）
-					SetParent(world, payloadEntity, NullEntity);
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			// 余白クリックで選択解除
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-			{
-				selected = NullEntity;
-			}
-
-			// 右クリック: 新規作成など
-			if (ImGui::BeginPopupContextWindow(nullptr, ImGuiMouseButton_Right | ImGuiPopupFlags_NoOpenOverItems))
-			{
-				if (ImGui::MenuItem("Create Empty"))
+				// 右クリック: 新規作成など
+				if (ImGui::BeginPopupContextWindow(nullptr, ImGuiMouseButton_Right | ImGuiPopupFlags_NoOpenOverItems))
 				{
-					Entity e = world.create_entity()
-						.add<Tag>("GameObject")
-						.add<Transform>().id();
-					selected = 0;
+					if (ImGui::MenuItem("Create Empty"))
+					{
+						Entity e = world.create_entity()
+							.add<Tag>("GameObject")
+							.add<Transform>().id();
+						selected = 0;
+					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndPopup();
-			}
 
-			// リストの下に余白を作る（ここにもドロップできるように）
-			ImGui::Dummy(ImGui::GetContentRegionAvail());
+				// リストの下に余白を作る（ここにもドロップできるように）
+				ImGui::Dummy(ImGui::GetContentRegionAvail());
 
-			// ---------------------------------------------------------
-			// ドラッグ＆ドロップの「受信」処理
-			// ---------------------------------------------------------
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				// ---------------------------------------------------------
+				// ドラッグ＆ドロップの「受信」処理
+				// ---------------------------------------------------------
+				if (ImGui::BeginDragDropTarget())
 				{
-					// 1. パスの取得と補完
-					const char* droppedPath = (const char*)payload->Data;
-					std::string relativePath = droppedPath;
-					std::string rootPath = "Resources\\Game\\";
-
-					std::string fullPath;
-					// パスが既に "Resources/Game/" で始まっているかチェック
-					if (relativePath.find(rootPath) == 0)
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
-						fullPath = relativePath;	// そのまま使う
-					}
-					else
-					{
-						fullPath = rootPath + relativePath;	// 結合する
-					}
+						// 1. パスの取得と補完
+						const char* droppedPath = (const char*)payload->Data;
+						std::string relativePath = droppedPath;
+						std::string rootPath = "Resources\\Game\\";
 
-					// バックスラッシュをスラッシュに統一
-					std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-					// 2. 拡張子の取得
-					std::filesystem::path fpath = fullPath;
-					std::string ext = fpath.extension().string();
-					// 小文字に統一して判定しやすくする（簡易実装）
-					std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-					// --- 拡張子による分岐 ---
-
-					// パターンA: プレファブ (.json)
-					if (ext == ".json")
-					{
-						// シリアライザを使って丸ごと復元
-						Entity prefabRoot = SceneSerializer::LoadPrefab(world, fullPath);
-
-						if (prefabRoot != NullEntity)
+						std::string fullPath;
+						// パスが既に "Resources/Game/" で始まっているかチェック
+						if (relativePath.find(rootPath) == 0)
 						{
-							// 必要なら名前を更新したり、選択状態にする
-							selected = prefabRoot;
+							fullPath = relativePath;	// そのまま使う
 						}
-					}
-					// パターンB: 通常のアセット (モデル/画像/音)
-					else
-					{
-						// 空のエンティティを新規作成
-						Entity newEntity = world.create_entity().id();
-
-						// 基本コンポーネント追加
-						std::string entityName = fpath.stem().string();
-						world.getRegistry().emplace<Tag>(newEntity, entityName);
-						world.getRegistry().emplace<Transform>(newEntity);
-
-						// アセットに応じたコンポーネント追加
-						if (ext == ".fbx" || ext == ".obj" || ext == ".gltf" || ext == ".glb")
+						else
 						{
-							StringId key(fullPath);
-							ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Model);
-							world.getRegistry().emplace<MeshComponent>(newEntity, key);
-						}
-						else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga")
-						{
-							StringId key(fullPath);
-							ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Texture);
-							world.getRegistry().emplace<SpriteComponent>(newEntity, key);
-						}
-						else if (ext == ".wav" || ext == ".mp3")
-						{
-							StringId key(fullPath);
-							ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Sound);
-							world.getRegistry().emplace<AudioSource>(newEntity, key);
+							fullPath = rootPath + relativePath;	// 結合する
 						}
 
-						selected = newEntity;
+						// バックスラッシュをスラッシュに統一
+						std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+
+						// 2. 拡張子の取得
+						std::filesystem::path fpath = fullPath;
+						std::string ext = fpath.extension().string();
+						// 小文字に統一して判定しやすくする（簡易実装）
+						std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+						// --- 拡張子による分岐 ---
+
+						// パターンA: プレファブ (.json)
+						if (ext == ".json")
+						{
+							// シリアライザを使って丸ごと復元
+							Entity prefabRoot = SceneSerializer::LoadPrefab(world, fullPath);
+
+							if (prefabRoot != NullEntity)
+							{
+								// 必要なら名前を更新したり、選択状態にする
+								selected = prefabRoot;
+							}
+						}
+						// パターンB: 通常のアセット (モデル/画像/音)
+						else
+						{
+							// 空のエンティティを新規作成
+							Entity newEntity = world.create_entity().id();
+
+							// 基本コンポーネント追加
+							std::string entityName = fpath.stem().string();
+							world.getRegistry().emplace<Tag>(newEntity, entityName);
+							world.getRegistry().emplace<Transform>(newEntity);
+
+							//// アセットに応じたコンポーネント追加
+							//if (ext == ".fbx" || ext == ".obj" || ext == ".gltf" || ext == ".glb")
+							//{
+							//	StringId key(fullPath);
+							//	ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Model);
+							//	world.getRegistry().emplace<MeshComponent>(newEntity, key);
+							//}
+							//else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga")
+							//{
+							//	StringId key(fullPath);
+							//	ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Texture);
+							//	world.getRegistry().emplace<SpriteComponent>(newEntity, key);
+							//}
+							//else if (ext == ".wav" || ext == ".mp3")
+							//{
+							//	StringId key(fullPath);
+							//	ResourceManager::Instance().RegisterResource(key, fullPath, ResourceManager::ResourceType::Sound);
+							//	world.getRegistry().emplace<AudioSource>(newEntity, key);
+							//}
+
+							selected = newEntity;
+						}
 					}
+
+					ImGui::EndDragDropTarget();
 				}
-
-				ImGui::EndDragDropTarget();
 			}
 			// ---------------------------------------------------------
 
@@ -277,6 +393,15 @@ namespace Arche
 
 			Tag& tag = reg.get<Tag>(e);
 
+			ImGui::PushID((int)e);
+
+			bool isActive = reg.isActiveSelf(e);
+			if (ImGui::Checkbox("##Active", &isActive))
+			{
+				reg.setActive(e, isActive);
+			}
+			ImGui::SameLine();
+
 			// ノードのフラグ設定
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 			if (e == selected) flags |= ImGuiTreeNodeFlags_Selected;
@@ -294,11 +419,23 @@ namespace Arche
 			}
 
 			// --- ノード描画 ---
+			bool isEffectivelyActive = reg.isActive(e);
+			if (!isEffectivelyActive) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+
 			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)e, flags, "%s (ID:%d)", tag.name.c_str(), e);
 
+			if (!isEffectivelyActive) ImGui::PopStyleColor();
+
 			// クリック選択
-			if (ImGui::IsItemClicked()) {
+			if (ImGui::IsItemClicked())
+			{
 				selected = e;
+			}
+
+			// ダブルクリックでフォーカス
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				Editor::Instance().GetSceneViewPanel().FocusEntity(e, world);
 			}
 
 			// 右クリックメニュー
@@ -371,12 +508,17 @@ namespace Arche
 				}
 				ImGui::TreePop();
 			}
+
+			ImGui::PopID();
 		}
 
 	private:
 		// 自動展開するノードIDを一時保存するセット
 		std::set<Entity> m_nodesToOpen;
 		Entity m_lastSelected = NullEntity;
+
+		// 検索用バッファ
+		char m_searchFilter[64] = "";
 	};
 
 }	// namespace Arche

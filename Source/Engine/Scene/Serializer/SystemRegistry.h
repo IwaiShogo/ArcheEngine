@@ -54,6 +54,11 @@ namespace Arche
 			return nullptr;
 		}
 
+		void Clear()
+		{
+			m_creators.clear();
+		}
+
 		// 登録されている全システム名を取得（エディタの追加用メニュー用）
 		const std::unordered_map<std::string, SystemCreator>& GetCreators() const { return m_creators; }
 

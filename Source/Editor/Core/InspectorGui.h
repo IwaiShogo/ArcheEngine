@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date	2025/12/19	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___INSPECTOR_GUI_H___
@@ -28,12 +20,15 @@
 #include "Engine/Core/Base/StringId.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Scene/Components/ComponentDefines.h"
+#include "Engine/Renderer/Text/FontManager.h"
 
 namespace Arche
 {
 	ARCHE_API void Inspector_Snapshot(ImGuiID id, std::function<void(json&)> saveFn);
 	ARCHE_API void Inspector_Commit(ImGuiID id, std::function<void(json&)> saveFn, std::function<void(const json&, const json&)> cmdFn);
 	ARCHE_API bool Inspector_HasState(ImGuiID id);
+
+	inline std::unordered_map<std::string, ImFont*> g_InspectorFontMap;
 
 	// ------------------------------------------------------------
 	// InspectorGuiVisitor
@@ -158,59 +153,144 @@ namespace Arche
 		void operator()(std::string& val, const char* name)
 		{
 			DrawWidget(name, val, [&]()
-			{
-				// 1. テキスト本文
-				if (strcmp(name, "text") == 0 || strcmp(name, "Content") == 0)
 				{
-					ImGui::LabelText(name, "Text Content");
-					char buf[1024];
-					strcpy_s(buf, sizeof(buf), val.c_str());
-					if (ImGui::InputTextMultiline(name, buf, sizeof(buf), ImVec2(-1, 60)))
-					{
-						val = buf;
-					}
-				}
-				// 2. フォント名 (プルダウン表示)
-				else if (strcmp(name, "fontKey") == 0)
-				{
-					if (ImGui::BeginCombo(name, val.c_str())) {
-						std::string fontDir = "Resources/Game/Fonts";
-						namespace fs = std::filesystem;
+					namespace fs = std::filesystem;
 
-						if (fs::exists(fontDir)) {
-							for (const auto& entry : fs::directory_iterator(fontDir)) {
-								if (!entry.is_regular_file()) continue;
+					// ヘルパー: ディレクトリ内のファイルを走査してコンボボックスを表示
+					auto ShowResourceCombo = [&](const std::string& dir, const std::vector<std::string>& extensions, bool useStem)
+						{
+							if (ImGui::BeginCombo(name, val.c_str()))
+							{
+								if (fs::exists(dir))
+								{
+									for (const auto& entry : fs::directory_iterator(dir))
+									{
+										if (!entry.is_regular_file()) continue;
 
-								// 拡張子チェック (.ttf, .otf)
-								std::string ext = entry.path().extension().string();
-								if (ext == ".ttf" || ext == ".otf") {
-									// ファイル名（拡張子なし）をキーとする場合
-									// std::string fontName = entry.path().stem().string();
+										std::string ext = entry.path().extension().string();
 
-									// ファイル名（拡張子あり）をキーとする場合 ← FontManagerの実装に合わせてください
-									std::string fontName = entry.path().filename().string();
+										// 拡張子チェック
+										bool isMatch = false;
+										for (const auto& targetExt : extensions) {
+											if (ext == targetExt) { isMatch = true; break; }
+										}
 
-									bool isSelected = (val == fontName);
-									if (ImGui::Selectable(fontName.c_str(), isSelected)) {
-										val = fontName;
+										if (isMatch)
+										{
+											// useStemがtrueなら拡張子なし、falseならファイル名そのまま
+											std::string itemName = useStem ? entry.path().stem().string() : entry.path().filename().string();
+
+											bool isSelected = (val == itemName);
+											if (ImGui::Selectable(itemName.c_str(), isSelected))
+											{
+												val = itemName;
+											}
+											if (isSelected) ImGui::SetItemDefaultFocus();
+										}
 									}
-									if (isSelected) ImGui::SetItemDefaultFocus();
 								}
+								ImGui::EndCombo();
 							}
-						}
-						ImGui::EndCombo();
-					}
-				}
-				else
-				{
-					char buf[256];
-					strcpy_s(buf, sizeof(buf), val.c_str());
-					if (ImGui::InputText(name, buf, sizeof(buf)))
+						};
+
+					// 1. テキスト本文
+					if (strcmp(name, "text") == 0 || strcmp(name, "Content") == 0)
 					{
-						val = buf;
+						ImGui::LabelText(name, "Text Content");
+						char buf[1024];
+						strcpy_s(buf, sizeof(buf), val.c_str());
+						if (ImGui::InputTextMultiline(name, buf, sizeof(buf), ImVec2(-1, 60)))
+						{
+							val = buf;
+						}
 					}
-				}
-			});
+					// 2. フォント選択 (.ttf / .otf)
+					else if (strcmp(name, "fontKey") == 0)
+					{
+						// FontManagerが認識している「正式なフォント名リスト」を取得して表示する
+						const auto& loadedFonts = FontManager::Instance().GetLoadedFontNames();
+
+						if (ImGui::BeginCombo(name, val.c_str()))
+						{
+							// カスタムフォント一覧
+							for (const auto& fontName : loadedFonts)
+							{
+								bool isSelected = (val == fontName);
+								bool pushed = false;
+								if (g_InspectorFontMap.find(fontName) != g_InspectorFontMap.end())
+								{
+									ImGui::PushFont(g_InspectorFontMap[fontName]);
+									pushed = true;
+								}
+
+								if (ImGui::Selectable(fontName.c_str(), isSelected))
+								{
+									val = fontName;
+								}
+
+								if (pushed) ImGui::PopFont();
+
+								if (isSelected) ImGui::SetItemDefaultFocus();
+							}
+
+							// システムフォントの代表例も追加しておく（必要であれば）
+							const char* systemFonts[] = { "Meiryo", "Yu Gothic", "MS Gothic", "Arial" };
+							for (const char* sysFont : systemFonts)
+							{
+								bool isSelected = (val == sysFont);
+								if (ImGui::Selectable(sysFont, isSelected))
+								{
+									val = sysFont;
+								}
+								if (isSelected) ImGui::SetItemDefaultFocus();
+							}
+
+							ImGui::EndCombo();
+						}
+					}
+					// 3. テクスチャ/画像選択 (.png, .jpg, etc)
+					// 変数名に "texture", "image", "sprite", "path" などが含まれる場合
+					else if (strstr(name, "texture") || strstr(name, "Texture") ||
+						strstr(name, "image") || strstr(name, "Image") ||
+						strstr(name, "sprite") || strstr(name, "Sprite"))
+					{
+						// useStem = false (拡張子あり) で表示。ResourceManagerの仕様に合わせて調整してください。
+						// 画像ファイルは拡張子で区別することが多いため、通常は拡張子ありが望ましいです。
+						ShowResourceCombo("Resources/Game/Textures", { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".dds" }, false);
+					}
+					// 4. モデル選択 (.fbx, .obj, etc)
+					else if (strstr(name, "model") || strstr(name, "Model") ||
+						strstr(name, "mesh") || strstr(name, "Mesh"))
+					{
+						ShowResourceCombo("Resources/Game/Models", { ".fbx", ".obj", ".gltf", ".glb" }, false);
+					}
+					// 5. その他 (標準入力 + D&D)
+					else
+					{
+						char buf[256];
+						strcpy_s(buf, sizeof(buf), val.c_str());
+						if (ImGui::InputText(name, buf, sizeof(buf)))
+						{
+							val = buf;
+						}
+
+						if (ImGui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+							{
+								const wchar_t* droppedPathW = (const wchar_t*)payload->Data;
+								std::filesystem::path p(droppedPathW);
+								std::string fullPath = p.string();
+								std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+
+								size_t found = fullPath.find("Resources");
+								if (found != std::string::npos) val = fullPath.substr(found);
+								else val = fullPath;
+							}
+							ImGui::EndDragDropTarget();
+						}
+					}
+				});
 		}
 
 		// リソースキー（StringId） -> ドラッグ&ドロップ対応
@@ -219,49 +299,11 @@ namespace Arche
 		{
 			DrawWidget(name, val, [&]()
 			{
-				std::string currentStr = val.c_str();
-				char buf[256];
-				strcpy_s(buf, currentStr.c_str());
+					std::string s = val.c_str();
+					char buf[256];
+					strcpy_s(buf, sizeof(buf), s.c_str());
 
-				// 入力欄
-				if (ImGui::InputText(name, buf, sizeof(buf)))
-				{
-					val = StringId(buf);
-				}
-
-				// マウスオーバーでパスを表示
-				if (ImGui::IsItemHovered())
-				{
-					// リソースタイプを推測してパスを取得
-					ResourceManager::ResourceType type = ResourceManager::ResourceType::Texture;
-					if (strstr(name, "model") || strstr(name, "Model")) type = ResourceManager::ResourceType::Model;
-					else if (strstr(name, "sound") || strstr(name, "Sound")) type = ResourceManager::ResourceType::Sound;
-
-					std::string path = ResourceManager::Instance().GetPathByKey(val, type);
-					if (!path.empty()) ImGui::SetTooltip("Path: %s", path.c_str());
-				}
-
-				// ドラッグ&ドロップ受け入れ
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const char* droppedPath = (const char*)payload->Data;
-						std::string fullPath = "Resources/Game/" + std::string(droppedPath);
-
-						// リソースタイプを推測
-						ResourceManager::ResourceType type = ResourceManager::ResourceType::Texture;
-						std::string n = name;
-						if (n.find("model") != std::string::npos || n.find("Model") != std::string::npos) type = ResourceManager::ResourceType::Model;
-						else if (n.find("sound") != std::string::npos || n.find("Sound") != std::string::npos) type = ResourceManager::ResourceType::Sound;
-
-						// キーとして登録 & 設定
-						StringId newKey(fullPath);
-						ResourceManager::Instance().RegisterResource(newKey, fullPath, type);
-						val = newKey;
-					}
-					ImGui::EndDragDropTarget();
-				}
+					ImGui::InputText(name, buf, sizeof(buf), ImGuiInputTextFlags_ReadOnly);
 			});
 		}
 
@@ -398,15 +440,29 @@ namespace Arche
 	void DrawComponent(
 		const char* label,
 		T& component,
+		Entity entity,
+		Registry& registry,
 		bool& removed,
-		std::function<void(json&)> serializeFunc,			// ★追加: 保存用関数
-		std::function<void(const json&, const json&)> commandFunc,		// ★追加: コマンド発行用関数
+		std::function<void(json&)> serializeFunc,
+		std::function<void(const json&, const json&)> commandFunc,
 		int index = -1,
 		std::function<void(int, int)> onReorder = nullptr
 	)
 	{
 		// D&D用のID
 		ImGui::PushID(label);
+
+		// チェックボックスの状態を取得
+		bool isEnabled = registry.isComponentEnabled<T>(entity);
+
+		float headerX = ImGui::GetCursorPosX();
+
+		ImGui::Checkbox("##Enabled", &isEnabled);
+		if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			registry.setComponentEnabled<T>(entity, isEnabled);
+		}
+		ImGui::SameLine();
 
 		// ヘッダー描画
 		bool open = ImGui::CollapsingHeader(label, ImGuiTreeNodeFlags_DefaultOpen);

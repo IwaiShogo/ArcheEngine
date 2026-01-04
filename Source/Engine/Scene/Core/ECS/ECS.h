@@ -106,6 +106,10 @@ namespace Arche
 		virtual bool has(Entity entity) const = 0;
 		virtual std::size_t size() const = 0;	// 最適化用
 
+		// コンポーネントの有効状態操作
+		virtual bool IsEnabled(Entity entity) const = 0;
+		virtual void SetEnabled(Entity entity, bool enabled) = 0;
+
 		// Observer接続用インターフェース
 		Signal<Entity> onConstruct;	// 追加時
 		Signal<Entity> onDestroy;	// 削除時
@@ -133,6 +137,20 @@ namespace Arche
 			return dense.size();
 		}
 
+		bool IsEnabled(Entity entity) const override
+		{
+			if (!has(entity)) return false;
+			return enabled[sparse[entity]];
+		}
+
+		void SetEnabled(Entity entity, bool isEnabled) override
+		{
+			if (has(entity))
+			{
+				enabled[sparse[entity]] = isEnabled;
+			}
+		}
+
 		// コンポーネントの構築（Emplace）
 		template<typename... Args>
 		T& emplace(Entity entity, Args&&... args)
@@ -154,6 +172,7 @@ namespace Arche
 			sparse[entity] = (Entity)dense.size();
 			dense.push_back(entity);
 			data.emplace_back(std::forward<Args>(args)...);
+			enabled.push_back(true);
 
 			// 追加通知
 			onConstruct.publish(entity);
@@ -192,11 +211,16 @@ namespace Arche
 			std::swap(data[indexToRemove], data.back());
 
 			// Sparse配列のリンクを更新
+			bool temp = enabled[indexToRemove];
+			enabled[indexToRemove] = enabled.back();
+			enabled.back() = temp;
+
 			sparse[lastEntity] = indexToRemove;
 
 			// 削除
 			dense.pop_back();
 			data.pop_back();
+			enabled.pop_back();
 		}
 
 		// データへの直接アクセス（Systemでのループ用）
@@ -207,6 +231,7 @@ namespace Arche
 		std::vector<Entity> sparse;	// Entity ID -> Dense Index
 		std::vector<Entity> dense;	// Dense Index -> Entity ID
 		std::vector<T> data;		// Component Data（Dense配列と同期）
+		std::vector<bool> enabled;	// コンポーネントごとの有効フラグ
 	};
 
 	// ------------------------------------------------------------
@@ -218,6 +243,8 @@ namespace Arche
 		// 再利用可能なIDのリスト
 		std::vector<Entity> freeIds;
 		std::vector<std::unique_ptr<IPool>> pools;
+		std::vector<bool> entityActiveStates;
+		std::function<Entity(Entity)> m_parentLookup;
 
 	public:
 		// -----------------------------------------------------------
@@ -281,18 +308,84 @@ namespace Arche
 			return nullptr;
 		}
 
+		// 親取得関数のセット
+		void SetParentLookup(std::function<Entity(Entity)> func)
+		{
+			m_parentLookup = func;
+		}
+
 		// Entity作成
 		Entity create()
 		{
-			// 再利用できるIDがあればそれを使う
+			Entity id;
 			if (!freeIds.empty())
 			{
-				Entity id = freeIds.back();
+				id = freeIds.back();
 				freeIds.pop_back();
-				return id;
 			}
-			// 無ければ新規発行
-			return nextEntity++;
+			else
+			{
+				id = nextEntity++;
+			}
+
+			if (entityActiveStates.size() <= id)
+			{
+				entityActiveStates.resize(id + 1, true);
+			}
+			entityActiveStates[id] = true;
+
+			return id;
+		}
+
+		// EntityのActive操作
+		void setActive(Entity entity, bool active)
+		{
+			if (valid(entity))
+			{
+				if (entityActiveStates.size() <= entity) entityActiveStates.resize(entity + 1, true);
+				entityActiveStates[entity] = active;
+			}
+		}
+
+		bool isActive(Entity entity) const
+		{
+			if (!valid(entity)) return false;
+
+			// 1. 自分自身がOFFなら false
+			if (entity < entityActiveStates.size() && !entityActiveStates[entity]) return false;
+
+			// 2. 親がいる場合、親がActiveかチェック
+			if (m_parentLookup)
+			{
+				Entity parent = m_parentLookup(entity);
+				if (parent != NullEntity)
+				{
+					return isActive(parent);
+				}
+			}
+
+			return true;
+		}
+
+		// 自分自身のActive設定だけを知りたい場合
+		bool isActiveSelf(Entity entity) const
+		{
+			if (!valid(entity)) return false;
+			if (entity >= entityActiveStates.size()) return true;
+			return entityActiveStates[entity];
+		}
+
+		// コンポーネントのEnabled操作ヘルパー
+		template<typename T>
+		void setComponentEnabled(Entity entity, bool enabled)
+		{
+			getPool<T>().SetEnabled(entity, enabled);
+		}
+
+		template<typename T>
+		bool isComponentEnabled(Entity entity)
+		{
+			return getPool<T>().IsEnabled(entity);
 		}
 
 		// コンポーネント追加
@@ -384,6 +477,7 @@ namespace Arche
 			pools.clear();
 			freeIds.clear();
 			nextEntity = 1;
+			entityActiveStates.clear();
 		}
 
 		// @brief	全ての有効なエンティティに対して関数を実行する。
@@ -530,7 +624,10 @@ namespace Arche
 			// エンティティが条件を満たすかチェック
 			bool isValid(Entity entity)
 			{
-				// 1. Excludeチェック
+				// 1. エンティティ自体がActiveでなければスキップ
+				if (!registry->isActive(entity)) return false;
+
+				// 2. Excludeチェック
 				for (auto id : excludeTypes)
 				{
 					if (id < registry->pools.size() && registry->pools[id] && registry->pools[id]->has(entity))
@@ -539,12 +636,13 @@ namespace Arche
 					}
 				}
 
-				// 2. Othersチェック
-				bool allHas = std::apply([&](auto*... p) {
-					return (p->has(entity) && ...);
-					}, pools);
+				// 3. Othersチェック
+				bool allValid = std::apply([&](auto*... p)
+				{
+					return ((p->has(entity) && p->IsEnabled(entity)) && ...);
+				}, pools);
 
-				return allHas;
+				return allValid;
 			}
 
 			// -----------------------------------------------------------
@@ -819,6 +917,8 @@ namespace Arche
 		double m_lastExecutionTime = 0.0;
 		// システムグループ
 		SystemGroup m_group = SystemGroup::PlayOnly;
+		// 有効化フラグ
+		bool m_isEnabled = true;
 	};
 
 	class World
@@ -851,10 +951,31 @@ namespace Arche
 			return registerSystem<T>(SystemGroup::PlayOnly, std::forward<Args>(args)...);
 		}
 
+		// システムの削除
+		void removeSystem(const std::string& name)
+		{
+			auto it = std::remove_if(systems.begin(), systems.end(),
+				[&](const std::unique_ptr<ISystem>& sys) {
+					return sys->m_systemName == name;
+				});
+
+			if (it != systems.end())
+			{
+				systems.erase(it, systems.end());
+				Logger::Log("Removed System: " + name);
+			}
+		}
+
 		// 全システムのクリア
 		void clearSystems()
 		{
 			systems.clear();
+		}
+
+		// 全エンティティ削除
+		void clearEntities()
+		{
+			registry.clear();
 		}
 
 		// 全システムのUpdateを実行
@@ -862,6 +983,8 @@ namespace Arche
 		{
 			for (auto& sys : systems)
 			{
+				if (!sys->m_isEnabled) continue;
+
 				bool shouldRun = false;
 				switch (sys->m_group)
 				{
@@ -889,6 +1012,8 @@ namespace Arche
 		{
 			for (auto& sys : systems)
 			{
+				if (!sys->m_isEnabled) continue;
+
 				sys->Render(registry, context);
 			}
 		}

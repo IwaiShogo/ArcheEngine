@@ -1,0 +1,11 @@
+{
+    "Camera": {
+        "pitch": 0.4300011992454529,
+        "x": 2.26503586769104,
+        "y": 3.581332206726074,
+        "yaw": -6.9449992179870605,
+        "z": -3.874049186706543
+    },
+    "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX_ECS_Time-Trace-Puzzle\\Resources\\Game\\Prefabs",
+    "LastScene": "Resources/Game/Scenes/GameScene.json"
+}

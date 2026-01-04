@@ -1,57 +1,85 @@
-{
-    "BoxCollider": {
-        "offset": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "size": [
-            1.0,
-            1.0,
-            1.0
-        ]
-    },
-    "MeshComponent": {
-        "color": [
-            1.0,
-            1.0,
-            1.0,
-            1.0
-        ],
-        "key": "hero",
-        "scale": [
-            0.10000000149011612,
-            0.10000000149011612,
-            0.10000000149011612
-        ]
-    },
-    "PlayerInput": {
-        "jump": 5.0,
-        "speed": 3.0
-    },
-    "Tag": {
-        "name": "Player"
-    },
-    "Transform": {
-        "pos": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "rot": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "scl": [
-            1.0,
-            1.0,
-            1.0
-        ]
-    },
-    "Velocity": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
+[
+    {
+        "Collider": {
+            "Enabled": true,
+            "boxSize": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "height": 2.0,
+            "isTrigger": false,
+            "layer": 2,
+            "offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "radius": 0.5,
+            "type": 2
+        },
+        "ID": 2,
+        "MeshComponent": {
+            "Enabled": true,
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "modelKey": "dousakakuninn11",
+            "scaleOffset": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612
+            ]
+        },
+        "PlayerInput": {
+            "Enabled": true,
+            "jumpPower": 5.0,
+            "speed": 3.0
+        },
+        "PlayerMoveData": {
+            "Enabled": true,
+            "speed": 10.0
+        },
+        "Rigidbody": {
+            "Enabled": true,
+            "drag": 0.10000000149011612,
+            "mass": 1.0,
+            "type": 1,
+            "useGravity": true
+        },
+        "Tag": {
+            "Enabled": true,
+            "componentOrder": [
+                "Collider",
+                "MeshComponent",
+                "PlayerInput",
+                "Rigidbody",
+                "Tag",
+                "Transform",
+                "PlayerMoveData"
+            ],
+            "name": "Player"
+        },
+        "Transform": {
+            "Enabled": true,
+            "position": [
+                -0.5279810428619385,
+                1.496972918510437,
+                -0.28873175382614136
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
     }
-}
+]

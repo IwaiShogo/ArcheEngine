@@ -26,55 +26,138 @@ namespace Arche
 		{
 			ImGui::Begin("Project Settings");
 
-			if (ImGui::CollapsingHeader("Physics Collision Matrix", ImGuiTreeNodeFlags_DefaultOpen))
+			// --------------------------------------------------------
+			// 1. レイヤー定義 (名前と色の編集)
+			// --------------------------------------------------------
+			if (ImGui::CollapsingHeader("Layer Definitions", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				// 定義されているレイヤー一覧（名前は管理クラスを作るのが理想ですが、一旦ハードコードで例示）
-				const char* layerNames[] = { "Default", "Player", "Enemy", "Wall", "Item" };
-				Layer layers[] = { Layer::Default, Layer::Player, Layer::Enemy, Layer::Wall, Layer::Item };
-				int count = 5;
-
-				// テーブルヘッダー
-				ImGui::Columns(count + 1, "LayerMatrix", false);
-				ImGui::NextColumn();
-				for (int i = 0; i < count; i++)
-				{
-					// 縦書き風に表示、あるいは斜めにするのはImGuiでは難しいので番号か名前で
-					ImGui::Text("%s", layerNames[i]);
-					ImGui::NextColumn();
-				}
+				ImGui::TextDisabled("Modify layer names. Clear text to remove.");
 				ImGui::Separator();
 
-				// マトリックス描画
-				for (int i = 0; i < count; i++)
+				// 2列で表示 (Index | Name | Color)
+				if (ImGui::BeginTable("LayerDefTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit))
 				{
-					ImGui::Text("%s", layerNames[i]); // 行見出し
-					ImGui::NextColumn();
+					ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 30.0f);
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+					ImGui::TableSetupColumn("Color", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+					ImGui::TableHeadersRow();
 
-					for (int j = 0; j < count; j++)
+					for (int i = 0; i < PhysicsConfig::MAX_LAYERS; i++)
 					{
-						// 対角線より上だけ表示（重複設定を防ぐため）
-						if (j < i)
+						ImGui::TableNextRow();
+
+						// ID
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text("%2d", i);
+
+						// Name Input
+						ImGui::TableSetColumnIndex(1);
+						ImGui::PushID(i);
+
+						// バッファを用意して入力させる
+						std::string currentName = PhysicsConfig::GetLayerName(i);
+						char buf[64];
+						strcpy_s(buf, currentName.c_str());
+
+						// 最初の6つ（Built-in）は変更不可にするか、警告付きにするのが通例ですが、今回は自由度重視で編集可能に
+						// ただし空にしてもシステム的にDefault等は残るため注意が必要
+						if (ImGui::InputText("##Name", buf, sizeof(buf)))
 						{
-							ImGui::NextColumn();
-							continue;
+							PhysicsConfig::SetLayerName(i, std::string(buf));
 						}
+						ImGui::PopID();
 
-						std::string id = std::string("##") + std::to_string(i) + "_" + std::to_string(j);
-
-						Layer maskA = PhysicsConfig::GetMask(layers[i]);
-						bool check = (maskA & layers[j]) == layers[j];
-
-						if (ImGui::Checkbox(id.c_str(), &check))
+						// Color Picker
+						ImGui::TableSetColumnIndex(2);
+						ImGui::PushID(i + 1000);
+						XMFLOAT4 col = PhysicsConfig::GetLayerColor(i);
+						float colArr[4] = { col.x, col.y, col.z, col.w };
+						if (ImGui::ColorEdit4("##Color", colArr, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel))
 						{
-							if (check)
-								PhysicsConfig::Configure(layers[i]).collidesWith(layers[j]);
-							else
-								PhysicsConfig::Configure(layers[i]).ignore(layers[j]);
+							PhysicsConfig::SetLayerColor(i, { colArr[0], colArr[1], colArr[2], colArr[3] });
 						}
-						ImGui::NextColumn();
+						ImGui::PopID();
 					}
+					ImGui::EndTable();
 				}
-				ImGui::Columns(1);
+			}
+
+			ImGui::Separator();
+
+			// --------------------------------------------------------
+			// 2. 衝突マトリックス (有効なレイヤーのみ表示)
+			// --------------------------------------------------------
+			if (ImGui::CollapsingHeader("Physics Collision Matrix", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				// 名前が設定されているレイヤーのリストを作成
+				std::vector<int> activeIndices;
+				for (int i = 0; i < PhysicsConfig::MAX_LAYERS; i++)
+				{
+					if (!PhysicsConfig::GetLayerName(i).empty()) activeIndices.push_back(i);
+				}
+
+				int count = (int)activeIndices.size();
+
+				if (count > 0 && ImGui::BeginTable("LayerCollisionMatrix", count + 1, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit))
+				{
+					// --- ヘッダー行 ---
+					ImGui::TableSetupColumn("Layer");
+					for (int idx : activeIndices)
+					{
+						// 縦書きは見にくいのでIDまたは短縮名を表示するか、マウスホバーでツールチップ
+						ImGui::TableSetupColumn(PhysicsConfig::GetLayerName(idx).c_str());
+					}
+					ImGui::TableHeadersRow();
+
+					// --- マトリックス ---
+					for (int i = 0; i < count; i++)
+					{
+						int rowIdx = activeIndices[i];
+						Layer rowLayer = PhysicsConfig::IndexToLayer(rowIdx);
+
+						ImGui::TableNextRow();
+
+						// 行見出し
+						ImGui::TableSetColumnIndex(0);
+						ImGui::Text("%s", PhysicsConfig::GetLayerName(rowIdx).c_str());
+
+						// 列チェックボックス
+						for (int j = 0; j < count; j++)
+						{
+							int colIdx = activeIndices[j];
+							Layer colLayer = PhysicsConfig::IndexToLayer(colIdx);
+
+							ImGui::TableSetColumnIndex(j + 1);
+
+							// 対角線より上だけ表示
+							if (j < i) continue;
+
+							ImGui::PushID(rowIdx * 100 + colIdx);
+
+							Layer maskA = PhysicsConfig::GetMask(rowLayer);
+							bool check = (maskA & colLayer) == colLayer;
+
+							// 中央寄せ
+							float indent = (ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight()) * 0.5f;
+							if (indent > 0.0f) ImGui::Indent(indent);
+
+							if (ImGui::Checkbox("", &check))
+							{
+								if (check) PhysicsConfig::Configure(rowLayer).collidesWith(colLayer);
+								else	   PhysicsConfig::Configure(rowLayer).ignore(colLayer);
+							}
+
+							if (indent > 0.0f) ImGui::Unindent(indent);
+
+							ImGui::PopID();
+						}
+					}
+					ImGui::EndTable();
+				}
+				else
+				{
+					ImGui::TextDisabled("No layers defined. Add names above.");
+				}
 			}
 
 			ImGui::End();

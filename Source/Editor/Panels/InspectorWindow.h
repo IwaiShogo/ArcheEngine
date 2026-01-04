@@ -47,6 +47,20 @@ namespace Arche
 			{
 				Registry& reg = world.getRegistry();
 
+				bool active = world.getRegistry().isActiveSelf(selected);
+				if (ImGui::Checkbox("##EntityActive", &active))
+				{
+					world.getRegistry().setActive(selected, active);
+				}
+
+				if (active && !reg.isActive(selected))
+				{
+					ImGui::SameLine();
+					ImGui::TextDisabled("(Inactive by Parent)");
+				}
+
+				ImGui::SameLine();
+
 				// 1. Tag編集（特別扱い）
 				// ------------------------------------------------------------
 				if (reg.has<Tag>(selected))
@@ -141,8 +155,21 @@ namespace Arche
 				{
 					// 検索ボックス
 					static char searchBuf[64] = "";
-					ImGui::InputTextWithHint("##Search", "Search...", searchBuf, sizeof(searchBuf));
+					if (ImGui::IsWindowAppearing()) ImGui::SetKeyboardFocusHere();
+					ImGui::InputTextWithHint("##Search", "Search Component...", searchBuf, sizeof(searchBuf));
 					ImGui::Separator();
+
+					// 大文字小文字を無視する検索ヘルパー
+					auto ContainsIC = [](const std::string& str, const std::string& query)
+					{
+						if (query.empty()) return true;
+						auto it = std::search(
+							str.begin(), str.end(),
+							query.begin(), query.end(),
+							[](char ch1, char ch2) {return std::toupper(ch1) == std::toupper(ch2); }
+						);
+						return (it != str.end());
+					};
 
 					// A. 通常コンポーネント（Data Components）
 					for (auto& [name, iface] : ComponentRegistry::Instance().GetInterfaces())
@@ -153,18 +180,13 @@ namespace Arche
 						if (!iface.has(reg, selected))
 						{
 							// 検索フィルター
-							if (searchBuf[0] != '\0')
-							{
-								// 部分一致検索
-								std::string n = name;
-								std::string s = searchBuf;
-								if (n.find(s) == std::string::npos) continue;
-							}
+							if (!ContainsIC(name, searchBuf)) continue;
 
 							if (ImGui::MenuItem(name.c_str()))
 							{
 								CommandHistory::Execute(std::make_shared<AddComponentCommand>(world, selected, name));
 								ImGui::CloseCurrentPopup();
+								searchBuf[0] = '\0';
 							}
 						}
 					}

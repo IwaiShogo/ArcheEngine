@@ -1,134 +1,23 @@
 {
     "Entities": [
         {
-            "ID": 0
-        },
-        {
-            "ID": 1
-        },
-        {
-            "ID": 2
-        },
-        {
-            "ID": 3
-        },
-        {
-            "ID": 4
-        },
-        {
-            "ID": 5
-        },
-        {
-            "ID": 6
-        },
-        {
-            "ID": 7
-        },
-        {
-            "ID": 8
-        },
-        {
-            "ID": 9
-        },
-        {
-            "ID": 10
-        },
-        {
-            "ID": 11
-        },
-        {
-            "ID": 12
-        },
-        {
-            "ID": 13
-        },
-        {
-            "ID": 14
-        },
-        {
-            "ID": 15
-        },
-        {
-            "ID": 16
-        },
-        {
-            "ID": 17
-        },
-        {
-            "ID": 18
-        },
-        {
-            "ID": 19
-        },
-        {
-            "ID": 20
-        },
-        {
-            "ID": 21
-        },
-        {
-            "ID": 22
-        },
-        {
-            "ID": 23
-        },
-        {
-            "ID": 24
-        },
-        {
-            "ID": 25
-        },
-        {
-            "ID": 26
-        },
-        {
-            "ID": 27
-        },
-        {
-            "ID": 28
-        },
-        {
-            "ID": 29
-        },
-        {
-            "ID": 30
-        },
-        {
-            "ID": 31
-        },
-        {
-            "ID": 32
-        },
-        {
-            "ID": 33
-        },
-        {
-            "ID": 34
-        },
-        {
-            "ID": 35
-        },
-        {
-            "ID": 36
-        },
-        {
             "AudioListener": {
-                "enabled": true
+                "Enabled": true
             },
             "Camera": {
+                "Enabled": true,
                 "aspect": 1.7777777910232544,
-                "enabled": true,
                 "farZ": 1000.0,
                 "fov": 0.7853981852531433,
                 "nearZ": 0.10000000149011612
             },
             "Collider": {
+                "Enabled": true,
                 "boxSize": [
                     1.0,
                     1.0,
                     1.0
                 ],
-                "enabled": true,
                 "height": 1.0,
                 "isTrigger": false,
                 "layer": 1,
@@ -140,8 +29,10 @@
                 "radius": 0.5,
                 "type": 1
             },
-            "ID": 37,
+            "ID": 1,
+            "IsActive": true,
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "AudioListener",
                     "Camera",
@@ -152,7 +43,7 @@
                 "name": "MainCamera"
             },
             "Transform": {
-                "enabled": true,
+                "Enabled": true,
                 "position": [
                     2.0,
                     10.0,
@@ -172,12 +63,12 @@
         },
         {
             "Collider": {
+                "Enabled": true,
                 "boxSize": [
                     1.0,
                     1.0,
                     1.0
                 ],
-                "enabled": true,
                 "height": 2.0,
                 "isTrigger": false,
                 "layer": 2,
@@ -189,16 +80,17 @@
                 "radius": 0.5,
                 "type": 2
             },
-            "ID": 38,
+            "ID": 2,
+            "IsActive": true,
             "MeshComponent": {
+                "Enabled": true,
                 "color": [
                     1.0,
                     1.0,
                     1.0,
                     1.0
                 ],
-                "enabled": true,
-                "modelKey": "hero",
+                "modelKey": "dousakakuninn11",
                 "scaleOffset": [
                     0.10000000149011612,
                     0.10000000149011612,
@@ -206,21 +98,23 @@
                 ]
             },
             "PlayerInput": {
-                "enabled": true,
+                "Enabled": true,
                 "jumpPower": 5.0,
                 "speed": 3.0
             },
             "PlayerMoveData": {
+                "Enabled": true,
                 "speed": 10.0
             },
             "Rigidbody": {
+                "Enabled": true,
                 "drag": 0.10000000149011612,
-                "enabled": true,
                 "mass": 1.0,
                 "type": 1,
                 "useGravity": true
             },
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "Collider",
                     "MeshComponent",
@@ -233,11 +127,11 @@
                 "name": "Player"
             },
             "Transform": {
-                "enabled": true,
+                "Enabled": true,
                 "position": [
-                    0.0,
-                    1.4969745874404907,
-                    -1.9109609127044678
+                    -0.5279810428619385,
+                    1.496972918510437,
+                    -0.28873175382614136
                 ],
                 "rotation": [
                     0.0,
@@ -253,12 +147,12 @@
         },
         {
             "Collider": {
+                "Enabled": true,
                 "boxSize": [
                     1.0,
                     1.0,
                     1.0
                 ],
-                "enabled": true,
                 "height": 1.0,
                 "isTrigger": false,
                 "layer": 1,
@@ -270,15 +164,17 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 39,
+            "ID": 3,
+            "IsActive": true,
             "Rigidbody": {
+                "Enabled": true,
                 "drag": 0.10000000149011612,
-                "enabled": true,
                 "mass": 1.0,
                 "type": 1,
                 "useGravity": true
             },
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "Collider",
                     "Rigidbody",
@@ -288,10 +184,10 @@
                 "name": "Enemy"
             },
             "Transform": {
-                "enabled": true,
+                "Enabled": true,
                 "position": [
                     2.8211817741394043,
-                    3.3203909397125244,
+                    5.425935745239258,
                     0.0
                 ],
                 "rotation": [
@@ -308,12 +204,12 @@
         },
         {
             "Collider": {
+                "Enabled": true,
                 "boxSize": [
                     10.0,
                     1.0,
                     10.0
                 ],
-                "enabled": true,
                 "height": 1.0,
                 "isTrigger": false,
                 "layer": 1,
@@ -325,15 +221,17 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 40,
+            "ID": 4,
+            "IsActive": true,
             "Rigidbody": {
+                "Enabled": true,
                 "drag": 0.10000000149011612,
-                "enabled": true,
                 "mass": 1.0,
                 "type": 0,
                 "useGravity": false
             },
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "Collider",
                     "Rigidbody",
@@ -343,7 +241,7 @@
                 "name": "Floor"
             },
             "Transform": {
-                "enabled": true,
+                "Enabled": true,
                 "position": [
                     0.0,
                     0.0,
@@ -363,23 +261,25 @@
         },
         {
             "Canvas": {
-                "enabled": true,
+                "Enabled": true,
                 "isScreenSpace": true,
                 "referenceSize": [
                     1280.0,
                     720.0
                 ]
             },
-            "ID": 41,
+            "ID": 5,
+            "IsActive": true,
             "Relationship": {
+                "Enabled": true,
                 "children": [
-                    42,
-                    43
+                    6,
+                    7
                 ],
-                "enabled": true,
                 "parent": 4294967295
             },
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "Canvas",
                     "Relationship",
@@ -389,6 +289,7 @@
                 "name": "Canvas"
             },
             "Transform2D": {
+                "Enabled": true,
                 "anchorMax": [
                     0.5,
                     0.5
@@ -397,7 +298,6 @@
                     0.5,
                     0.5
                 ],
-                "enabled": true,
                 "pivot": [
                     0.5,
                     0.5
@@ -422,13 +322,15 @@
             }
         },
         {
-            "ID": 42,
+            "ID": 6,
+            "IsActive": true,
             "Relationship": {
+                "Enabled": true,
                 "children": [],
-                "enabled": true,
-                "parent": 41
+                "parent": 5
             },
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "Relationship",
                     "Tag",
@@ -438,6 +340,7 @@
                 "name": "Text"
             },
             "TextComponent": {
+                "Enabled": true,
                 "centerAlign": false,
                 "color": [
                     1.0,
@@ -445,7 +348,6 @@
                     0.5,
                     1.0
                 ],
-                "enabled": true,
                 "fontKey": "Oradano-mincho-GSRR",
                 "fontSize": 80.0,
                 "isBold": false,
@@ -457,6 +359,7 @@
                 "text": "Text (テキスト)"
             },
             "Transform2D": {
+                "Enabled": true,
                 "anchorMax": [
                     0.5,
                     0.5
@@ -465,7 +368,6 @@
                     0.5,
                     0.5
                 ],
-                "enabled": true,
                 "pivot": [
                     0.5,
                     0.5
@@ -490,32 +392,35 @@
             }
         },
         {
-            "ID": 43,
+            "ID": 7,
+            "IsActive": true,
             "Relationship": {
+                "Enabled": true,
                 "children": [],
-                "enabled": true,
-                "parent": 41
+                "parent": 5
             },
             "SpriteComponent": {
+                "Enabled": true,
                 "color": [
                     1.0,
                     1.0,
                     1.0,
                     1.0
                 ],
-                "enabled": true,
-                "textureKey": "test"
+                "textureKey": "White"
             },
             "Tag": {
+                "Enabled": true,
                 "componentOrder": [
                     "Relationship",
                     "SpriteComponent",
                     "Tag",
                     "Transform2D"
                 ],
-                "name": "Text"
+                "name": "UI"
             },
             "Transform2D": {
+                "Enabled": true,
                 "anchorMax": [
                     0.5,
                     0.5
@@ -524,7 +429,6 @@
                     0.5,
                     0.5
                 ],
-                "enabled": true,
                 "pivot": [
                     0.5,
                     0.5
@@ -550,7 +454,28 @@
         }
     ],
     "Physics": {
-        "LayerCollision": []
+        "LayerCollision": [
+            {
+                "Layer": 2,
+                "Mask": 62
+            },
+            {
+                "Layer": 4,
+                "Mask": 62
+            },
+            {
+                "Layer": 8,
+                "Mask": 62
+            },
+            {
+                "Layer": 16,
+                "Mask": 62
+            },
+            {
+                "Layer": 32,
+                "Mask": 62
+            }
+        ]
     },
     "SceneName": "Untitled Scene",
     "Systems": [

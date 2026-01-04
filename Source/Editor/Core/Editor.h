@@ -33,6 +33,8 @@
 
 namespace Arche
 {
+	// 前方宣言
+	class HierarchyWindow;
 
 	// 各ウィンドウの親クラス
 	class EditorWindow
@@ -55,12 +57,27 @@ namespace Arche
 		void Initialize();
 		void Draw(World& world, Context& ctx);
 
-		void DrawGizmo(World& world, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj, float x, float y, float w, float h);
-
 		void SetSelectedEntity(Entity e) { m_selectedEntity = e; }
 		Entity& GetSelectedEntity() { return m_selectedEntity; }
 		
 		SceneViewPanel& GetSceneViewPanel() { return m_sceneViewPanel; }
+
+		enum class EditorMode { Scene, Prefab };
+
+		// 現在のモード取得
+		EditorMode GetMode() const { return m_editorMode; }
+
+		// プレファブモードで編集中のワールドを取得
+		World* GetActiveWorld() { return (m_editorMode == EditorMode::Scene) ? &SceneManager::Instance().GetWorld() : m_prefabWorld.get(); }
+
+		// プレファブを開く
+		void OpenPrefab(const std::string& path);
+
+		// プレファブを保存してシーンに戻る
+		void SavePrefabAndExit();
+
+		// 変更を破棄してシーンに戻る
+		void ExitPrefabMode();
 
 	private:
 		Editor() = default;
@@ -71,8 +88,17 @@ namespace Arche
 		// ウィンドウ間利用リスト
 		std::vector<std::unique_ptr<EditorWindow>> m_windows;
 
+		HierarchyWindow* m_hierarchyPanel = nullptr;
+
 		SceneViewPanel m_sceneViewPanel;
 		GameViewPanel m_gameViewPanel;
+
+		EditorMode m_editorMode = EditorMode::Scene;
+		std::unique_ptr<World> m_prefabWorld;			// プレファブ編集用の一時ワールド
+		std::string m_currentPrefabPath;				// 編集中のパス
+
+		// 内部処理: メインシーン内の全インスタンスを更新
+		void PropagateChangesToScene();
 	};
 }	// namespace Arche
 

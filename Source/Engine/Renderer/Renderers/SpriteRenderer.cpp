@@ -85,8 +85,8 @@ namespace Arche
 		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 		s_device->CreateBlendState(&blendDesc, &s_blendState);
@@ -159,7 +159,7 @@ namespace Arche
 		// Z範囲は 0.0～1.0
 		float w = static_cast<float>(Config::SCREEN_WIDTH);
 		float h = static_cast<float>(Config::SCREEN_HEIGHT);
-		s_cbData.projection = XMMatrixTranspose(XMMatrixOrthographicLH(w, -h, 0.0f, 1.0f));
+		s_cbData.projection = XMMatrixTranspose(XMMatrixOrthographicLH(w, h, 0.0f, 100.0f));
 
 		s_context->RSSetState(s_rs2D.Get());
 		s_context->OMSetDepthStencilState(s_ds2D.Get(), 0);
@@ -176,11 +176,17 @@ namespace Arche
 		if (SUCCEEDED(s_context->Map(s_vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms)))
 		{
 			Vertex2D* v = (Vertex2D*)ms.pData;
+
+			float left = 0.0f;
+			float right = 1.0f;
+			float top = 1.0f;
+			float bottom = 0.0f;
+
 			// TriangleStripの順序: 左上 -> 右上 -> 左下 -> 右下
-			v[0] = { XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0) }; // 左上
-			v[1] = { XMFLOAT3(1, 0, 0), XMFLOAT2(1, 0) }; // 右上
-			v[2] = { XMFLOAT3(0, 1, 0), XMFLOAT2(0, 1) }; // 左下
-			v[3] = { XMFLOAT3(1, 1, 0), XMFLOAT2(1, 1) }; // 右下
+			v[0] = { XMFLOAT3(0, 0, 0), XMFLOAT2(0, 1) }; // 左上
+			v[1] = { XMFLOAT3(1, 0, 0), XMFLOAT2(1, 1) }; // 右上
+			v[2] = { XMFLOAT3(0, 1, 0), XMFLOAT2(0, 0) }; // 左下
+			v[3] = { XMFLOAT3(1, 1, 0), XMFLOAT2(1, 0) }; // 右下
 			s_context->Unmap(s_vertexBuffer.Get(), 0);
 		}
 

@@ -1,4 +1,8 @@
-﻿#include <Windows.h>
+﻿
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#include <Windows.h>
 #include <iostream>
 #include <filesystem>
 #include <thread>
@@ -196,6 +200,12 @@ bool CheckForDllUpdate()
 // ============================================================
 int main()
 {
+	// メモリリークチェック
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+	HWND consoleWindow = GetConsoleWindow();
+	MoveWindow(consoleWindow, 100, 100, 600, 300, TRUE);
+
 	CleanUpOldDLLs();
 
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -218,7 +228,7 @@ int main()
 		std::thread watcher([&]() {
 			while (!stopWatcher) {
 				// F5キー または 自動検知
-				if (CheckForDllUpdate() || (GetAsyncKeyState(VK_F5) & 0x8000)) {
+				if (CheckForDllUpdate()/* || (GetAsyncKeyState(VK_F5) & 0x8000)*/) {
 					if (g_app) g_app->RequestReload(); // ゲームループを終了させる
 					// 連続検知防止
 					std::this_thread::sleep_for(std::chrono::milliseconds(1000));

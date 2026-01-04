@@ -16,6 +16,7 @@
 #include "Engine/pch.h"
 #include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Core/Base/Reflection.h"
+#include "Engine/Core/Base/StringId.h"
 
 // エディタ機能（InspectorGui）を利用可能にする
 #ifdef _DEBUG
@@ -161,6 +162,8 @@ namespace Arche
 				{
 					SerializeComponentHelper(j, nameStr, [&](json& compNode)
 					{
+						compNode["Enabled"] = reg.isComponentEnabled<T>(e);
+
 						Reflection::VisitMembers(reg.get<T>(e), SerializeVisitor{ compNode });
 					});
 				}
@@ -173,7 +176,14 @@ namespace Arche
 				{
 					// 持っていなければ追加、あれば取得
 					T& comp = reg.has<T>(e) ? reg.get<T>(e) : reg.emplace<T>(e);
-					Reflection::VisitMembers(comp, DeserializeVisitor{ j[nameStr] });
+					const auto& compNode = j[nameStr];
+
+					if (compNode.contains("Enabled"))
+					{
+						reg.setComponentEnabled<T>(e, compNode["Enabled"].get<bool>());
+					}
+
+					Reflection::VisitMembers(comp, DeserializeVisitor{ compNode });
 				}
 			};
 
@@ -210,7 +220,7 @@ namespace Arche
 					};
 
 					// シリアライズ用の関数を作成
-					DrawComponent(nameStr.c_str(), reg.get<T>(e), removed, serializeFunc, onCommand, index, onReorder);
+					DrawComponent(nameStr.c_str(), reg.get<T>(e), e, reg, removed, serializeFunc, onCommand, index, onReorder);
 
 					if (removed && onRemove)
 					{
@@ -221,6 +231,11 @@ namespace Arche
 			};
 
 			m_interfaces[nameStr] = iface;
+		}
+
+		void Clear()
+		{
+			m_interfaces.clear();
 		}
 
 		const std::map<std::string, Interface>& GetInterfaces() const { return m_interfaces; }

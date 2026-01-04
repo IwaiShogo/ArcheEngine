@@ -8,6 +8,8 @@
 
 #include "Sandbox/Components/PlayerMoveData.h"
 
+#include "Engine/Scene/Core/SceneManager.h"
+
 namespace Arche
 {
 	class PlayerMoveSystem : public ISystem
@@ -38,9 +40,18 @@ namespace Arche
 				if (Input::GetKey(VK_RIGHT)) transform.position.x += speed * dt;
 				if (Input::GetKey(VK_UP))	 transform.position.z += speed * dt;
 				if (Input::GetKey(VK_DOWN))	 transform.position.z -= speed * dt;
+
+				if (Input::GetKeyDown(VK_SPACE)) transform.position.y += 10.0f;
+
+				if (Input::GetKeyDown('C')) SceneManager::Instance().LoadScene("Resources/Game/Scenes/NewScene.json", new ImmediateTransition());
+				if (Input::GetKeyDown('V')) SceneManager::Instance().LoadScene("Resources/Game/Scenes/NewScene.json", new FadeTransition(2.0f));
+				if (Input::GetKeyDown('B')) SceneManager::Instance().LoadScene("Resources/Game/Scenes/NewScene.json", new SlideTransition(2.0f));
+				if (Input::GetKeyDown('N')) SceneManager::Instance().LoadScene("Resources/Game/Scenes/NewScene.json", new CrossDissolveTransition(2.0f));
+				if (Input::GetKeyDown('M')) SceneManager::Instance().LoadScene("Resources/Game/Scenes/NewScene.json", new CircleWipeTransition(2.0f));
 			}
 		}
 	};
+
 }	// namespace Arche
 
 #include "Engine/Scene/Serializer/SystemRegistry.h"

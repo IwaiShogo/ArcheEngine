@@ -89,6 +89,36 @@ namespace Arche
 			}
 		}
 
+		void SetPosition(const XMFLOAT3& pos)
+		{
+			m_position = pos;
+			UpdateView();
+		}
+
+		void SetRotation(float pitch, float yaw)
+		{
+			m_pitch = pitch;
+			m_yaw = yaw;
+			UpdateView();
+		}
+
+		void Focus(const XMFLOAT3& focusPoint, float distance = 5.0f)
+		{
+			// 現在の方向（Forward）を使って、ターゲットの手前に移動する
+			XMVECTOR fwd = XMLoadFloat3(&m_forward);
+			XMVECTOR target = XMLoadFloat3(&focusPoint);
+
+			// 新しいカメラ位置 = ターゲット位置 - (前方ベクトル * 距離)
+			XMVECTOR newPos = target - (fwd * distance);
+
+			XMStoreFloat3(&m_position, newPos);
+			UpdateView();
+		}
+
+		XMFLOAT3 GetPositionFloat3() const { return m_position; }
+		float GetPitch() const { return m_pitch; }
+		float GetYaw() const { return m_yaw; }
+
 		XMMATRIX GetViewMatrix() const { return XMLoadFloat4x4(&m_viewMatrix); }
 		XMMATRIX GetProjectionMatrix() const { return XMLoadFloat4x4(&m_projMatrix); }
 		XMVECTOR GetPosition() const { return XMLoadFloat3(&m_position); }

@@ -36,9 +36,4 @@
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Resources\Game\resources.json">
-      <Filter>Resources</Filter>
-    </None>
-  </ItemGroup>
 </Project>

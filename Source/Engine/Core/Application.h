@@ -118,14 +118,13 @@ namespace Arche
 		virtual void SaveState();
 		virtual void LoadState();
 
-	protected:
-		// 継承先でユーザー初期化処理を行いたい場合はオーバーライド
-		virtual void OnInitialize() {}
-
 	private:
 		// 内部初期化
 		bool InitializeWindow();
 		bool InitializeGraphics();
+
+		// DirectXリソースのリサイズ処理
+		void Resize(uint32_t width, uint32_t height);
 
 		// 更新処理 / 描画処理
 		void Update();

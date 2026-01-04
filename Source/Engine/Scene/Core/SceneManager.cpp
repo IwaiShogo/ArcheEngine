@@ -12,9 +12,9 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Scene/Core/SceneManager.h"
-#include "Engine/Scene/Systems/Physics/CollisionSystem.h"
 #include "Engine/Scene/Serializer/SceneSerializer.h"
 #include "Engine/Scene/Serializer/SystemRegistry.h"
+#include "Engine/Core/Time/Time.h"
 
 namespace Arche
 {
@@ -46,73 +46,179 @@ namespace Arche
 
 	void SceneManager::Initialize()
 	{
-		// 必要ならデフォルト設定など
+		// 必要なら
 	}
 
 	void SceneManager::Update()
 	{
-		// シーン遷移リクエストがあれば実行
-		if (!m_nextScenePath.empty())
+		float dt = Time::DeltaTime();
+
+		// シーン更新
+		if (m_transition == nullptr || m_transition->GetPhase() != ISceneTransition::Phase::WaitAsync)
 		{
-			ExecuteLoadScene();
+			m_world.Tick(m_context.editorState);
 		}
 
-		// Worldの更新
-		m_world.Tick(m_context.editorState);
+		// 遷移エフェクト更新
+		if (m_transition)
+		{
+			// フェード更新。trueが帰ってきたらそのフェーズ完了
+			if (m_transition->Update(dt))
+			{
+				auto phase = m_transition->GetPhase();
+
+				// 1. フェードアウト完了 -> ロード開始
+				if (phase == ISceneTransition::Phase::Out)
+				{
+					if (m_isAsyncLoading)
+					{
+						// 非同期ロード開始
+						m_transition->SetPhase(ISceneTransition::Phase::WaitAsync);
+						// タイマーリセット
+						m_transition->ResetTimer();
+						// 別スレッドでファイルを読み込む
+						m_loadFuture = std::async(std::launch::async, [this]()
+						{
+							// 一時的なワールド作成してロード
+							m_tempWorld = std::make_unique<World>();
+							// ファイル読み込み
+							SceneSerializer::LoadScene(*m_tempWorld, m_nextScenePath);
+						});
+					}
+					else
+					{
+						// 同期ロード
+						m_transition->SetPhase(ISceneTransition::Phase::Loading);
+						m_transition->ResetTimer();
+						PerformLoad(m_nextScenePath);
+						m_transition->SetPhase(ISceneTransition::Phase::In);
+						m_transition->ResetTimer();
+					}
+				}
+			}
+
+			// 2. 非同期ロード待ち
+			if (m_transition->GetPhase() == ISceneTransition::Phase::WaitAsync)
+			{
+				// スレッドが終わったか確認
+				if (m_loadFuture.valid() && m_loadFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+				{
+					m_loadFuture.get();
+
+					// ワールド入れ替え
+					SwapWorld();
+
+					if (m_currentAsyncOp)
+					{
+						m_currentAsyncOp->progress = 1.0f;
+						m_currentAsyncOp->isDone = true;
+					}
+
+					// フェードイン開始
+					m_transition->SetPhase(ISceneTransition::Phase::In);
+					m_transition->ResetTimer();
+				}
+			}
+
+			// 3. 終了判定
+			if (m_transition->GetPhase() == ISceneTransition::Phase::Finished)
+			{
+				m_transition = nullptr;
+				m_isAsyncLoading = false;
+				m_currentAsyncOp = nullptr;
+				m_nextScenePath = "";
+			}
+		}
 	}
 
 	void SceneManager::Render()
 	{
 		// Worldの描画
 		m_world.Render(m_context);
+
+		// 遷移エフェクト描画
+		if (m_transition)
+		{
+			m_transition->Render();
+		}
 	}
 
-	void SceneManager::LoadScene(const std::string& filepath)
+	void SceneManager::Render(World* targetWorld)
 	{
+		if (!targetWorld) return;
+
+		targetWorld->Render(m_context);
+	}
+
+	// 同期ロード
+	// ============================================================
+	void SceneManager::LoadScene(const std::string& filepath, ISceneTransition* transition)
+	{
+		if (m_transition || m_isAsyncLoading) return;
+
 		m_nextScenePath = filepath;
+		m_isAsyncLoading = false;
+
+		// 遷移エフェクトが無ければデフォルトのフェードを使用
+		if (transition == nullptr)
+			m_transition = std::make_unique<FadeTransition>(0.5f);
+		else
+			m_transition.reset(transition);
+
+		m_transition->Start();
+		Logger::Log("Transition Started: " + filepath);
 	}
 
-	void SceneManager::ExecuteLoadScene()
+	// 非同期ロード
+	// ============================================================
+	std::shared_ptr<AsyncOperation> SceneManager::LoadSceneAsync(const std::string& filepath, ISceneTransition* transition)
 	{
-		// ファイルチェック
-		std::ifstream f(m_nextScenePath);
-		if (!f.good())
+		if (m_transition || m_isAsyncLoading) return nullptr;
+
+		m_nextScenePath = filepath;
+		m_isAsyncLoading = true;
+		m_currentAsyncOp = std::make_shared<AsyncOperation>();
+		m_currentAsyncOp->progress = 0.0f;
+		m_currentAsyncOp->isDone = false;
+
+		// 遷移セット
+		if (transition == nullptr)
+			m_transition = std::make_unique<FadeTransition>(0.5f);
+		else
+			m_transition.reset(transition);
+
+		m_transition->Start();
+		Logger::Log("LoadSceneAsync Started: " + filepath);
+
+		return m_currentAsyncOp;
+	}
+
+	// 同期ロード用ヘルパー
+	void SceneManager::PerformLoad(const std::string& path)
+	{
+		m_world.clearSystems();
+		m_world.clearEntities();
+		SceneSerializer::LoadScene(m_world, path);
+		m_currentSceneName = path;
+	}
+
+	// 非同期ロード完了後のワールド交換
+	void SceneManager::SwapWorld()
+	{
+		if (m_tempWorld)
 		{
-			Logger::LogError("Scene not found: " + m_nextScenePath);
-			m_nextScenePath = "";
-			return;
+			// 古いワールドのシステム
+			m_world.clearSystems();
+			m_world.clearEntities();
+
+			// 中身をムーブ
+			m_world = std::move(*m_tempWorld);
+
+			m_tempWorld = nullptr;
+			m_currentSceneName = m_nextScenePath;
+
+			Logger::Log("Async Load Completed: " + m_currentSceneName);
 		}
-		f.close();
-
-		// ロード実行
-		SceneSerializer::LoadScene(m_world, m_nextScenePath);
-		m_currentSceneName = m_nextScenePath;
-
-		Logger::Log("Scene Loaded: " + m_nextScenePath);
-
-		// システムがない場合の自動復旧
-		if (m_world.getSystems().empty())
-		{
-			Logger::LogWarning("No systems found (or failed to load). Adding default systems.");
-			auto& reg = SystemRegistry::Instance();
-
-			// 必須システム群
-			reg.CreateSystem(m_world, "Input System",			SystemGroup::Always);
-			reg.CreateSystem(m_world, "Physics System",			SystemGroup::PlayOnly);
-			reg.CreateSystem(m_world, "Collision System",		SystemGroup::PlayOnly);
-			reg.CreateSystem(m_world, "UI System",				SystemGroup::Always);
-			reg.CreateSystem(m_world, "Lifetime System",		SystemGroup::PlayOnly);
-			reg.CreateSystem(m_world, "Hierarchy System",		SystemGroup::Always);
-			reg.CreateSystem(m_world, "Render System",			SystemGroup::Always);
-			reg.CreateSystem(m_world, "Model Render System",	SystemGroup::Always);
-			reg.CreateSystem(m_world, "Billboard System",		SystemGroup::Always);
-			reg.CreateSystem(m_world, "Sprite Render System",	SystemGroup::Always);
-			reg.CreateSystem(m_world, "Text Render System",		SystemGroup::Always);
-			reg.CreateSystem(m_world, "Audio System",			SystemGroup::Always);
-		}
-
-		// リクエストクリア
-		m_nextScenePath = "";
 	}
 
 }	// namespace Arche

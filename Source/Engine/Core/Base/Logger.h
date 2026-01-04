@@ -17,7 +17,6 @@
 
 namespace Arche
 {
-
 	// ログの種類
 	enum class LogType
 	{
@@ -34,11 +33,13 @@ namespace Arche
 		ImVec4 color;
 	};
 
-	class Logger
+	class ARCHE_API Logger
 	{
 	public:
 		// 初期化（コンソール確保など）
 		static void Init() { /* 必要なら実装、無ければ空でもOK */ }
+
+		static void Clear() { s_logs.clear(); }
 
 		// --- ログ出力 ---
 		static void Log(const std::string& message) {

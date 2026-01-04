@@ -25,7 +25,6 @@
 
 namespace Arche
 {
-
 	FontManager::~FontManager()
 	{
 		if (m_dwriteFactory && m_collectionLoader)
@@ -126,6 +125,8 @@ namespace Arche
 		);
 
 		m_loadedFontNames.clear();
+		m_fontPathMap.clear();
+
 		if (SUCCEEDED(hr) && m_customCollection)
 		{
 			// ロード成功したフォント名をリスト化
@@ -153,6 +154,65 @@ namespace Arche
 
 				m_loadedFontNames.push_back(name);
 				Logger::Log(">>> Loaded Custom Font: " + name);
+
+				// このフォントのファイルパスを取得してマップに保存
+				ComPtr<IDWriteFont> font;
+				family->GetFont(0, &font);
+				if (font)
+				{
+					ComPtr<IDWriteFontFace> fontFace;
+					font->CreateFontFace(&fontFace);
+					if (fontFace)
+					{
+						UINT32 fileCount = 1;
+						ComPtr<IDWriteFontFile> fontFile;
+						fontFace->GetFiles(&fileCount, &fontFile);
+
+						if (fontFile)
+						{
+							// 1. このファイルをロードしたローダーを取得
+							ComPtr<IDWriteFontFileLoader> loader;
+							fontFile->GetLoader(&loader);
+
+							// 2. ローカルファイルローダー（ディスク上のファイルを扱うもの）か確認
+							ComPtr<IDWriteLocalFontFileLoader> localLoader;
+							loader.As(&localLoader);
+
+							if (localLoader)
+							{
+								const void* refKey;
+								UINT32 refKeySize;
+								fontFile->GetReferenceKey(&refKey, &refKeySize);
+
+								// 3. キーからパスの長さを取得
+								UINT32 pathLength = 0;
+								if (SUCCEEDED(localLoader->GetFilePathLengthFromKey(refKey, refKeySize, &pathLength)) && pathLength > 0)
+								{
+									// 4. パスを取得（+1 は終端ヌル文字分）
+									std::wstring wPath(pathLength + 1, L'\0');
+									if (SUCCEEDED(localLoader->GetFilePathFromKey(refKey, refKeySize, &wPath[0], pathLength + 1)))
+									{
+										// 末尾のヌル文字を除去してサイズを合わせる
+										wPath.resize(pathLength);
+
+										// UTF-8へ変換
+										int p_len = WideCharToMultiByte(CP_UTF8, 0, wPath.c_str(), -1, NULL, 0, NULL, NULL);
+										if (p_len > 0)
+										{
+											std::string u8Path(p_len, 0);
+											WideCharToMultiByte(CP_UTF8, 0, wPath.c_str(), -1, &u8Path[0], p_len, NULL, NULL);
+
+											if (!u8Path.empty() && u8Path.back() == '\0') u8Path.pop_back();
+
+											// マップに保存
+											m_fontPathMap[name] = u8Path;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		else
@@ -161,6 +221,15 @@ namespace Arche
 		}
 
 		m_isInitialized = true;
+	}
+
+	std::string FontManager::GetFontPath(const std::string& fontName)
+	{
+		if (m_fontPathMap.find(fontName) != m_fontPathMap.end())
+		{
+			return m_fontPathMap[fontName];
+		}
+		return "";
 	}
 
 	ComPtr<IDWriteTextFormat> FontManager::GetTextFormat(StringId key, const std::wstring& fontFamily, float fontSize, DWRITE_FONT_WEIGHT fontWeight, DWRITE_FONT_STYLE fontStyle)

@@ -40,15 +40,17 @@ namespace Arche
 	// 基本コンポーネント
 	// ============================================================
 	/**
-	 * @struct	Active
-	 * @brief	エンティティの有効無効を管理するコンポーネント
+	 * @struct	PrefabInstance
+	 * @brief	プレファブとのリンク情報を保持
 	 */
-	struct Active
+	struct PrefabInstance
 	{
-		bool isActive = true;
+		std::string prefabPath;	// プレファブのファイルパス
+
+		PrefabInstance(const std::string& path = "") : prefabPath(path) {}
 	};
-	ARCHE_COMPONENT(Active, REFLECT_VAR(isActive))
-	
+	ARCHE_COMPONENT(PrefabInstance, REFLECT_VAR(prefabPath))
+
 	/**
 	 * @struct	Tag
 	 * @brief	名前
@@ -76,8 +78,6 @@ namespace Arche
 	 */
 	struct Transform
 	{
-		bool enabled = true;
-
 		XMFLOAT3 position;	// x, y, z
 		XMFLOAT3 rotation;	// pitch, yaw, roll (Euler angles in degrees or radians)
 		XMFLOAT3 scale;		// x, y, z
@@ -96,7 +96,7 @@ namespace Arche
 			XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
 		}
 	};
-	ARCHE_COMPONENT(Transform, REFLECT_VAR(enabled) REFLECT_VAR(position) REFLECT_VAR(rotation) REFLECT_VAR(scale))
+	ARCHE_COMPONENT(Transform, REFLECT_VAR(position) REFLECT_VAR(rotation) REFLECT_VAR(scale))
 
 	/**
 	 * @struct	Relationship
@@ -104,15 +104,13 @@ namespace Arche
 	 */
 	struct Relationship
 	{
-		bool enabled = true;
-
 		Entity parent = NullEntity;
 		std::vector<Entity> children;
 
 		Relationship() : parent(NullEntity) {}
 		Relationship(Entity p) : parent(p) {}
 	};
-	ARCHE_COMPONENT(Relationship, REFLECT_VAR(enabled) REFLECT_VAR(parent) REFLECT_VAR(children))
+	ARCHE_COMPONENT(Relationship, REFLECT_VAR(parent) REFLECT_VAR(children))
 
 	/**
 	 * @struct	Lifetime
@@ -120,15 +118,13 @@ namespace Arche
 	 */
 	struct Lifetime
 	{
-		bool enabled = true;
-
 		float time;	// 残り時間
 
 		Lifetime(float t = 0.0f)
 			: time(t) {
 		}
 	};
-	ARCHE_COMPONENT(Lifetime, REFLECT_VAR(enabled) REFLECT_VAR(time))
+	ARCHE_COMPONENT(Lifetime, REFLECT_VAR(time))
 
 	// ============================================================
 	// 物理コンポーネント
@@ -139,8 +135,6 @@ namespace Arche
 	 */
 	struct Rigidbody
 	{
-		bool enabled = true;
-
 		BodyType type;			// 物理挙動の種類
 		XMFLOAT3 velocity;		// 速度
 		float mass;				// 質量
@@ -158,7 +152,7 @@ namespace Arche
 			if (type != BodyType::Dynamic) useGravity = false;
 		}
 	};
-	ARCHE_COMPONENT(Rigidbody, REFLECT_VAR(enabled) REFLECT_VAR(type) REFLECT_VAR(mass) REFLECT_VAR(drag) REFLECT_VAR(useGravity))
+	ARCHE_COMPONENT(Rigidbody, REFLECT_VAR(type) REFLECT_VAR(mass) REFLECT_VAR(drag) REFLECT_VAR(useGravity))
 
 	// ============================================================
 	// 衝突マトリックス（グローバル設定）
@@ -170,6 +164,9 @@ namespace Arche
 	class PhysicsConfig
 	{
 	public:
+		// レイヤーの最大数
+		static constexpr int MAX_LAYERS = 32;
+
 		// 設定用ヘルパー構造体（メソッドチェーン用）
 		struct RuleBuilder
 		{
@@ -207,29 +204,86 @@ namespace Arche
 			return RuleBuilder(layer);
 		}
 
-		// @brief	全レイヤーの設定をクリア
+		// @brief	全設定を初期化（名前や色もデフォルトに戻す）
 		static void Reset()
 		{
 			matrix.clear();
-			// DefaultはAllと当たるのが基本
+
+			// デフォルト名の初期化
+			for (int i = 0; i < MAX_LAYERS; i++) layerNames[i] = "";
+
+			// 固定レイヤー名の設定 (enumと同期)
+			SetLayerName(0, "Default");
+			SetLayerName(1, "Player");
+			SetLayerName(2, "Enemy");
+			SetLayerName(3, "Wall");
+			SetLayerName(4, "Item");
+			SetLayerName(5, "Projectile");
+
+			// デフォルト色の設定（ランダムっぽく分散させるか、白で統一）
+			for (int i = 0; i < MAX_LAYERS; i++) layerColors[i] = { 0.0f, 1.0f, 0.0f, 1.0f }; // 基本は緑
+			layerColors[1] = { 0.0f, 0.5f, 1.0f, 1.0f }; // Player: 青
+			layerColors[2] = { 1.0f, 0.0f, 0.0f, 1.0f }; // Enemy: 赤
+
+			// 衝突ルールのデフォルト: DefaultはAllと当たる
 			Configure(Layer::Default).collidesWith(Layer::All);
 		}
 
-		// @brief	指定レイヤーのマスクを取得（設定が無ければAllを返す）
 		static Layer GetMask(Layer layer)
 		{
-			if (matrix.find(layer) != matrix.end())
+			if (matrix.find(layer) != matrix.end()) return matrix[layer];
+			return Layer::All;
+		}
+
+		// --- レイヤー名管理 ---
+		static void SetLayerName(int index, const std::string& name)
+		{
+			if (index >= 0 && index < MAX_LAYERS) layerNames[index] = name;
+		}
+
+		static std::string GetLayerName(int index)
+		{
+			if (index >= 0 && index < MAX_LAYERS)
 			{
-				// 設定されていないレイヤーはデフォルトで「全て」と当たるようにするか、
-				// あるいは「Default」と同じにするか。ここでは安全のためDefault設定を返す。
-				if (matrix.find(Layer::Default) != matrix.end()) return matrix[Layer::Default];
-				else return Layer::All;
+				// 名前が空なら "Layer X" と返すか、空文字を返す
+				if (layerNames[index].empty()) return "";
+				return layerNames[index];
 			}
-			return matrix[layer];
+			return "Unknown";
+		}
+
+		// Enumからインデックスを取得するヘルパー
+		static int LayerToIndex(Layer l)
+		{
+			uint32_t val = static_cast<uint32_t>(l);
+			if (val == 0) return -1;
+			// ビット位置をスキャン (簡易実装)
+			for (int i = 0; i < MAX_LAYERS; i++) if ((val >> i) & 1) return i;
+			return 0;
+		}
+
+		static Layer IndexToLayer(int i)
+		{
+			if (i < 0 || i >= MAX_LAYERS) return Layer::None;
+			return static_cast<Layer>(1 << i);
+		}
+
+		// --- レイヤーカラー管理 ---
+		static void SetLayerColor(int index, const XMFLOAT4& color)
+		{
+			if (index >= 0 && index < MAX_LAYERS) layerColors[index] = color;
+		}
+
+		static XMFLOAT4 GetLayerColor(int index)
+		{
+			if (index >= 0 && index < MAX_LAYERS) return layerColors[index];
+			return { 1, 1, 1, 1 };
 		}
 
 	private:
-		static inline std::map<Layer, Layer> matrix;	// Layer -> Mask
+		static inline std::map<Layer, Layer> matrix;
+		static inline std::array<std::string, MAX_LAYERS> layerNames;
+		static inline std::array<XMFLOAT4, MAX_LAYERS> layerColors;
 	};
 
 	// ============================================================
@@ -250,8 +304,6 @@ namespace Arche
 	 */
 	struct Collider
 	{
-		bool enabled = true;
-
 		ColliderType type;	// タイプの種類
 		bool isTrigger;		// 物理衝突を無視してイベントのみ発生させるか	
 		Layer layer;		// 所属
@@ -352,7 +404,6 @@ namespace Arche
 		}
 	};
 	ARCHE_COMPONENT(Collider,
-		REFLECT_VAR(enabled)
 		REFLECT_VAR(type)
 		REFLECT_VAR(layer)
 		REFLECT_VAR(isTrigger)
@@ -419,8 +470,6 @@ namespace Arche
 	 */
 	struct PlayerInput
 	{
-		bool enabled = true;
-
 		float speed;
 		float jumpPower;
 
@@ -428,7 +477,7 @@ namespace Arche
 			: speed(s), jumpPower(j) {
 		}
 	};
-	ARCHE_COMPONENT(PlayerInput, REFLECT_VAR(enabled) REFLECT_VAR(speed) REFLECT_VAR(jumpPower))
+	ARCHE_COMPONENT(PlayerInput, REFLECT_VAR(speed) REFLECT_VAR(jumpPower))
 
 	// ============================================================
 	// レンダリング関連
@@ -439,17 +488,15 @@ namespace Arche
 	 */
 	struct MeshComponent
 	{
-		bool enabled = true;
-
-		StringId modelKey;	// ResourceManagerのキー
+		std::string modelKey;	// ResourceManagerのキー
 		XMFLOAT3 scaleOffset;	// モデル固有のスケール補正（アセットが巨大/極小な場合用）
 		XMFLOAT4 color;			// マテリアルカラー乗算用
 
-		MeshComponent(StringId key = "", const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT4& c = { 1, 1, 1, 1 })
+		MeshComponent(std::string key = "", const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT4& c = { 1, 1, 1, 1 })
 			: modelKey(key), scaleOffset(scale), color(c) {
 		}
 	};
-	ARCHE_COMPONENT(MeshComponent, REFLECT_VAR(enabled) REFLECT_VAR(modelKey) REFLECT_VAR(scaleOffset) REFLECT_VAR(color))
+	ARCHE_COMPONENT(MeshComponent, REFLECT_VAR(modelKey) REFLECT_VAR(scaleOffset) REFLECT_VAR(color))
 
 	/**
 	 * @struct	SpriteComponent
@@ -457,16 +504,14 @@ namespace Arche
 	 */
 	struct SpriteComponent
 	{
-		bool enabled = true;
-
-		StringId textureKey;	// ResourceManagerで使うキー
+		std::string textureKey;	// ResourceManagerで使うキー
 		XMFLOAT4 color;			// 色と透明度
 
-		SpriteComponent(StringId key = "", const XMFLOAT4& c = { 1, 1, 1, 1 })
+		SpriteComponent(std::string key = "", const XMFLOAT4& c = { 1, 1, 1, 1 })
 			: textureKey(key), color(c) {
 		}
 	};
-	ARCHE_COMPONENT(SpriteComponent, REFLECT_VAR(enabled) REFLECT_VAR(textureKey) REFLECT_VAR(color))
+	ARCHE_COMPONENT(SpriteComponent, REFLECT_VAR(textureKey) REFLECT_VAR(color))
 
 	/**
 	 * @struct	BillboardComponent
@@ -474,17 +519,15 @@ namespace Arche
 	 */
 	struct BillboardComponent
 	{
-		bool enabled = true;
-
-		StringId textureKey;
+		std::string textureKey;
 		XMFLOAT2 size;	// 幅、高さ
 		XMFLOAT4 color;
 
-		BillboardComponent(StringId key = "", float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1,1,1,1 })
+		BillboardComponent(std::string key = "", float w = 1.0f, float h = 1.0f, const XMFLOAT4& c = { 1,1,1,1 })
 			: textureKey(key), size({ w, h }), color(c) {
 		}
 	};
-	ARCHE_COMPONENT(BillboardComponent, REFLECT_VAR(enabled) REFLECT_VAR(textureKey) REFLECT_VAR(size) REFLECT_VAR(color))
+	ARCHE_COMPONENT(BillboardComponent, REFLECT_VAR(textureKey) REFLECT_VAR(size) REFLECT_VAR(color))
 
 	/**
 	 * @struct	TextComponent
@@ -492,8 +535,6 @@ namespace Arche
 	 */
 	struct TextComponent
 	{
-		bool enabled = true;
-
 		std::string text;
 		std::string fontKey;	// フォント名（例: "Meiryo", "CustomFont"）
 		float fontSize;		// 基本サイズ（1080p基準など）
@@ -513,7 +554,6 @@ namespace Arche
 		}
 	};
 	ARCHE_COMPONENT(TextComponent,
-		REFLECT_VAR(enabled)
 		REFLECT_VAR(text)
 		REFLECT_VAR(fontKey)
 		REFLECT_VAR(fontSize)
@@ -534,9 +574,7 @@ namespace Arche
 	 */
 	struct AudioSource
 	{
-		bool enabled = true;
-
-		StringId soundKey;	// ResourceManagerのキー
+		std::string soundKey;	// ResourceManagerのキー
 		float volume;			// 基本音量
 		float range;			// 音が聞こえる最大距離（3Dサウンド用）
 		bool isLoop;			// ループするか
@@ -545,11 +583,11 @@ namespace Arche
 		// 内部状態管理用
 		bool isPlaying = false;
 
-		AudioSource(StringId key = "", float vol = 1.0f, float r = 20.0f, bool loop = false, bool awake = false)
+		AudioSource(std::string key = "", float vol = 1.0f, float r = 20.0f, bool loop = false, bool awake = false)
 			: soundKey(key), volume(vol), range(r), isLoop(loop), playOnAwake(awake) {
 		}
 	};
-	ARCHE_COMPONENT(AudioSource, REFLECT_VAR(enabled) REFLECT_VAR(soundKey) REFLECT_VAR(volume) REFLECT_VAR(range) REFLECT_VAR(isLoop) REFLECT_VAR(playOnAwake))
+	ARCHE_COMPONENT(AudioSource, REFLECT_VAR(soundKey) REFLECT_VAR(volume) REFLECT_VAR(range) REFLECT_VAR(isLoop) REFLECT_VAR(playOnAwake))
 
 	/**
 	 * @struct	AudioListener
@@ -557,10 +595,9 @@ namespace Arche
 	 */
 	struct AudioListener
 	{
-		bool enabled = true;
 		// データは不要、タグとして機能する。
 	};
-	ARCHE_COMPONENT(AudioListener, REFLECT_VAR(enabled))
+	ARCHE_COMPONENT(AudioListener, )
 
 	/**
 	 * @struct	Camera
@@ -568,8 +605,6 @@ namespace Arche
 	 */
 	struct Camera
 	{
-		bool enabled = true;
-
 		float fov;			// 視野角（Radian）
 		float nearZ, farZ;	// 視錐台の範囲
 		float aspect;		// アスペクト比
@@ -579,7 +614,7 @@ namespace Arche
 			: fov(f), nearZ(n), farZ(r), aspect(a) {
 		}
 	};
-	ARCHE_COMPONENT(Camera, REFLECT_VAR(enabled) REFLECT_VAR(fov) REFLECT_VAR(nearZ) REFLECT_VAR(farZ) REFLECT_VAR(aspect))
+	ARCHE_COMPONENT(Camera, REFLECT_VAR(fov) REFLECT_VAR(nearZ) REFLECT_VAR(farZ) REFLECT_VAR(aspect))
 
 	// ============================================================
 	// 2D / UI関連
@@ -590,8 +625,6 @@ namespace Arche
 	 */
 	struct Transform2D
 	{
-		bool enabled = true;
-
 		// --- 基本パラメータ ---
 		XMFLOAT2 position = { 0.0f, 0.0f };			// アンカー中心からのオフセット座標
 		XMFLOAT2 size = { 100.0f, 100.0f };			// 幅と高さ
@@ -653,7 +686,6 @@ namespace Arche
 		}
 	};
 	ARCHE_COMPONENT(Transform2D,
-		REFLECT_VAR(enabled)
 		REFLECT_VAR(position)
 		REFLECT_VAR(size)
 		REFLECT_VAR(rotation)
@@ -669,8 +701,6 @@ namespace Arche
 	 */
 	struct Canvas
 	{
-		bool enabled = true;
-
 		bool isScreenSpace = true;	// trueなら画面解像度に合わせる
 		XMFLOAT2 referenceSize = { 1920.0f, 1080.0f };	// 基準解像度
 
@@ -687,7 +717,7 @@ namespace Arche
 			: isScreenSpace(isScreen), referenceSize({ w, h }) {
 		}
 	};
-	ARCHE_COMPONENT(Canvas, REFLECT_VAR(enabled) REFLECT_VAR(isScreenSpace) REFLECT_VAR(referenceSize))
+	ARCHE_COMPONENT(Canvas, REFLECT_VAR(isScreenSpace) REFLECT_VAR(referenceSize))
 
 }	// namespace Arche
 

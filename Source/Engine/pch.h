@@ -7,6 +7,11 @@
 #ifndef ___PCH_H___
 #define ___PCH_H___
 
+// メモリリーク検出用の定義
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 // Windowsのmin/maxマクロと標準ライブラリの競合を防ぐ
 #define NOMINMAX
 
@@ -53,6 +58,10 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+// --- WIC ---
+#include <wincodec.h>
+#pragma comment(lib, "windowscodecs.lib")
+
 // --- Standard Library ---
 #include <vector>
 #include <string>
@@ -80,6 +89,7 @@
 #include <tuple>
 #include <deque>
 #include <comdef.h>
+#include <future>
 
 #include "Engine/Core/Core.h"
 
@@ -89,6 +99,7 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_internal.h"
+// #include "imgui_stdlib.h"
 #include "ImGuizmo.h"
 
 // --- Common Engine Definitions ---
@@ -97,11 +108,8 @@ using Microsoft::WRL::ComPtr;
 using json = nlohmann::json;
 using namespace DirectX;
 
-// メモリリーク検出用（Debug用）
 #ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
+	#define new new( _NORMAL_BLOCK, __FILE__, __LINE__ )
 #endif // _DEBUG
 
 #endif // !___PCH_H___

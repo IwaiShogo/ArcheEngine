@@ -29,7 +29,7 @@ namespace Arche
 	// ===== 前方宣言 =====
 	class PrivateFontCollectionLoader;
 
-	class FontManager
+	class ARCHE_API FontManager
 	{
 	public:
 		static FontManager& Instance() { static FontManager i; return i; }
@@ -46,6 +46,9 @@ namespace Arche
 
 		// ロードされたフォント名のリストを取得
 		const std::vector<std::string>& GetLoadedFontNames() const { return m_loadedFontNames; }
+
+		// フォント名からファイルパスを取得する
+		std::string GetFontPath(const std::string& fontName);
 
 	private:
 		FontManager() = default;
@@ -68,6 +71,8 @@ namespace Arche
 		std::unordered_map<StringId, ComPtr<IDWriteTextFormat>> m_textFormats;
 		// GUI表示用
 		std::vector<std::string> m_loadedFontNames;
+		// フォント名 -> ファイルパス
+		std::unordered_map<std::string, std::string> m_fontPathMap;
 	};
 
 }	// namespace Arche

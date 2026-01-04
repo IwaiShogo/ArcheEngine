@@ -121,6 +121,9 @@
     <Filter Include="Scripts">
       <UniqueIdentifier>{2224f43a-d908-4c7e-a3e3-f0f9efd4c6a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\Core\Graphics">
+      <UniqueIdentifier>{06f9941d-e973-4acc-9dba-aaabaffd40db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Editor\Core\Editor.cpp">
@@ -264,6 +267,15 @@
     <ClCompile Include="..\Source\Engine\Core\Time\Time.cpp">
       <Filter>Source\Engine\Core\Time</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Serializer\SceneSerializer.cpp">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Core\Graphics\Graphics.cpp">
+      <Filter>Source\Engine\Core\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Editor\Panels\SceneViewPanel.cpp">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Editor\Core\Editor.h">
@@ -278,7 +290,7 @@
     <ClInclude Include="..\Source\Editor\Tools\GizmoSystem.h">
       <Filter>Source\Editor\Tools</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Editor\Tools\ThumbnailGenerator.h">
+    <ClInclude Include="..\Source\Editor\Tools\ThumbnailCache.h">
       <Filter>Source\Editor\Tools</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Audio\AudioManager.h">
@@ -369,9 +381,6 @@
       <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Editor\Panels\InspectorWindow.h">
-      <Filter>Source\Editor\Panels</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Editor\Panels\SystemWindow.h">
       <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Core\Base\Logger.h">
@@ -505,6 +514,30 @@
     </ClInclude>
     <ClInclude Include="..\Library\DirectXTex\DirectXTex.h">
       <Filter>Library\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Core\SceneTransition.h">
+      <Filter>Source\Engine\Scene\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\ResourceInspectorWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Core\EditorPrefs.h">
+      <Filter>Source\Editor\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\SystemMonitorWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\GameControlWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\InputVisualizerWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Core\Graphics\Graphics.h">
+      <Filter>Source\Engine\Core\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Tools\ThumbnailGenerator.h">
+      <Filter>Source\Editor\Tools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

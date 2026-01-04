@@ -17,6 +17,8 @@
 #include "Engine/Audio/AudioManager.h"
 #include "Engine/Core/Base/Logger.h"
 #include "Engine/Scene/Serializer/SceneSerializer.h"
+#include "Engine/Scene/Serializer/SystemRegistry.h"
+#include "Engine/Scene/Serializer/ComponentRegistry.h"
 
 // Renderer（静的初期化用）
 #include "Engine/Renderer/Renderers/PrimitiveRenderer.h"
@@ -24,13 +26,16 @@
 #include "Engine/Renderer/Renderers/ModelRenderer.h"
 #include "Engine/Renderer/Renderers/BillboardRenderer.h"
 #include "Engine/Renderer/Text/TextRenderer.h"
+#include "Engine/Core/Graphics/Graphics.h"
 
 #include "Engine/EngineLoader.h"
-//#include "Sandbox/GameLoader.h"
 
 #ifdef _DEBUG
 #include "Editor/Core/Editor.h"
 #include "Editor/Core/GameCommands.h"
+#include "Editor/Core/InspectorGui.h"
+#include "Editor/Core/EditorPrefs.h"
+#include "Editor/Tools/ThumbnailGenerator.h"
 #endif // _DEBUG
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -38,6 +43,15 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace Arche
 {
 	Application* Application::s_instance = nullptr;
+
+	std::wstring ToWideString(const std::string& str)
+	{
+		if (str.empty()) return std::wstring();
+		int size_needed = MultiByteToWideChar(CP_ACP, 0, &str[0], (int)str.size(), NULL, 0);
+		std::wstring wstrTo(size_needed, 0);
+		MultiByteToWideChar(CP_ACP, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+		return wstrTo;
+	}
 
 	HMODULE GetCurrentModuleHandle()
 	{
@@ -62,11 +76,20 @@ namespace Arche
 		// --- サブシステム初期化 ---
 		// シーンマネージャー
 		new SceneManager();
+		SceneManager::Instance().GetWorld().getRegistry().SetParentLookup([&](Entity e) -> Entity
+		{
+			auto& reg = SceneManager::Instance().GetWorld().getRegistry();
+			if (reg.has<Relationship>(e))
+			{
+				return reg.get<Relationship>(e).parent;
+			}
+			return NullEntity;
+		});
+
 		// 入力
 		Input::Initialize();
 		// リソースマネージャー
 		ResourceManager::Instance().Initialize(m_device.Get());
-		ResourceManager::Instance().LoadManifest("Resources/Game/resources.json");
 		// オーディオマネージャー
 		AudioManager::Instance().Initialize();
 		// FPS制御
@@ -79,13 +102,92 @@ namespace Arche
 		ModelRenderer::Initialize(m_device.Get(), m_context.Get());
 		BillboardRenderer::Initialize(m_device.Get(), m_context.Get());
 		TextRenderer::Initialize(m_device.Get(), m_context.Get());
+		Graphics::Initialize(m_device.Get(), m_context.Get(), m_swapChain.Get());
 
 #ifdef _DEBUG
+		ThumbnailGenerator::Initialize(m_device.Get(), m_context.Get());
+
 		// --- ImGui & Editor 初期化 ---
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;	// ドッキング有効化
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;	// ドッキング有効化
 		ImGui::StyleColorsDark();
+
+		const char* fontPath = "C:\\Windows\\Fonts\\meiryo.ttc";
+		if (std::filesystem::exists(fontPath))
+		{
+			io.Fonts->AddFontFromFileTTF(fontPath, 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+		}
+		else
+		{
+			io.Fonts->AddFontDefault();
+		}
+
+		// インスペクターのプレビュー用にゲーム内フォントをロード
+		const auto& fontNames = FontManager::Instance().GetLoadedFontNames();
+		for (const auto& name : fontNames)
+		{
+			// 名前からパスを取得 (UTF-8)
+			std::string path = FontManager::Instance().GetFontPath(name);
+
+			if (!path.empty())
+			{
+				// パスオブジェクトを作成
+				// u8pathを経由することで、日本語パスも正しく認識させます
+				auto fsPath = std::filesystem::u8path(path);
+
+				// 1. まずファイルが存在するかチェック
+				if (std::filesystem::exists(fsPath))
+				{
+					// 2. バイナリモードで開く (ateは外す)
+					std::ifstream file(fsPath, std::ios::binary);
+
+					if (file.is_open())
+					{
+						// 末尾に移動してサイズを取得
+						file.seekg(0, std::ios::end);
+						std::streamsize size = file.tellg();
+						file.seekg(0, std::ios::beg); // 先頭に戻す
+
+						if (size > 0)
+						{
+							unsigned char* fontData = new unsigned char[(size_t)size];
+							if (file.read((char*)fontData, size))
+							{
+								// プレビュー用なので軽量化のため Default (英数字のみ) でロード
+								ImFontConfig config;
+								config.FontDataOwnedByAtlas = true;
+
+								ImFont* f = io.Fonts->AddFontFromMemoryTTF(
+									fontData,
+									(int)size,
+									18.0f,
+									&config,
+									io.Fonts->GetGlyphRangesDefault()
+								);
+
+								if (f)
+								{
+									Arche::g_InspectorFontMap[name] = f;
+								}
+								else
+								{
+									// ImGuiでのロード失敗時
+									delete[] fontData;
+								}
+							}
+							else
+							{
+								// 読み込み失敗
+								delete[] fontData;
+							}
+						}
+					}
+				}
+			}
+		}
 
 		ImGui_ImplWin32_Init(m_hwnd);
 		ImGui_ImplDX11_Init(m_device.Get(), m_context.Get());
@@ -100,6 +202,18 @@ namespace Arche
 
 		m_gameRT = std::make_unique<RenderTarget>();
 		m_gameRT->Create(m_device.Get(), m_width, m_height);
+
+		std::string lastScene = EditorPrefs::Instance().lastScenePath;
+		if (!lastScene.empty() && std::filesystem::exists(lastScene))
+		{
+			SceneManager::Instance().LoadScene(lastScene, new ImmediateTransition());
+		}
+		else
+		{
+			SceneManager::Instance().LoadScene("Resources/Game/Scenes/GameScene.json", new ImmediateTransition());
+		}
+#else
+		SceneManager::Instance().LoadScene("Resources/Game/Scenes/Title.json", new ImmediateTransition());
 #endif // _DEBUG
 	}
 
@@ -111,6 +225,7 @@ namespace Arche
 	void Application::Finalize()
 	{
 #ifdef _DEBUG
+		ThumbnailGenerator::Shutdown();
 		if (m_isImguiInitialized)
 		{
 			ImGui_ImplDX11_Shutdown();
@@ -119,6 +234,9 @@ namespace Arche
 		}
 #endif // _DEBUG
 		AudioManager::Instance().Finalize();
+
+		SystemRegistry::Instance().Clear();
+		ComponentRegistry::Instance().Clear();
 
 		ResourceManager::Instance().Clear();
 
@@ -140,14 +258,14 @@ namespace Arche
 		}
 
 		// クラス登録解除
-		UnregisterClass(m_windowClassName.c_str(), GetCurrentModuleHandle());
+		std::wstring classNameW = ToWideString(m_windowClassName);
+		UnregisterClassW(classNameW.c_str(), GetCurrentModuleHandle());
 
 		s_instance = nullptr;
 	}
 
 	void Application::Run()
 	{
-		OnInitialize();
 		SceneManager::Instance().Initialize();
 
 #ifdef _DEBUG
@@ -244,13 +362,26 @@ namespace Arche
 	// ======================================================================
 	void Application::Render()
 	{
+		if (!m_renderTargetView) return;
+
 #ifdef _DEBUG
 		// ----------------------------------------------------
 		// 1. Scene View Pass (エディタカメラ)
 		// ----------------------------------------------------
 		if (m_sceneRT)
 		{
-			m_sceneRT->Clear(m_context.Get(), 0.15f, 0.15f, 0.15f, 1.0f);	// グレー背景
+			// 背景色
+			float clearColor[4] = { 0.15f, 0.15f, 0.15f, 1.0f };	// デフォルト
+			// プレファブモード: 青色
+			if (Editor::Instance().GetMode() == Editor::EditorMode::Prefab)
+			{
+				clearColor[0] = 0.1f;
+				clearColor[1] = 0.2f;
+				clearColor[2] = 0.35f;
+				clearColor[3] = 1.0f;
+			}
+
+			m_sceneRT->Clear(m_context.Get(), clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
 			m_sceneRT->Bind(m_context.Get());
 
 			// デバッグカメラ情報をContextにセット
@@ -265,7 +396,18 @@ namespace Arche
 			XMStoreFloat3(&ctx.renderCamera.position, cam.GetPosition());
 			ctx.renderCamera.useOverride = true;
 
-			SceneManager::Instance().Render();
+			// 描画対象のワールドを切り替える
+			if (Editor::Instance().GetMode() == Editor::EditorMode::Prefab)
+			{
+				World* activeWorld = Editor::Instance().GetActiveWorld();
+				SceneManager::Instance().Render(activeWorld);
+			}
+			else
+			{
+				SceneManager::Instance().Render();
+			}
+
+			Graphics::SetCaptureSource(m_sceneRT->GetSRV());
 		}
 
 		// ----------------------------------------------------
@@ -289,6 +431,8 @@ namespace Arche
 			ctx.renderCamera.useOverride = false;
 
 			SceneManager::Instance().Render();
+
+			Graphics::SetCaptureSource(m_gameRT->GetSRV());
 
 			// 設定を元に戻す
 			ctx.debugSettings = backSettings;
@@ -326,6 +470,8 @@ namespace Arche
 		float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		m_context->ClearRenderTargetView(m_renderTargetView.Get(), color);
 		m_context->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+		Graphics::SetCaptureSource(nullptr);
 
 		// ゲーム画面描画
 		SceneManager::Instance().Render();
@@ -385,19 +531,21 @@ namespace Arche
 	{
 		HINSTANCE hInstance = GetCurrentModuleHandle();
 
-		WNDCLASS wc = {};
+		WNDCLASSW wc = {};
 		wc.lpfnWndProc = StaticWndProc;
 		wc.hInstance = hInstance;
-		wc.lpszClassName = m_windowClassName.c_str();
+		std::wstring classNameW = ToWideString(m_windowClassName);
+		wc.lpszClassName = classNameW.c_str();
 		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-		RegisterClass(&wc);
+		RegisterClassW(&wc);
 
 		RECT rc = { 0, 0, (LONG)m_width, (LONG)m_height };
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 		// ウィンドウ作成
-		m_hwnd = CreateWindowEx(
-			0, m_windowClassName.c_str(), m_title.c_str(),
+		std::wstring titleW = ToWideString(m_title);
+		m_hwnd = CreateWindowExW(
+			0, classNameW.c_str(), titleW.c_str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT,
 			rc.right - rc.left, rc.bottom - rc.top,
@@ -407,16 +555,16 @@ namespace Arche
 		if (!m_hwnd) return false;
 
 		ShowWindow(m_hwnd, SW_SHOW);
+
+		// 最前面
+		SetForegroundWindow(m_hwnd);
+		SetFocus(m_hwnd);
+
 		return true;
 	}
 
 	bool Application::InitializeGraphics()
 	{
-		// DX11デバイス生成処理（既存コードと同様）
-		// ※長くなるため、アップロードされたコードのロジックをここに移植してください
-		// 基本的な CreateDeviceAndSwapChain -> RTV/DSV 作成の流れです。
-
-		// 簡易実装（本来は詳細なエラーチェックが必要）
 		DXGI_SWAP_CHAIN_DESC scd = {};
 		scd.BufferCount = 1;
 		scd.BufferDesc.Width = m_width;
@@ -475,17 +623,85 @@ namespace Arche
 		return true;
 	}
 
+	void Application::Resize(uint32_t width, uint32_t height)
+	{
+		// サイズが0または変更がない場合は無視
+		if (width == 0 || height == 0) return;
+		if (m_width == width && m_height == height) return;
+
+		m_width = width;
+		m_height = height;
+
+		// 1. 既存の描画ターゲットへの参照を解放
+		m_context->OMSetRenderTargets(0, nullptr, nullptr);
+		m_renderTargetView.Reset();
+		m_depthStencilView.Reset();
+		m_context->ClearState();
+
+		// 2. スワップチェーンのバッファサイズ変更
+		HRESULT hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+		if (FAILED(hr))
+		{
+			Logger::LogError("Failed to resize swap chain buffers.");
+			return;
+		}
+
+		// 3. RTV（レンダーターゲットビュー）の再作成
+		ComPtr<ID3D11Texture2D> backBuffer;
+		hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+		if (FAILED(hr)) return;
+
+		hr = m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_renderTargetView);
+		if (FAILED(hr)) return;
+
+		// 4. DSV（深度ステンシルビュー）の再作成
+		D3D11_TEXTURE2D_DESC dsd = {};
+		dsd.Width = width;
+		dsd.Height = height;
+		dsd.MipLevels = 1;
+		dsd.ArraySize = 1;
+		dsd.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		dsd.SampleDesc.Count = 1;
+		dsd.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+		ComPtr<ID3D11Texture2D> depthBuffer;
+		m_device->CreateTexture2D(&dsd, nullptr, &depthBuffer);
+		m_device->CreateDepthStencilView(depthBuffer.Get(), nullptr, &m_depthStencilView);
+
+		// 5. ビューポートの更新
+		D3D11_VIEWPORT vp = {};
+		vp.Width = (float)width;
+		vp.Height = (float)height;
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		m_context->RSSetViewports(1, &vp);
+	}
+
 	LRESULT CALLBACK Application::StaticWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+#ifdef _DEBUG
 		// ImGui用ハンドラ
 		if (s_instance && s_instance->m_isImguiInitialized)
 		{
 			extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 			if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam)) return true;
 		}
+#endif // _DEBUG
 
 		switch (msg)
 		{
+		case WM_SIZE:
+			if (s_instance && wParam != SIZE_MINIMIZED)
+			{
+				// LOWORD, HIWORDマクロで新しい幅と高さを取得
+				uint32_t width = (uint32_t)LOWORD(lParam);
+				uint32_t height = (uint32_t)HIWORD(lParam);
+
+				// リサイズ実行
+				s_instance->Resize(width, height);
+			}
+			return 0;
+
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
@@ -501,7 +717,7 @@ namespace Arche
 			if (wParam == VK_ESCAPE) PostQuitMessage(0);
 			return 0;
 		}
-		return DefWindowProc(hwnd, msg, wParam, lParam);
+		return DefWindowProcW(hwnd, msg, wParam, lParam);
 	}
 
 }	// namespace Arche

@@ -19,7 +19,7 @@
 #include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Scene/Components/Components.h"
 #include "Engine/Core/Window/Input.h"
-#include "Engine/Core/Context.h" // Config::SCREEN_WIDTH等用
+#include "Engine/Core/Context.h"
 #include "Engine/Config.h"
 
 // コマンド関連のインクルード
@@ -38,6 +38,31 @@ namespace Arche
 			if (selected == NullEntity) return;
 
 			Registry& reg = world.getRegistry();
+
+			// スナップ設定
+			bool useGridSnap = Input::GetKey(VK_CONTROL);	// Ctrlでグリッドスナップ
+			bool useEntitySnap = Input::GetKey(VK_SHIFT);	// Shiftでエンティティ吸着
+
+			// スナップ値
+			float snapTranslate[3] = { 0.5f, 0.5f, 0.5f };	// 0.5m単位
+			float snapRotate[3] = { 45.0f, 45.0f, 45.0f };	// 45度単位
+			float snapScale[3] = { 0.1f, 0.1f, 0.1f };		// 0.1倍単位
+
+			float* snapValues = nullptr;
+
+			// 操作モード制御
+			static ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+			if (Input::GetKeyDown('1')) mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+			if (Input::GetKeyDown('2')) mCurrentGizmoOperation = ImGuizmo::ROTATE;
+			if (Input::GetKeyDown('3')) mCurrentGizmoOperation = ImGuizmo::SCALE;
+
+			// グリッドスナップの値選択
+			if (useGridSnap)
+			{
+				if (mCurrentGizmoOperation == ImGuizmo::TRANSLATE) snapValues = snapTranslate;
+				else if (mCurrentGizmoOperation == ImGuizmo::ROTATE) snapValues = snapRotate;
+				else if (mCurrentGizmoOperation == ImGuizmo::SCALE) snapValues = snapScale;
+			}
 
 			// =================================================================================
 			// 1. Transform2D (UI / 2D) の場合
@@ -58,7 +83,7 @@ namespace Arche
 
 				float screenW = (float)Config::SCREEN_WIDTH;
 				float screenH = (float)Config::SCREEN_HEIGHT;
-				XMMATRIX proj2D = XMMatrixOrthographicLH(screenW, -screenH, 0.1f, 1000.0f);
+				XMMATRIX proj2D = XMMatrixOrthographicLH(screenW, screenH, 0.1f, 1000.0f);
 
 				float viewM[16], projM[16], worldM[16];
 				MatrixToFloat16(view2D, viewM);
@@ -69,8 +94,6 @@ namespace Arche
 				// --------------------------------------------------------
 				// ギズモに渡す行列の作成 (D2D WorldMatrix -> DirectX 4x4 Matrix)
 				// --------------------------------------------------------
-				// UISystemですでに計算された「正しい表示位置（ワールド行列）」を使います
-				// これにより、ギズモがオブジェクトの見た目通りの場所に表示されます
 				auto& m = t2.worldMatrix;
 				XMMATRIX matWorld = XMMatrixSet(
 					m._11, m._12, 0.0f, 0.0f,
@@ -81,18 +104,8 @@ namespace Arche
 				MatrixToFloat16(matWorld, worldM);
 
 				// --------------------------------------------------------
-				// 操作モード制御
-				// --------------------------------------------------------
-				static ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-				if (Input::GetKeyDown('1')) mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-				if (Input::GetKeyDown('2')) mCurrentGizmoOperation = ImGuizmo::ROTATE;
-				if (Input::GetKeyDown('3')) mCurrentGizmoOperation = ImGuizmo::SCALE;
-
-				// --------------------------------------------------------
 				// ギズモ操作実行
 				// --------------------------------------------------------
-				// 2D回転が軸ブレしないように LOCAL モード推奨ですが、UIなら WORLD でもOK
-				// ここでは操作しやすさ優先で WORLD にします
 				if (ImGuizmo::Manipulate(viewM, projM, mCurrentGizmoOperation, ImGuizmo::WORLD, worldM))
 				{
 					// 操作後の新しいワールド行列
@@ -180,14 +193,8 @@ namespace Arche
 				Transform& t = reg.get<Transform>(selected);
 				MatrixToFloat16(t.GetWorldMatrix(), worldM);
 
-				// 操作モード
-				static ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-				if (Input::GetKeyDown('1')) mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-				if (Input::GetKeyDown('2')) mCurrentGizmoOperation = ImGuizmo::ROTATE;
-				if (Input::GetKeyDown('3')) mCurrentGizmoOperation = ImGuizmo::SCALE;
-
 				// ギズモ描画と操作判定
-				ImGuizmo::Manipulate(viewM, projM, mCurrentGizmoOperation, ImGuizmo::LOCAL, worldM);
+				ImGuizmo::Manipulate(viewM, projM, mCurrentGizmoOperation, ImGuizmo::LOCAL, worldM, nullptr, snapValues);
 
 				// Undo / Redo
 				bool isUsingNow = ImGuizmo::IsUsing();
@@ -207,12 +214,59 @@ namespace Arche
 					float translation[3], rotation[3], scale[3];
 					ImGuizmo::DecomposeMatrixToComponents(worldM, translation, rotation, scale);
 
+
+					// エンティティ吸着処理
+					if (mCurrentGizmoOperation == ImGuizmo::TRANSLATE && useEntitySnap)
+					{
+						XMFLOAT3 currentPos = { translation[0], translation[1], translation[2] };
+						XMFLOAT3 snappedPos = currentPos;
+						float minDistSq = 1.0f; // 吸着距離の閾値（の2乗）
+						bool snapped = false;
+
+						// 全エンティティ走査
+						auto viewT = reg.view<Transform>();
+						for (auto otherEntity : viewT)
+						{
+							if (otherEntity == selected) continue; // 自分自身は無視
+
+							auto& otherT = viewT.get<Transform>(otherEntity);
+
+							// 距離計算
+							float dx = currentPos.x - otherT.position.x;
+							float dy = currentPos.y - otherT.position.y;
+							float dz = currentPos.z - otherT.position.z;
+							float distSq = dx * dx + dy * dy + dz * dz;
+
+							if (distSq < minDistSq)
+							{
+								minDistSq = distSq;
+								snappedPos = otherT.position;
+								snapped = true;
+							}
+						}
+
+						if (snapped)
+						{
+							// 吸着適用
+							translation[0] = snappedPos.x;
+							translation[1] = snappedPos.y;
+							translation[2] = snappedPos.z;
+
+							// 吸着した場所にガイド線を表示（視覚フィードバック）
+							// ワールド座標 -> スクリーン座標に変換してImGuiで線を描く
+							ImVec2 p1 = WorldToScreen(currentPos, view, proj, x, y, width, height);
+							ImVec2 p2 = WorldToScreen(snappedPos, view, proj, x, y, width, height);
+
+							// 黄色い線を引く
+							ImGui::GetWindowDrawList()->AddLine(p1, p2, IM_COL32(255, 255, 0, 255), 2.0f);
+							// 吸着点に丸を表示
+							ImGui::GetWindowDrawList()->AddCircleFilled(p2, 5.0f, IM_COL32(255, 255, 0, 255));
+						}
+					}
+
 					t.position = { translation[0], translation[1], translation[2] };
 					t.rotation = { rotation[0], rotation[1], rotation[2] };
 					t.scale = { scale[0], scale[1], scale[2] };
-
-					// 更新通知
-					//reg.patch<Transform>(selected);
 				}
 
 				// 3. 操作終了
@@ -240,6 +294,22 @@ namespace Arche
 		// ヘルパー: XMMATRIX -> float[16]
 		static void MatrixToFloat16(const XMMATRIX& m, float* out) {
 			XMStoreFloat4x4((XMFLOAT4X4*)out, m);
+		}
+
+		// ワールド座標 -> スクリーン座標変換（可視化用）
+		static ImVec2 WorldToScreen(const XMFLOAT3& worldPos, const XMMATRIX& view, const XMMATRIX& proj, float viewportX, float viewportY, float viewportW, float viewportH)
+		{
+			XMVECTOR pos = XMLoadFloat3(&worldPos);
+			XMVECTOR screenPos = XMVector3Project(
+				pos,
+				viewportX, viewportY, viewportW, viewportH,
+				0.0f, 1.0f,
+				proj, view, XMMatrixIdentity()
+			);
+
+			XMFLOAT3 s;
+			XMStoreFloat3(&s, screenPos);
+			return ImVec2(s.x, s.y);
 		}
 
 	private:
