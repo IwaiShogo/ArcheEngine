@@ -93,7 +93,7 @@ namespace Arche
 		Transform(XMFLOAT3 p = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 r = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 s = { 1.0f, 1.0f, 1.0f })
 			: position(p), rotation(r), scale(s)
 		{
-			XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+			UpdateMatrix();
 		}
 	};
 	ARCHE_COMPONENT(Transform, REFLECT_VAR(position) REFLECT_VAR(rotation) REFLECT_VAR(scale))
