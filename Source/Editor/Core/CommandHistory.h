@@ -62,6 +62,14 @@ namespace Arche
 			Logger::Log("Redo performed.");
 		}
 
+		// 履歴の全消去（モード切替時などに使用）
+		static void Clear()
+		{
+			m_undoStack.clear();
+			m_redoStack.clear();
+			Logger::Log("Command History Cleared.");
+		}
+
 	private:
 		static inline std::deque<std::shared_ptr<ICommand>> m_undoStack;
 		static inline std::deque<std::shared_ptr<ICommand>> m_redoStack;

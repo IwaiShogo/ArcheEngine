@@ -202,18 +202,6 @@ namespace Arche
 
 		m_gameRT = std::make_unique<RenderTarget>();
 		m_gameRT->Create(m_device.Get(), m_width, m_height);
-
-		std::string lastScene = EditorPrefs::Instance().lastScenePath;
-		if (!lastScene.empty() && std::filesystem::exists(lastScene))
-		{
-			SceneManager::Instance().LoadScene(lastScene, new ImmediateTransition());
-		}
-		else
-		{
-			SceneManager::Instance().LoadScene("Resources/Game/Scenes/GameScene.json", new ImmediateTransition());
-		}
-#else
-		SceneManager::Instance().LoadScene("Resources/Game/Scenes/Title.json", new ImmediateTransition());
 #endif // _DEBUG
 	}
 
@@ -225,6 +213,7 @@ namespace Arche
 	void Application::Finalize()
 	{
 #ifdef _DEBUG
+		Editor::Instance().Shutdown();
 		ThumbnailGenerator::Shutdown();
 		if (m_isImguiInitialized)
 		{
@@ -274,35 +263,50 @@ namespace Arche
 #endif // _DEBUG
 
 		// シーンロードの分岐
-		// 「一時ファイルがあるなら続きから、なければ通常起動」と判断します。
+		std::string startScene = "Resources/Game/Scenes/GameScene.json";	// デフォルト
 		std::string tempPath = "temp_hotreload.json";
+		std::string configPath = "game_config.json";
+
+		// パターンA: ホットリロード復帰
 		if (std::filesystem::exists(tempPath))
 		{
-			// ホットリロード復帰: 続きからロード
-			//LoadState();
-
-			std::string startScene = "Resources/Game/Scenes/GameScene.json";
-			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
-
-			// 読み込んだら消す（次回通常起動時に誤爆しないように）
+			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), tempPath);
 			std::filesystem::remove(tempPath);
 			Logger::Log("HotReload: State Reset (Debug).");
 		}
+		// パターンB: リリースビルド設定（Confingあり）
+		else if (std::filesystem::exists(configPath))
+		{
+			try
+			{
+				std::ifstream f(configPath);
+				json config;
+				f >> config;
+
+				if (config.contains("StartScene"))
+				{
+					startScene = config["StartScene"].get<std::string>();
+				}
+			}
+			catch (...)
+			{
+				Logger::LogError("Failed to load game_config.json");
+			}
+
+			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
+			Logger::Log("Release Build: Loaded " + startScene);
+		}
+		// パターンC: エディタデフォルト
 		else
 		{
-			// 通常起動: スタートアップシーンのロード
-			std::string startScene = "Resources/Game/Scenes/GameScene.json";
-			std::ifstream f(startScene);
-			if (f.good())
+#ifdef _DEBUG
+			std::string lastScene = EditorPrefs::Instance().lastScenePath;
+			if (!lastScene.empty() && std::filesystem::exists(lastScene))
 			{
-				f.close();
-				SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
-				Logger::Log("Startup: Loaded: " + startScene);
+				startScene = lastScene;
 			}
-			else
-			{
-				Logger::LogWarning("Startup: Scene file not found.");
-			}
+			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
+#endif // _DEBUG
 		}
 
 		// 残留メッセージ
@@ -351,10 +355,22 @@ namespace Arche
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
-#endif // _DEBUG
 
-		// シーン更新
+		if (Editor::Instance().GetMode() == Editor::EditorMode::Prefab)
+		{
+			World* prefabWorld = Editor::Instance().GetActiveWorld();
+			if (prefabWorld)
+			{
+				prefabWorld->Tick(EditorState::Edit);
+			}
+		}
+		else
+		{
+			SceneManager::Instance().Update();
+		}
+#else
 		SceneManager::Instance().Update();
+#endif // _DEBUG
 	}
 
 	// ======================================================================

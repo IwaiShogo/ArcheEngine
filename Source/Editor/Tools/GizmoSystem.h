@@ -267,6 +267,21 @@ namespace Arche
 					t.position = { translation[0], translation[1], translation[2] };
 					t.rotation = { rotation[0], rotation[1], rotation[2] };
 					t.scale = { scale[0], scale[1], scale[2] };
+					
+					XMMATRIX localMat = t.GetLocalMatrix();
+					XMMATRIX parentMat = XMMatrixIdentity();
+
+					if (reg.has<Relationship>(selected))
+					{
+						Entity parent = reg.get<Relationship>(selected).parent;
+						if (parent != NullEntity && reg.has<Transform>(parent))
+						{
+							parentMat = reg.get<Transform>(parent).GetWorldMatrix();
+						}
+					}
+
+					// ワールド行列を更新
+					XMStoreFloat4x4(&t.worldMatrix, localMat * parentMat);
 				}
 
 				// 3. 操作終了

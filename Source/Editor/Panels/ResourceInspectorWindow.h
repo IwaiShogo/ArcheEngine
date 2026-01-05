@@ -21,11 +21,16 @@ namespace Arche
 	class ResourceInspectorWindow : public EditorWindow
 	{
 	public:
-		ResourceInspectorWindow() = default;
+		ResourceInspectorWindow()
+		{
+			m_windowName = "Resource Monitor";
+		}
 
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
-			ImGui::Begin("Resource Monitor");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 
 			if (ImGui::BeginTabBar("ResourceTabs"))
 			{

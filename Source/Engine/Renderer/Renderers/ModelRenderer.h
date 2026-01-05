@@ -65,7 +65,7 @@ namespace Arche
 		 * @param	model		モデル
 		 * @param	worldMatrix	ワールド行列
 		 */
-		static void Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix);
+		static void Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix, const std::vector<DirectX::XMFLOAT4X4>* boneMatrices = nullptr);
 
 	private:
 		static ID3D11Device* s_device;
@@ -87,6 +87,10 @@ namespace Arche
 			XMFLOAT4 lightDir;
 			XMFLOAT4 lightColor;
 			XMFLOAT4 materialColor;
+			// ボーン行列とフラグ
+			XMMATRIX boneTransforms[100];
+			int hasAnimation;
+			float padding[3];	// アライメント調整
 		};
 		static CBData s_cbData;
 

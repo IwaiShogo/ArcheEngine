@@ -166,6 +166,7 @@
     <ClCompile Include="..\Source\Engine\Renderer\Text\FontManager.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Text\TextRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Resource\ResourceManager.cpp" />
+    <ClCompile Include="..\Source\Engine\Scene\Animation\Animation.cpp" />
     <ClCompile Include="..\Source\Engine\Scene\Core\ECS\ECS.cpp" />
     <ClCompile Include="..\Source\Engine\Scene\Core\SceneManager.cpp" />
     <ClCompile Include="..\Source\Engine\Scene\Serializer\ComponentRegistry.cpp" />
@@ -199,13 +200,14 @@
     <ClInclude Include="..\Source\Editor\Core\EditorPrefs.h" />
     <ClInclude Include="..\Source\Editor\Core\GameCommands.h" />
     <ClInclude Include="..\Source\Editor\Core\InspectorGui.h" />
+    <ClInclude Include="..\Source\Editor\Panels\BuildSettingsWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\ContentBrowser.h" />
     <ClInclude Include="..\Source\Editor\Panels\GameControlWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\GameViewPanel.h" />
     <ClInclude Include="..\Source\Editor\Panels\HierarchyWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\InputVisualizerWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\InspectorWindow.h" />
-    <ClInclude Include="..\Source\Editor\Panels\ProjectSettingsWindow.h" />
+    <ClInclude Include="..\Source\Editor\Panels\PhysicsSettingsWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\ResourceInspectorWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\SceneViewPanel.h" />
     <ClInclude Include="..\Source\Editor\Panels\SystemMonitorWindow.h" />
@@ -229,6 +231,7 @@
     <ClInclude Include="..\Source\Engine\Physics\PhysicsEvents.h" />
     <ClInclude Include="..\Source\Engine\Physics\SpatialHash.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Core\RenderTarget.h" />
+    <ClInclude Include="..\Source\Engine\Renderer\Data\AnimationData.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Data\Model.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.h" />
@@ -240,6 +243,7 @@
     <ClInclude Include="..\Source\Engine\Renderer\Text\TextRenderer.h" />
     <ClInclude Include="..\Source\Engine\Resource\Prefab.h" />
     <ClInclude Include="..\Source\Engine\Resource\ResourceManager.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Animation\Animation.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\ComponentDefines.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\Components.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\UIComponents.h" />
@@ -250,6 +254,7 @@
     <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentSerializer.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\SceneSerializer.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\SystemRegistry.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Animation\AnimationSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Audio\AudioSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\BillboardSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\ModelRenderSystem.h" />
@@ -258,7 +263,6 @@
     <ClInclude Include="..\Source\Engine\Scene\Systems\Graphics\TextRenderSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\ButtonSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\HierarchySystem.h" />
-    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\InputSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\LifetimeSystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\UISystem.h" />
     <ClInclude Include="..\Source\Engine\Scene\Systems\Physics\CollisionSystem.h" />
@@ -278,6 +282,8 @@
     <None Include="..\Resources\Engine\Shaders\Sprite.hlsl">
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
       <FileType>Document</FileType>
     </None>
@@ -307,14 +313,14 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

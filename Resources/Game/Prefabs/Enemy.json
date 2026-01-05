@@ -1,12 +1,12 @@
 [
     {
         "Collider": {
+            "Enabled": true,
             "boxSize": [
                 1.0,
-                1.0,
+                2.0,
                 1.0
             ],
-            "enabled": true,
             "height": 1.0,
             "isTrigger": false,
             "layer": 1,
@@ -18,15 +18,16 @@
             "radius": 0.5,
             "type": 0
         },
-        "ID": 3,
+        "ID": 1,
         "Rigidbody": {
+            "Enabled": true,
             "drag": 0.10000000149011612,
-            "enabled": true,
-            "mass": 1.0,
+            "mass": 2.0,
             "type": 1,
             "useGravity": true
         },
         "Tag": {
+            "Enabled": true,
             "componentOrder": [
                 "Collider",
                 "Rigidbody",
@@ -36,9 +37,9 @@
             "name": "Enemy"
         },
         "Transform": {
-            "enabled": true,
+            "Enabled": true,
             "position": [
-                5.0,
+                0.0,
                 0.0,
                 0.0
             ],

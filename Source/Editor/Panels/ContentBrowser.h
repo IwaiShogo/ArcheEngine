@@ -32,6 +32,8 @@ namespace Arche
 			: m_rootDirectory(std::filesystem::current_path())
 			, m_currentDirectory(std::filesystem::current_path())	// 初期ディレクトリ: プロジェクトルート
 		{
+			m_windowName = "Content Browser";
+
 			// 保存されたパスを復元
 			std::string savedPath = EditorPrefs::Instance().contentBrowserPath;
 			if (std::filesystem::exists(savedPath))
@@ -42,7 +44,9 @@ namespace Arche
 
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
-			ImGui::Begin("Content Browser");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 
 			// --- 全体レイアウト（テーブル） ---
 			// Resizable:境界線をドラッグ可能, BordersInnerV:境界線を表示
@@ -78,7 +82,7 @@ namespace Arche
 				ImGui::EndTable();
 			}
 
-			HandlePopups();
+			HandlePopups(world);
 			EditorPrefs::Instance().contentBrowserPath = m_currentDirectory.string();
 
 			ImGui::End();
@@ -349,7 +353,7 @@ namespace Arche
 		// ====================================================================================
 		// ポップアップ制御 (バグ修正済み)
 		// ====================================================================================
-		void HandlePopups()
+		void HandlePopups(World& world)
 		{
 			// スクリプト作成ポップアップ
 			if (m_showCreatePopup)
@@ -394,7 +398,42 @@ namespace Arche
 				if (ImGui::Button("Delete", ImVec2(120, 0)))
 				{
 					try {
-						if (std::filesystem::exists(m_deletePath)) std::filesystem::remove_all(m_deletePath);
+						// 1. ファイルシステムから削除
+						if (std::filesystem::exists(m_deletePath))
+						{
+							std::filesystem::remove_all(m_deletePath);
+
+							// 2. シーン内の該当プレファブを自動Unpack
+							std::filesystem::path deletedAbs = std::filesystem::absolute(m_deletePath);
+
+							Registry& reg = world.getRegistry();
+							std::vector<Entity> toUnpack;
+
+							// PrefabInstanceを持つ全エンティティを検索
+							auto view = reg.view<PrefabInstance>();
+							for (auto entity : view)
+							{
+								auto& pref = view.get<PrefabInstance>(entity);
+								std::filesystem::path prefPath = std::filesystem::absolute(pref.prefabPath);
+
+								// パスが一致したらリストに追加
+								// (remove_allした後なのでexistsチェックではなくパスの一致を見る)
+								if (prefPath == deletedAbs)
+								{
+									toUnpack.push_back(entity);
+								}
+							}
+
+							// Unpack実行
+							for (auto e : toUnpack)
+							{
+								reg.remove<PrefabInstance>(e);
+							}
+							if (!toUnpack.empty())
+							{
+								Logger::LogWarning("Auto-unpacked " + std::to_string(toUnpack.size()) + " entities due to file deletion.");
+							}
+						}
 					}
 					catch (const std::exception& e) {
 						Logger::LogError("Failed to delete: " + std::string(e.what()));

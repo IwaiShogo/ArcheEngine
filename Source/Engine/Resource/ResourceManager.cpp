@@ -28,8 +28,63 @@ namespace Arche
 	// ====================================================================================
 	namespace
 	{
+		// 行列変換ヘルパー (Assimp -> DirectX)
+		inline XMFLOAT4X4 AiMatrixToXM(const aiMatrix4x4& from)
+		{
+			XMFLOAT4X4 to;
+			to._11 = from.a1; to._12 = from.b1; to._13 = from.c1; to._14 = from.d1;
+			to._21 = from.a2; to._22 = from.b2; to._23 = from.c2; to._24 = from.d2;
+			to._31 = from.a3; to._32 = from.b3; to._33 = from.c3; to._34 = from.d3;
+			to._41 = from.a4; to._42 = from.b4; to._43 = from.c4; to._44 = from.d4;
+			return to;
+		}
+
+		// ウェイト設定ヘルパー
+		void SetVertexBoneData(ModelVertex& vertex, int boneID, float weight)
+		{
+			vertex.AddBoneData(boneID, weight);
+		}
+
+		// ボーン情報の抽出
+		void ExtractBoneWeightForVertices(std::vector<ModelVertex>& vertices, aiMesh* mesh, std::shared_ptr<Model> model)
+		{
+			for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+			{
+				int boneID = -1;
+				std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+
+				// 新しいボーンなら登録
+				if (model->boneInfoMap.find(boneName) == model->boneInfoMap.end())
+				{
+					BoneInfo newBoneInfo;
+					newBoneInfo.id = model->boneCounter;
+					newBoneInfo.offset = AiMatrixToXM(mesh->mBones[boneIndex]->mOffsetMatrix);
+					model->boneInfoMap[boneName] = newBoneInfo;
+					boneID = model->boneCounter;
+					model->boneCounter++;
+				}
+				else
+				{
+					boneID = model->boneInfoMap[boneName].id;
+				}
+
+				assert(boneID != -1);
+
+				// ウェイト情報の取得
+				aiVertexWeight* weights = mesh->mBones[boneIndex]->mWeights;
+				int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+				for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+				{
+					int vertexId = weights[weightIndex].mVertexId;
+					float weight = weights[weightIndex].mWeight;
+					SetVertexBoneData(vertices[vertexId], boneID, weight);
+				}
+			}
+		}
+
 		// メッシュ単体のロード処理
-		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory, ID3D11Device* device)
+		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene, std::shared_ptr<Model> model, const std::string& directory, ID3D11Device* device)
 		{
 			Mesh myMesh;
 			std::vector<ModelVertex> vertices;
@@ -51,10 +106,6 @@ namespace Arche
 					vertex.normal.y = mesh->mNormals[i].y;
 					vertex.normal.z = mesh->mNormals[i].z;
 				}
-				else
-				{
-					vertex.normal = { 0, 1, 0 };
-				}
 
 				// UV座標 (0番目のチャンネルのみ)
 				if (mesh->mTextureCoords[0])
@@ -62,15 +113,58 @@ namespace Arche
 					vertex.uv.x = mesh->mTextureCoords[0][i].x;
 					vertex.uv.y = mesh->mTextureCoords[0][i].y;
 				}
-				else
-				{
-					vertex.uv = { 0, 0 };
-				}
 
 				vertices.push_back(vertex);
 			}
 
-			// 2. インデックスデータ取得
+			// 2. ボーンウェイトの抽出
+			ExtractBoneWeightForVertices(vertices, mesh, model);
+
+			// ウェイトの正規化
+			for (auto& v : vertices)
+			{
+				float sum = 0.0f;
+				for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+				{
+					if (v.boneIDs[i] != -1)
+						sum += v.weights[i];
+				}
+
+				// 合計が0より大きければ、合計で割って1.0にする
+				if (sum > 0.0f)
+				{
+					for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+					{
+						if (v.boneIDs[i] != -1)
+							v.weights[i] /= sum;
+					}
+				}
+
+				if (vertices.size() > 0)
+				{
+					static bool s_logged = false;
+					if (!s_logged)
+					{
+						s_logged = true; // 1回だけ出す
+						auto& v = vertices[0];
+						std::string log = "Vertex[0] BoneIDs: "
+							+ std::to_string(v.boneIDs[0]) + ", "
+							+ std::to_string(v.boneIDs[1]) + ", "
+							+ std::to_string(v.boneIDs[2]) + ", "
+							+ std::to_string(v.boneIDs[3]);
+						Logger::Log(log);
+
+						std::string wlog = "Vertex[0] Weights: "
+							+ std::to_string(v.weights[0]) + ", "
+							+ std::to_string(v.weights[1]) + ", "
+							+ std::to_string(v.weights[2]) + ", "
+							+ std::to_string(v.weights[3]);
+						Logger::Log(wlog);
+					}
+				}
+			}
+
+			// 3. インデックスデータ取得
 			for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 			{
 				aiFace face = mesh->mFaces[i];
@@ -81,7 +175,7 @@ namespace Arche
 			}
 			myMesh.indexCount = (unsigned int)indices.size();
 
-			// 3. バッファ作成
+			// 4. バッファ作成
 			// Vertex Buffer
 			D3D11_BUFFER_DESC vbd = {};
 			vbd.Usage = D3D11_USAGE_DEFAULT;
@@ -100,44 +194,25 @@ namespace Arche
 			iInit.pSysMem = indices.data();
 			device->CreateBuffer(&ibd, &iInit, myMesh.indexBuffer.GetAddressOf());
 
-			// 4. マテリアル（テクスチャ）ロード
+			// 5. マテリアル（テクスチャ）ロード
 			if (mesh->mMaterialIndex >= 0)
 			{
 				aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-				// Diffuseテクスチャのみ対応
 				if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
 				{
 					aiString str;
 					material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-
-					// ファイル名のみ抽出
 					std::string filename = std::filesystem::path(str.C_Str()).filename().string();
-
-					// 1. モデルと同じディレクトリを探す (最優先)
 					std::string localPath = directory + "/" + filename;
-
-					// パス区切り文字の統一（念のため）
 					std::replace(localPath.begin(), localPath.end(), '\\', '/');
 
 					if (std::filesystem::exists(localPath))
-					{
-						// 見つかったらそのパスでロード
 						myMesh.texture = ResourceManager::Instance().GetTexture(localPath);
-					}
 					else
-					{
-						// 2. 見つからなければ、ファイル名だけで標準リソースフォルダを探させる
 						myMesh.texture = ResourceManager::Instance().GetTexture(filename);
-					}
 				}
 			}
-
-			// テクスチャが見つからなかった場合のフォールバック
-			if (!myMesh.texture)
-			{
-				myMesh.texture = ResourceManager::Instance().GetTexture("White");
-			}
+			if (!myMesh.texture) myMesh.texture = ResourceManager::Instance().GetTexture("White");
 
 			return myMesh;
 		}
@@ -149,7 +224,7 @@ namespace Arche
 			for (unsigned int i = 0; i < node->mNumMeshes; i++)
 			{
 				aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-				model->meshes.push_back(ProcessMesh(mesh, scene, directory, device));
+				model->meshes.push_back(ProcessMesh(mesh, scene, model, directory, device));
 			}
 
 			// 子ノードへ
@@ -346,7 +421,7 @@ namespace Arche
 	{
 		Assimp::Importer importer;
 		// 読み込みフラグ: 三角形化、UVフリップ(DirectX用)、タンジェント計算
-		unsigned int flags = aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded;
+		unsigned int flags = aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded; // | aiProcess_PopulateArmatureData;
 
 		const aiScene* scene = importer.ReadFile(path, flags);
 
@@ -358,6 +433,10 @@ namespace Arche
 
 		auto model = std::make_shared<Model>();
 		model->filepath = path;
+
+		aiMatrix4x4 transform = scene->mRootNode->mTransformation;
+		transform.Inverse();
+		model->globalInverseTransform = AiMatrixToXM(transform);
 
 		std::string directory = std::filesystem::path(path).parent_path().string();
 
@@ -448,6 +527,52 @@ namespace Arche
 		}
 
 		return sound;
+	}
+
+	// -------------------------------------------------------------------------
+	// Animation 取得
+	// -------------------------------------------------------------------------
+	std::shared_ptr<AnimationClip> ResourceManager::GetAnimation(const std::string& keyName, std::shared_ptr<Model> model)
+	{
+		// 既にロード済みなら返す
+		if (m_animations.find(keyName) != m_animations.end()) return m_animations[keyName];
+
+		// パス解決
+		std::string path = ResolvePath(keyName, m_animDirs, m_animExts);
+		if (path.empty())
+		{
+			// ファイルが見つからない場合、もしかしたらModelと同じファイル内にあるかも？
+			// その場合はモデルのパスを試す
+			if (model && !model->filepath.empty())
+			{
+				path = model->filepath;
+			}
+			else
+			{
+				Logger::LogError("Animation not found: " + keyName);
+				return nullptr;
+			}
+		}
+
+		auto anim = LoadAnimationInternal(path, model);
+		if (anim) m_animations[keyName] = anim;
+		return anim;
+	}
+
+	std::shared_ptr<AnimationClip> ResourceManager::LoadAnimationInternal(const std::string& path, std::shared_ptr<Model> model)
+	{
+		// AnimationClipのコンストラクタでAssimpを使ってロードする
+		// (以前作成した Animation.cpp の実装がここで動きます)
+		auto anim = std::make_shared<AnimationClip>(path, model);
+
+		if (anim->GetDuration() > 0.0f)
+		{
+			Logger::Log("Loaded Animation: " + path);
+			return anim;
+		}
+
+		Logger::LogError("Failed to load animation (or no animation found): " + path);
+		return nullptr;
 	}
 
 }	// namespace Arche

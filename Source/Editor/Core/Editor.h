@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date   2025/11/27	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___EDITOR_H___
@@ -40,6 +32,9 @@ namespace Arche
 	class EditorWindow
 	{
 	public:
+		bool m_isOpen = true;
+		std::string m_windowName = "Window";
+
 		virtual ~EditorWindow() = default;
 		virtual void Draw(World& world, Entity& selected, Context& ctx) = 0;
 	};
@@ -55,11 +50,12 @@ namespace Arche
 		}
 
 		void Initialize();
+		void Shutdown();
 		void Draw(World& world, Context& ctx);
 
 		void SetSelectedEntity(Entity e) { m_selectedEntity = e; }
 		Entity& GetSelectedEntity() { return m_selectedEntity; }
-		
+
 		SceneViewPanel& GetSceneViewPanel() { return m_sceneViewPanel; }
 
 		enum class EditorMode { Scene, Prefab };
@@ -83,7 +79,8 @@ namespace Arche
 		Editor() = default;
 		~Editor() = default;
 
-		Entity m_selectedEntity = NullEntity;
+		Entity m_selectedEntity = NullEntity;	// プライマリ（最後に選んだもの）
+		std::vector<Entity> m_selection;		// 選択中の全エンティティ
 
 		// ウィンドウ間利用リスト
 		std::vector<std::unique_ptr<EditorWindow>> m_windows;
@@ -96,9 +93,7 @@ namespace Arche
 		EditorMode m_editorMode = EditorMode::Scene;
 		std::unique_ptr<World> m_prefabWorld;			// プレファブ編集用の一時ワールド
 		std::string m_currentPrefabPath;				// 編集中のパス
-
-		// 内部処理: メインシーン内の全インスタンスを更新
-		void PropagateChangesToScene();
+		Entity m_prefabRoot = NullEntity;
 	};
 }	// namespace Arche
 

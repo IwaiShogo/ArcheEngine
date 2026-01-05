@@ -124,6 +124,12 @@
     <Filter Include="Source\Engine\Core\Graphics">
       <UniqueIdentifier>{06f9941d-e973-4acc-9dba-aaabaffd40db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\Scene\Animation">
+      <UniqueIdentifier>{fc83bf27-0226-4c1c-9178-2389caaa84f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Scene\Systems\Animation">
+      <UniqueIdentifier>{20d7707c-685a-458d-ac4a-d844f3baa6cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Editor\Core\Editor.cpp">
@@ -275,6 +281,9 @@
     </ClCompile>
     <ClCompile Include="..\Source\Editor\Panels\SceneViewPanel.cpp">
       <Filter>Source\Editor\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Scene\Animation\Animation.cpp">
+      <Filter>Source\Engine\Scene\Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -443,9 +452,6 @@
     <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\HierarchySystem.h">
       <Filter>Source\Engine\Scene\Systems\Logic</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\InputSystem.h">
-      <Filter>Source\Engine\Scene\Systems\Logic</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Engine\Scene\Systems\Logic\LifetimeSystem.h">
       <Filter>Source\Engine\Scene\Systems\Logic</Filter>
     </ClInclude>
@@ -488,7 +494,7 @@
     <ClInclude Include="..\Source\Editor\Core\EditorCommands.h">
       <Filter>Source\Editor\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Editor\Panels\ProjectSettingsWindow.h">
+    <ClInclude Include="..\Source\Editor\Panels\PhysicsSettingsWindow.h">
       <Filter>Source\Editor\Panels</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Core\Core.h">
@@ -539,6 +545,18 @@
     <ClInclude Include="..\Source\Editor\Tools\ThumbnailGenerator.h">
       <Filter>Source\Editor\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\BuildSettingsWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Renderer\Data\AnimationData.h">
+      <Filter>Source\Engine\Renderer\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Animation\Animation.h">
+      <Filter>Source\Engine\Scene\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Systems\Animation\AnimationSystem.h">
+      <Filter>Source\Engine\Scene\Systems\Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Billboard.hlsl">
@@ -550,14 +568,14 @@
     <None Include="..\Resources\Engine\Shaders\Sprite.hlsl">
       <Filter>Resources\Shaders</Filter>
     </None>
-    <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
-      <Filter>Resources\Shaders</Filter>
-    </None>
     <None Include="..\Scripts\GenerateGameLoader.ps1">
       <Filter>Scripts</Filter>
     </None>
     <None Include="..\Library\DirectXTex\DirectXTex.inl">
       <Filter>Library\DirectXTex</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
+      <Filter>Resources\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

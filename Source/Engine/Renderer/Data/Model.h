@@ -23,16 +23,50 @@
  // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Renderer/RHI/Texture.h"
+#include "AnimationData.h"
 
 namespace Arche
 {
+	// ボーンの影響最大数
+	#define MAX_BONE_INFLUENCE 4
 
-	// 頂点データ（位置、法線、UV）
+	// 頂点データ（位置、法線、UV、ボーンID、ウェイト）
 	struct ModelVertex
 	{
 		XMFLOAT3 position;
 		XMFLOAT3 normal;
 		XMFLOAT2 uv;
+
+		// スキニング情報
+		int boneIDs[MAX_BONE_INFLUENCE];
+		float weights[MAX_BONE_INFLUENCE];
+
+		// 初期化コンストラクタ
+		ModelVertex()
+		{
+			position = { 0, 0, 0 };
+			normal = { 0, 0, 0 };
+			uv = { 0, 0 };
+			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+			{
+				boneIDs[i] = -1;
+				weights[i] = 0.0f;
+			}
+		}
+
+		// ウェイト追加ヘルパー
+		void AddBoneData(int boneID, float weight)
+		{
+			for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+			{
+				if (weights[i] == 0.0f)
+				{
+					boneIDs[i] = boneID;
+					weights[i] = weight;
+					return;
+				}
+			}
+		}
 	};
 
 	// 1つのメッシュ（モデルの構成部品）
@@ -52,6 +86,13 @@ namespace Arche
 	public:
 		std::vector<Mesh> meshes;
 		std::string filepath;	// デバッグ用
+
+		// ボーン情報マップ（名前 -> 情報）
+		std::map<std::string, BoneInfo> boneInfoMap;
+		int boneCounter = 0;
+
+		// グローバル逆変換行列
+		XMFLOAT4X4 globalInverseTransform;
 	};
 
 }	// namespace Arche

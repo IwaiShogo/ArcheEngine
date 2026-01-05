@@ -62,6 +62,13 @@
             }
         },
         {
+            "Animator": {
+                "Enabled": true,
+                "currentAnimationName": "Walking.fbx",
+                "isPlaying": true,
+                "loop": true,
+                "speed": 1.0
+            },
             "Collider": {
                 "Enabled": true,
                 "boxSize": [
@@ -74,7 +81,7 @@
                 "layer": 2,
                 "offset": [
                     0.0,
-                    0.0,
+                    -2.0,
                     0.0
                 ],
                 "radius": 0.5,
@@ -90,21 +97,16 @@
                     1.0,
                     1.0
                 ],
-                "modelKey": "dousakakuninn11",
+                "modelKey": "Walking.fbx",
                 "scaleOffset": [
-                    0.10000000149011612,
-                    0.10000000149011612,
-                    0.10000000149011612
+                    0.009999999776482582,
+                    0.009999999776482582,
+                    0.009999999776482582
                 ]
-            },
-            "PlayerInput": {
-                "Enabled": true,
-                "jumpPower": 5.0,
-                "speed": 3.0
             },
             "PlayerMoveData": {
                 "Enabled": true,
-                "speed": 10.0
+                "speed": 3.0
             },
             "Rigidbody": {
                 "Enabled": true,
@@ -116,13 +118,13 @@
             "Tag": {
                 "Enabled": true,
                 "componentOrder": [
-                    "Collider",
-                    "MeshComponent",
-                    "PlayerInput",
-                    "Rigidbody",
-                    "Tag",
                     "Transform",
-                    "PlayerMoveData"
+                    "Collider",
+                    "Rigidbody",
+                    "PlayerMoveData",
+                    "MeshComponent",
+                    "Tag",
+                    "Animator"
                 ],
                 "name": "Player"
             },
@@ -130,65 +132,8 @@
                 "Enabled": true,
                 "position": [
                     -0.5279810428619385,
-                    1.496972918510437,
+                    4.1431965827941895,
                     -0.28873175382614136
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "Collider": {
-                "Enabled": true,
-                "boxSize": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "height": 1.0,
-                "isTrigger": false,
-                "layer": 1,
-                "offset": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "radius": 0.5,
-                "type": 0
-            },
-            "ID": 3,
-            "IsActive": true,
-            "Rigidbody": {
-                "Enabled": true,
-                "drag": 0.10000000149011612,
-                "mass": 1.0,
-                "type": 1,
-                "useGravity": true
-            },
-            "Tag": {
-                "Enabled": true,
-                "componentOrder": [
-                    "Collider",
-                    "Rigidbody",
-                    "Tag",
-                    "Transform"
-                ],
-                "name": "Enemy"
-            },
-            "Transform": {
-                "Enabled": true,
-                "position": [
-                    2.8211817741394043,
-                    5.425935745239258,
-                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -221,7 +166,7 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 4,
+            "ID": 3,
             "IsActive": true,
             "Rigidbody": {
                 "Enabled": true,
@@ -268,13 +213,13 @@
                     720.0
                 ]
             },
-            "ID": 5,
+            "ID": 4,
             "IsActive": true,
             "Relationship": {
                 "Enabled": true,
                 "children": [
-                    6,
-                    7
+                    5,
+                    6
                 ],
                 "parent": 4294967295
             },
@@ -322,12 +267,12 @@
             }
         },
         {
-            "ID": 6,
+            "ID": 5,
             "IsActive": true,
             "Relationship": {
                 "Enabled": true,
                 "children": [],
-                "parent": 5
+                "parent": 4
             },
             "Tag": {
                 "Enabled": true,
@@ -392,12 +337,12 @@
             }
         },
         {
-            "ID": 7,
+            "ID": 6,
             "IsActive": true,
             "Relationship": {
                 "Enabled": true,
                 "children": [],
-                "parent": 5
+                "parent": 4
             },
             "SpriteComponent": {
                 "Enabled": true,
@@ -451,6 +396,68 @@
                     100.0
                 ]
             }
+        },
+        {
+            "Collider": {
+                "Enabled": true,
+                "boxSize": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "height": 1.0,
+                "isTrigger": false,
+                "layer": 1,
+                "offset": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "radius": 0.5,
+                "type": 0
+            },
+            "ID": 7,
+            "IsActive": true,
+            "PrefabInstance": {
+                "Enabled": true,
+                "prefabPath": "Resources/Game/Prefabs/Enemy.json"
+            },
+            "Rigidbody": {
+                "Enabled": true,
+                "drag": 0.10000000149011612,
+                "mass": 1.0,
+                "type": 1,
+                "useGravity": true
+            },
+            "Tag": {
+                "Enabled": true,
+                "componentOrder": [
+                    "Collider",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform",
+                    "PrefabInstance"
+                ],
+                "name": "Enemy"
+            },
+            "Transform": {
+                "Enabled": true,
+                "position": [
+                    2.1864304542541504,
+                    5.571140289306641,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ],
     "Physics": {
@@ -479,10 +486,6 @@
     },
     "SceneName": "Untitled Scene",
     "Systems": [
-        {
-            "Group": 0,
-            "Name": "Input System"
-        },
         {
             "Group": 1,
             "Name": "Physics System"
@@ -530,6 +533,10 @@
         {
             "Group": 1,
             "Name": "PlayerMoveSystem"
+        },
+        {
+            "Group": 1,
+            "Name": "Animation System"
         }
     ]
 }

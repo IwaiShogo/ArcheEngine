@@ -23,9 +23,16 @@ namespace Arche
 	class GameControlWindow : public EditorWindow
 	{
 	public:
+		GameControlWindow()
+		{
+			m_windowName = "Game Control";
+		}
+
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
-			ImGui::Begin("Game Control");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 
 			// 1. FPSと時間
 			ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);

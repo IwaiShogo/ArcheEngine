@@ -25,11 +25,16 @@ namespace Arche
 	class SystemMonitorWindow : public EditorWindow
 	{
 	public:
-		SystemMonitorWindow() = default;
+		SystemMonitorWindow()
+		{
+			m_windowName = "System Monitor";
+		}
 
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
-			ImGui::Begin("System Monitor");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 
 			// 上部: 統計情報
 			float totalTime = 0.0f;
@@ -103,9 +108,10 @@ namespace Arche
 		bool IsEngineSystem(const std::string& name)
 		{
 			static const std::vector<std::string> engineSys = {
-				"Input System", "Physics System", "Collision System", "UI System",
+				"Physics System", "Collision System", "UI System",
 				"Lifetime System", "Hierarchy System", "Render System", "Model Render System",
-				"Sprite Render System", "Billboard System", "Text Render System", "Audio System", "Button System"
+				"Sprite Render System", "Billboard System", "Text Render System", "Audio System", "Button System",
+				"Animation System"
 			};
 			for (const auto& s : engineSys) if (s == name) return true;
 			return false;

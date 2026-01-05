@@ -26,6 +26,7 @@
 #include "Engine/Renderer/RHI/Texture.h"
 #include "Engine/Renderer/Data/Model.h"
 #include "Engine/Audio/Sound.h"
+#include "Engine/Scene/Animation/Animation.h"
 
 #include "Engine/Audio/AudioManager.h"
 
@@ -54,6 +55,7 @@ namespace Arche
 		std::shared_ptr<Texture> GetTexture(const std::string& keyName);
 		std::shared_ptr<Model>   GetModel(const std::string& keyName);
 		std::shared_ptr<Sound>   GetSound(const std::string& keyName);
+		std::shared_ptr<AnimationClip> GetAnimation(const std::string& keyName, std::shared_ptr<Model> model);
 
 		// ユーティリティ
 		// ------------------------------------------------------------
@@ -81,6 +83,7 @@ namespace Arche
 		std::shared_ptr<Texture> LoadTextureInternal(const std::string& path);
 		std::shared_ptr<Model>   LoadModelInternal(const std::string& path);
 		std::shared_ptr<Sound>   LoadSoundInternal(const std::string& path);
+		std::shared_ptr<AnimationClip> LoadAnimationInternal(const std::string& path, std::shared_ptr<Model> model);
 
 	private:
 		ID3D11Device* m_device = nullptr;
@@ -89,15 +92,18 @@ namespace Arche
 		std::unordered_map<std::string, std::shared_ptr<Texture>> m_textures;
 		std::unordered_map<std::string, std::shared_ptr<Model>>   m_models;
 		std::unordered_map<std::string, std::shared_ptr<Sound>>   m_sounds;
+		std::unordered_map<std::string, std::shared_ptr<AnimationClip>> m_animations;
 
 		// 検索パス設定
 		const std::vector<std::string> m_textureDirs = { "Resources/Game/Textures/", "Resources/Engine/Textures/" };
 		const std::vector<std::string> m_modelDirs = { "Resources/Game/Models/",   "Resources/Engine/Models/" };
 		const std::vector<std::string> m_soundDirs = { "Resources/Game/Sounds/",   "Resources/Engine/Sounds/" };
+		const std::vector<std::string> m_animDirs = { "Resources/Game/Animations/", "Resources/Engine/Animations/" };
 
 		const std::vector<std::string> m_imgExts = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".dds" };
 		const std::vector<std::string> m_modelExts = { ".fbx", ".obj", ".gltf", ".glb" };
 		const std::vector<std::string> m_soundExts = { ".wav", ".mp3", ".ogg" };
+		const std::vector<std::string> m_animExts = { ".fbx", ".dae", ".gltf", ".glb" };
 	};
 
 }	// namespace Arche

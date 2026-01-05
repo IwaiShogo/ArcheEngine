@@ -43,22 +43,43 @@ namespace Arche
 		ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
 
-		// Standard.hlsl を読み込む
+		// VS コンパイル
 		HRESULT hr = D3DCompileFromFile(L"Resources/Engine/Shaders/Standard.hlsl", nullptr, nullptr, "VS", "vs_5_0", flags, 0, &vsBlob, &errorBlob);
-		if (FAILED(hr)) throw std::runtime_error("Failed to compile Standard VS");
+		if (FAILED(hr))
+		{
+			if (errorBlob)
+			{
+				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				MessageBoxA(nullptr, (char*)errorBlob->GetBufferPointer(), "Standard VS Compile Error", MB_OK | MB_ICONERROR);
+			}
+			throw std::runtime_error("Failed to compile Standard VS");
+		}
 		s_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &s_vs);
 
+		// PS コンパイル
 		hr = D3DCompileFromFile(L"Resources/Engine/Shaders/Standard.hlsl", nullptr, nullptr, "PS", "ps_5_0", flags, 0, &psBlob, &errorBlob);
-		if (FAILED(hr)) throw std::runtime_error("Failed to compile Standard PS");
+		if (FAILED(hr))
+		{
+			if (errorBlob)
+			{
+				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				MessageBoxA(nullptr, (char*)errorBlob->GetBufferPointer(), "Standard PS Compile Error", MB_OK | MB_ICONERROR);
+			}
+			throw std::runtime_error("Failed to compile Standard PS");
+		}
 		s_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &s_ps);
 
-		// 2. 入力レイアウト (Pos, Normal, UV)
+		// 2. 入力レイアウト (Pos, Normal, UV, BoneIDs, Weights)
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL",	  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,	  0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	 0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL",	  0, DXGI_FORMAT_R32G32B32_FLOAT,	 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "BONE_IDS", 0, DXGI_FORMAT_R32G32B32A32_SINT,	 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 }, // int4
+			{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 }, // float4
 		};
-		s_device->CreateInputLayout(layout, 3, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &s_inputLayout);
+
+		// 要素数を 3 から 5 に変更
+		s_device->CreateInputLayout(layout, 5, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &s_inputLayout);
 
 		// 3. 定数バッファ
 		D3D11_BUFFER_DESC bd = {};
@@ -130,10 +151,10 @@ namespace Arche
 		XMMATRIX world = S * R * T;
 
 		// 新しいDrawを呼ぶ
-		Draw(model, world);
+		Draw(model, world, nullptr);
 	}
 
-	void ModelRenderer::Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix)
+	void ModelRenderer::Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix, const std::vector<DirectX::XMFLOAT4X4>* boneMatrices)
 	{
 		if (!model) return;
 
@@ -141,6 +162,24 @@ namespace Arche
 		// 受け取った行列を転置してセット
 		s_cbData.world = XMMatrixTranspose(worldMatrix);
 		s_cbData.materialColor = { 1, 1, 1, 1 }; // デフォルト白
+
+		// ボーン行列の転送処理
+		if (boneMatrices && !boneMatrices->empty())
+		{
+			s_cbData.hasAnimation = 1;
+			// 最大100本までコピー
+			size_t count = std::min((size_t)100, boneMatrices->size());
+			for (size_t i = 0; i < count; i++)
+			{
+				// XMLoadFloat4x4 でロードし、転置してセット
+				XMMATRIX m = XMLoadFloat4x4(&(*boneMatrices)[i]);
+				s_cbData.boneTransforms[i] = XMMatrixTranspose(m);
+			}
+		}
+		else
+		{
+			s_cbData.hasAnimation = 0;
+		}
 
 		// シェーダーに送信
 		s_context->UpdateSubresource(s_constantBuffer.Get(), 0, nullptr, &s_cbData, 0, 0);

@@ -44,24 +44,18 @@ namespace Arche
 						auto& t = registry.get<Transform>(entity);
 
 						// 1. ローカル行列を作る (S * R * T)
-						DirectX::XMMATRIX localMat =
-							DirectX::XMMatrixScaling(t.scale.x, t.scale.y, t.scale.z) *
-							DirectX::XMMatrixRotationRollPitchYaw(
-								DirectX::XMConvertToRadians(t.rotation.x), // 度数法なら変換が必要
-								DirectX::XMConvertToRadians(t.rotation.y),
-								DirectX::XMConvertToRadians(t.rotation.z)) *
-							DirectX::XMMatrixTranslation(t.position.x, t.position.y, t.position.z);
+						DirectX::XMMATRIX localMat = t.GetLocalMatrix();
 
 						// 2. 親の行列を掛けてワールド行列にする
 						DirectX::XMMATRIX worldMat = localMat * parentMatrix;
 
-						// ★修正: 計算結果をメンバ変数にストアする
+						// 計算結果をメンバ変数にストアする
 						DirectX::XMStoreFloat4x4(&t.worldMatrix, worldMat);
 
 						// 3. 子供たちにも「今計算したワールド行列」を渡して更新させる
 						if (registry.has<Relationship>(entity)) {
 							for (Entity child : registry.get<Relationship>(entity).children) {
-								// ★修正: 計算済みの worldMat を渡す
+								// 計算済みの worldMat を渡す
 								updateMatrix(child, worldMat);
 							}
 						}

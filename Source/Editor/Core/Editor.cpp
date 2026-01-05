@@ -24,11 +24,12 @@
 #include "Editor/Panels/HierarchyWindow.h"
 #include "Editor/Panels/InspectorWindow.h"
 #include "Editor/Panels/ContentBrowser.h"
-#include "Editor/Panels/ProjectSettingsWindow.h"
+#include "Editor/Panels/PhysicsSettingsWindow.h"
 #include "Editor/Panels/ResourceInspectorWindow.h"
 #include "Editor/Panels/SystemMonitorWindow.h"
 #include "Editor/Panels/GameControlWindow.h"
 #include "Editor/Panels/InputVisualizerWindow.h"
+#include "Editor/Panels/BuildSettingsWindow.h"
 
 namespace Arche
 {
@@ -42,11 +43,12 @@ namespace Arche
 		m_windows.push_back(std::move(hierarchy));
 		m_windows.push_back(std::make_unique<InspectorWindow>());
 		m_windows.push_back(std::make_unique<ContentBrowser>());
-		m_windows.push_back(std::make_unique<ProjectSettingsWindow>());
+		m_windows.push_back(std::make_unique<PhysicsSettingsWindow>());
 		m_windows.push_back(std::make_unique<ResourceInspectorWindow>());
 		m_windows.push_back(std::make_unique<SystemMonitorWindow>());
 		m_windows.push_back(std::make_unique<GameControlWindow>());
 		m_windows.push_back(std::make_unique<InputVisualizerWindow>());
+		m_windows.push_back(std::make_unique<BuildSettingsWindow>());
 
 		// 2. ImGuiの設定
 		ImGuiIO& io = ImGui::GetIO();
@@ -77,6 +79,23 @@ namespace Arche
 		{
 			io.Fonts->AddFontDefault();
 		}
+	}
+
+	void Editor::Shutdown()
+	{
+		// プレファブ編集モードらな強制終了してワールドを破棄
+		if (m_editorMode == EditorMode::Prefab)
+		{
+			ExitPrefabMode();
+		}
+
+		// ウィンドウ群の破棄
+		m_windows.clear();
+
+		// プレファブワールドの明示的リセット
+		m_prefabWorld.reset();
+
+		Logger::Log("Editor Shutdown Completed.");
 	}
 
 	static std::string s_currentScenePath = "Resources/Game/Scenes/GameScene.json";
@@ -169,6 +188,15 @@ namespace Arche
 			// ウィンドウメニュー
 			if (ImGui::BeginMenu("Window"))
 			{
+				for (auto& window : m_windows)
+				{
+					if (ImGui::MenuItem(window->m_windowName.c_str(), nullptr, window->m_isOpen))
+					{
+						window->m_isOpen = !window->m_isOpen;
+					}
+				}
+
+				ImGui::Separator();
 				if (ImGui::MenuItem("Reset Layout"))
 				{
 					std::filesystem::remove("imgui.ini");
@@ -206,12 +234,12 @@ namespace Arche
 					{
 						// Logger::Log("Restoring default systems...");
 						auto& reg = SystemRegistry::Instance();
-						reg.CreateSystem(world, "Input System", SystemGroup::Always);
 						reg.CreateSystem(world, "Physics System", SystemGroup::PlayOnly);
 						reg.CreateSystem(world, "Collision System", SystemGroup::PlayOnly);
 						reg.CreateSystem(world, "UI System", SystemGroup::Always);
 						reg.CreateSystem(world, "Lifetime System", SystemGroup::PlayOnly);
 						reg.CreateSystem(world, "Hierarchy System", SystemGroup::Always);
+						reg.CreateSystem(world, "Animation System", SystemGroup::PlayOnly);
 						reg.CreateSystem(world, "Render System", SystemGroup::Always);
 						reg.CreateSystem(world, "Model Render System", SystemGroup::Always);
 						reg.CreateSystem(world, "Sprite Render System", SystemGroup::Always);
@@ -260,6 +288,9 @@ namespace Arche
 		m_editorMode = EditorMode::Prefab;
 		m_currentPrefabPath = path;
 		
+		// 履歴をクリア
+		CommandHistory::Clear();
+
 		// 2. 編集用の一時ワールドを作成
 		m_prefabWorld = std::make_unique<World>();
 
@@ -272,10 +303,17 @@ namespace Arche
 		sysReg.CreateSystem(*m_prefabWorld, "Sprite Render System", SystemGroup::Always);
 		sysReg.CreateSystem(*m_prefabWorld, "Billboard System", SystemGroup::Always);
 		sysReg.CreateSystem(*m_prefabWorld, "Text Render System", SystemGroup::Always);
+		sysReg.CreateSystem(*m_prefabWorld, "UI System", SystemGroup::Always);
 		sysReg.CreateSystem(*m_prefabWorld, "Hierarchy System", SystemGroup::Always);
 
 		// 3. プレファブをロード
 		Entity root = SceneSerializer::LoadPrefab(*m_prefabWorld, path);
+		m_prefabRoot = root;
+
+		if (m_prefabRoot != NullEntity && m_prefabWorld->getRegistry().has<PrefabInstance>(m_prefabRoot))
+		{
+			m_prefabWorld->getRegistry().remove<PrefabInstance>(m_prefabRoot);
+		}
 
 		// 4. カメラのフォーカスを合わせる
 		if (root != NullEntity)
@@ -293,26 +331,23 @@ namespace Arche
 	{
 		if (m_editorMode != EditorMode::Prefab || !m_prefabWorld) return;
 
-		// 1. プレファブのルートエンティティを探す
-		// (LoadPrefabで作ったルート。通常はRegistryの先頭付近にあるはず)
-		// ここでは簡易的に、RelationshipのParentがNullEntityであるものをルートとする
-		Entity root = NullEntity;
-		m_prefabWorld->getRegistry().each([&](Entity e) {
-			if (m_prefabWorld->getRegistry().has<Relationship>(e)) {
-				if (m_prefabWorld->getRegistry().get<Relationship>(e).parent == NullEntity) {
-					root = e;
-				}
-			}
-			});
+		Entity root = m_prefabRoot;
 
-		if (root != NullEntity)
+		if (root != NullEntity && m_prefabWorld->getRegistry().valid(root))
 		{
 			// 2. ファイルへ書き出し
 			SceneSerializer::SavePrefab(m_prefabWorld->getRegistry(), root, m_currentPrefabPath);
 			Logger::Log("Prefab Saved: " + m_currentPrefabPath);
 
 			// 3. メインシーンへの反映 (Propagation)
-			PropagateChangesToScene();
+			SceneSerializer::ReloadPrefabInstances(
+				SceneManager::Instance().GetWorld(),
+				m_currentPrefabPath
+			);
+		}
+		else
+		{
+			Logger::LogError("Failed to save prefab: Root entity not found.");
 		}
 
 		// 4. モード終了
@@ -321,103 +356,16 @@ namespace Arche
 
 	void Editor::ExitPrefabMode()
 	{
+		// 履歴をクリア
+		CommandHistory::Clear();
+
 		m_editorMode = EditorMode::Scene;
 		m_prefabWorld.reset(); // 一時ワールド破棄
 		m_currentPrefabPath = "";
+		m_prefabRoot = NullEntity;
 
 		// 選択解除
 		SetSelectedEntity(NullEntity);
-	}
-
-	// メインシーンにあるインスタンスを更新する処理
-	void Editor::PropagateChangesToScene()
-	{
-		World& mainWorld = SceneManager::Instance().GetWorld();
-		Registry& mainReg = mainWorld.getRegistry();
-
-		// 1. 更新されたプレファブデータをJSONとしてメモリにロード
-		// (ファイルから読むのが一番確実)
-		std::ifstream fin(m_currentPrefabPath);
-		json prefabJson;
-		fin >> prefabJson;
-		fin.close();
-
-		// 2. シーン内から、このプレファブを使っているエンティティを探す
-		std::vector<Entity> targetEntities;
-
-		// Viewを使って走査
-		auto view = mainReg.view<PrefabInstance>();
-		for (auto entity : view)
-		{
-			const auto& prefab = view.get<PrefabInstance>(entity);
-			if (prefab.prefabPath == m_currentPrefabPath)
-			{
-				targetEntities.push_back(entity);
-			}
-		}
-
-		// 3. 各エンティティを更新（再構築）
-		for (auto target : targetEntities)
-		{
-			// A. 現在のトランスフォームをバックアップ（位置がリセットされないように）
-			Transform backupTransform;
-			if (mainReg.has<Transform>(target)) backupTransform = mainReg.get<Transform>(target);
-
-			// 親子関係のバックアップ
-			Entity parent = NullEntity;
-			if (mainReg.has<Relationship>(target)) parent = mainReg.get<Relationship>(target).parent;
-
-			// B. 子エンティティをすべて削除 (プレファブ構造が変わっている可能性があるため)
-			// 再帰的な削除が必要
-			std::function<void(Entity)> deleteChildren = [&](Entity e) {
-				if (mainReg.has<Relationship>(e)) {
-					for (auto c : mainReg.get<Relationship>(e).children) {
-						deleteChildren(c); // 再帰
-						mainReg.destroy(c);
-					}
-				}
-				};
-			deleteChildren(target);
-
-			// C. ターゲット自身のコンポーネントを全クリア (IDとTag, PrefabInstance以外)
-			// EnTTの remove_all 相当の処理が必要ですが、簡易的に主要なものを消すか、
-			// もしくは「ターゲット自体も消して、同じIDで作り直す」のが理想ですがID維持は難しい。
-			// ここでは「古いコンポーネントを上書きロードする」方針をとります。
-
-			// PrefabJson[0] はルート要素
-			// ComponentSerializer::DeserializeEntity は "追記/上書き" を行う
-			if (prefabJson.is_array() && !prefabJson.empty())
-			{
-				// ルートのJSONデータ
-				json rootJson = prefabJson[0];
-
-				// 上書きロード (Transformなどもプレファブの値になる)
-				ComponentSerializer::DeserializeEntity(mainReg, target, rootJson);
-
-				// D. バックアップしていた位置情報などを復元
-				// これにより「プレファブの中身は更新されるが、シーンでの配置場所は維持される」
-				if (mainReg.has<Transform>(target))
-				{
-					auto& t = mainReg.get<Transform>(target);
-					t.position = backupTransform.position;
-					t.rotation = backupTransform.rotation;
-					t.scale = backupTransform.scale;
-				}
-
-				// E. PrefabInstanceコンポーネントが消えていたら付け直す
-				if (!mainReg.has<PrefabInstance>(target)) {
-					mainReg.emplace<PrefabInstance>(target, m_currentPrefabPath);
-				}
-
-				// F. 子要素の再生成 (JSONの2つ目以降が子要素)
-				// SceneSerializer::LoadPrefab のロジックの一部を再利用して
-				// target を親として子を生成する必要がある。
-				// ※ここが少し複雑になるため、SceneSerializerにヘルパー関数を作ると良い
-				SceneSerializer::ReconstructPrefabChildren(mainWorld, target, prefabJson);
-			}
-		}
-
-		Logger::Log("Propagated changes to " + std::to_string(targetEntities.size()) + " instances.");
 	}
 
 }	// namespace Arche

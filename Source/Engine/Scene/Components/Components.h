@@ -90,10 +90,17 @@ namespace Arche
 			return XMLoadFloat4x4(&worldMatrix);
 		}
 
+		XMMATRIX GetLocalMatrix() const
+		{
+			return XMMatrixScaling(scale.x, scale.y, scale.z) *
+				XMMatrixRotationRollPitchYaw(XMConvertToRadians(rotation.x), XMConvertToRadians(rotation.y), XMConvertToRadians(rotation.z)) *
+				XMMatrixTranslation(position.x, position.y, position.z);
+		}
+
 		Transform(XMFLOAT3 p = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 r = { 0.0f, 0.0f, 0.0f }, XMFLOAT3 s = { 1.0f, 1.0f, 1.0f })
 			: position(p), rotation(r), scale(s)
 		{
-			UpdateMatrix();
+			XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
 		}
 	};
 	ARCHE_COMPONENT(Transform, REFLECT_VAR(position) REFLECT_VAR(rotation) REFLECT_VAR(scale))
@@ -718,6 +725,78 @@ namespace Arche
 		}
 	};
 	ARCHE_COMPONENT(Canvas, REFLECT_VAR(isScreenSpace) REFLECT_VAR(referenceSize))
+
+	// ============================================================
+	// アニメーション
+	// ============================================================
+	// 前方宣言
+	class AnimationClip;
+
+	/**
+	 * @struct	Animator
+	 * @brief	スケルタルアニメーション制御
+	 */
+	struct Animator
+	{
+		std::string currentAnimationName;	// 再生中のアニメーション名
+		float currentTime = 0.0f;			// 再生時間
+		float speed = 1.0f;					// 再生速度
+		bool isPlaying = true;				// 再生中か
+		bool loop = true;					// ループするか
+
+		// 現在再生中のクリップデータへの参照
+		std::shared_ptr<AnimationClip> currentAnimation = nullptr;
+
+		// ボーン行列
+		std::vector<XMFLOAT4X4> finalBoneMatrices;
+
+		Animator()
+		{
+			// ボーン行列の初期化
+			finalBoneMatrices.resize(100);
+			for (auto& m : finalBoneMatrices) XMStoreFloat4x4(&m, XMMatrixIdentity());
+		}
+	};
+	ARCHE_COMPONENT(Animator, REFLECT_VAR(currentAnimationName) REFLECT_VAR(speed) REFLECT_VAR(loop) REFLECT_VAR(isPlaying))
+
+	// ============================================================
+	// エフェクト関連
+	// ============================================================
+	/**
+	 * @struct	ParticleSystemComponent
+	 * @brief	パーティクルエフェクト
+	 */
+	struct ParticleSystemComponent
+	{
+		std::string textureKey;
+
+		int maxParticles = 100;
+		float emissionRate = 10.0f;	// 1秒あたりの生成数
+		float lifetime = 1.0f;		// パーティクルの寿命
+		float speed = 1.0f;			// 速度
+		float size = 1.0f;			// サイズ
+		XMFLOAT4 startColor = { 1,1,1,1 };
+		XMFLOAT4 endColor = { 1,1,1,0 };
+
+		bool isLoop = true;
+		bool isPlaying = true;
+
+		// 内部タイマー
+		float emissionTimer = 0.0f;
+
+		ParticleSystemComponent() = default;
+	};
+	ARCHE_COMPONENT(ParticleSystemComponent,
+		REFLECT_VAR(textureKey)
+		REFLECT_VAR(maxParticles)
+		REFLECT_VAR(emissionRate)
+		REFLECT_VAR(lifetime)
+		REFLECT_VAR(speed)
+		REFLECT_VAR(size)
+		REFLECT_VAR(startColor)
+		REFLECT_VAR(endColor)
+		REFLECT_VAR(isLoop)
+	)
 
 }	// namespace Arche
 

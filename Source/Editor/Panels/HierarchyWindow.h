@@ -29,12 +29,19 @@ namespace Arche
 		: public EditorWindow
 	{
 	public:
+		HierarchyWindow()
+		{
+			m_windowName = "Hierarchy";
+		}
+
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
 			// ------------------------------------------------------------
 			// Hierarchy Window
 			// ------------------------------------------------------------
-			ImGui::Begin("Hierarchy");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 			
 			if (Editor::Instance().GetMode() == Editor::EditorMode::Prefab)
 			{
@@ -388,7 +395,6 @@ namespace Arche
 		void DrawEntityNode(World& world, Entity e, Entity& selected)
 		{
 			Registry& reg = world.getRegistry();
-			// 既に削除されている場合はスキップ
 			if (!reg.valid(e)) return;
 
 			Tag& tag = reg.get<Tag>(e);
@@ -420,11 +426,27 @@ namespace Arche
 
 			// --- ノード描画 ---
 			bool isEffectivelyActive = reg.isActive(e);
-			if (!isEffectivelyActive) ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+			bool isPrefab = reg.has<PrefabInstance>(e); // プレファブかどうかチェック
+			bool colorPushed = false;
 
+			if (!isEffectivelyActive)
+			{
+				// 非アクティブならグレー
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+				colorPushed = true;
+			}
+			else if (isPrefab)
+			{
+				// プレファブなら水色
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.65f, 1.0f, 1.0f));
+				colorPushed = true;
+			}
+
+			// ツリーノード描画
 			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)e, flags, "%s (ID:%d)", tag.name.c_str(), e);
 
-			if (!isEffectivelyActive) ImGui::PopStyleColor();
+			// 色を戻す
+			if (colorPushed) ImGui::PopStyleColor();
 
 			// クリック選択
 			if (ImGui::IsItemClicked())
@@ -448,7 +470,40 @@ namespace Arche
 					if (selected == e) selected = NullEntity;	// 選択中なら解除
 					ImGui::EndPopup();
 					if (opened) ImGui::TreePop();	// ツリーが開いていた場合の整合性
+
+					ImGui::PopID();
 					return;
+				}
+
+				ImGui::Separator();
+
+				// プレファブ関連メニュー
+				if (reg.has<PrefabInstance>(e))
+				{
+					// Unpack (解除)
+					if (ImGui::MenuItem("Unpack Prefab"))
+					{
+						// 単純にコンポーネントを外すだけ
+						reg.remove<PrefabInstance>(e);
+						ImGui::EndPopup();
+						if (opened) ImGui::TreePop();
+
+						ImGui::PopID();
+						return;
+					}
+
+					// Revert (復元)
+					if (ImGui::MenuItem("Revert to Prefab"))
+					{
+						SceneSerializer::RevertPrefab(world, e);
+						ImGui::EndPopup();
+						if (opened) ImGui::TreePop();
+
+						ImGui::PopID();
+						return;
+					}
+
+					ImGui::Separator();
 				}
 
 				// プレファブ保存
@@ -468,6 +523,15 @@ namespace Arche
 
 					// 保存実行
 					SceneSerializer::SavePrefab(reg, e, path);
+
+					if (!reg.has<PrefabInstance>(e))
+					{
+						reg.emplace<PrefabInstance>(e, path);
+					}
+					else
+					{
+						reg.get<PrefabInstance>(e).prefabPath = path;
+					}
 				}
 
 				ImGui::EndPopup();

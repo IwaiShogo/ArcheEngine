@@ -23,9 +23,16 @@ namespace Arche
 	class InputVisualizerWindow : public EditorWindow
 	{
 	public:
+		InputVisualizerWindow()
+		{
+			m_windowName = "Input Visualizer";
+		}
+
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
-			ImGui::Begin("Input Visualizer");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 
 			bool connected = Input::IsControllerConnected();
 			if (!connected)

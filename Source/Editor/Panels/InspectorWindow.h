@@ -39,9 +39,16 @@ namespace Arche
 	class InspectorWindow : public EditorWindow
 	{
 	public:
+		InspectorWindow()
+		{
+			m_windowName = "Inspector";
+		}
+
 		void Draw(World& world, Entity& selected, Context& ctx) override
 		{
-			ImGui::Begin("Inspector");
+			if (!m_isOpen) return;
+
+			ImGui::Begin(m_windowName.c_str(), &m_isOpen);
 
 			if (selected != NullEntity)
 			{

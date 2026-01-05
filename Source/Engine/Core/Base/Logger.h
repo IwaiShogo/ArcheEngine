@@ -71,6 +71,13 @@ namespace Arche
 			// 1. ツールバー (フィルタリング & クリア)
 			if (ImGui::Button("Clear")) s_logs.clear();
 			ImGui::SameLine();
+			// 全コピーボタンを追加（便利機能）
+			if (ImGui::Button("Copy All")) {
+				std::string allText;
+				for (const auto& log : s_logs) allText += log.message + "\n";
+				ImGui::SetClipboardText(allText.c_str());
+			}
+			ImGui::SameLine();
 			ImGui::Checkbox("Info", &s_showInfo); ImGui::SameLine();
 			ImGui::Checkbox("Warn", &s_showWarn); ImGui::SameLine();
 			ImGui::Checkbox("Error", &s_showError);
@@ -78,16 +85,35 @@ namespace Arche
 			ImGui::Separator();
 
 			// 2. ログ表示エリア (スクロール)
-			// 下にコマンド入力欄を作るため、少し高さを残す
 			float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 			ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 
+			int id = 0; // Selectable用にIDを生成
 			for (const auto& log : s_logs) {
 				if (log.type == LogType::Info && !s_showInfo) continue;
 				if (log.type == LogType::Warning && !s_showWarn) continue;
 				if (log.type == LogType::Error && !s_showError) continue;
 
-				ImGui::TextColored(log.color, "%s", log.message.c_str());
+				ImGui::PushID(id++); // UI要素のID重複を防ぐ
+
+				// Selectableを使って行を選択可能にする
+				// 文字色を変更して表示
+				ImGui::PushStyleColor(ImGuiCol_Text, log.color);
+				if (ImGui::Selectable(log.message.c_str(), false)) {
+					// クリックされたらクリップボードにコピーする場合の処理
+					// ImGui::SetClipboardText(log.message.c_str()); 
+				}
+				ImGui::PopStyleColor();
+
+				// 右クリックメニュー (Context Menu)
+				if (ImGui::BeginPopupContextItem()) {
+					if (ImGui::MenuItem("Copy")) {
+						ImGui::SetClipboardText(log.message.c_str());
+					}
+					ImGui::EndPopup();
+				}
+
+				ImGui::PopID();
 			}
 
 			// 自動スクロール
@@ -101,15 +127,14 @@ namespace Arche
 
 			// 3. コマンド入力エリア
 			bool reclaim_focus = false;
-			ImGui::PushItemWidth(-1); // 幅いっぱい
+			ImGui::PushItemWidth(-1);
 			if (ImGui::InputText("##Input", s_inputBuf, IM_ARRAYSIZE(s_inputBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 				ExecuteCommand(s_inputBuf);
-				s_inputBuf[0] = 0; // 入力欄クリア
+				s_inputBuf[0] = 0;
 				reclaim_focus = true;
 			}
 			ImGui::PopItemWidth();
 
-			// フォーカスを維持（連続入力用）
 			if (reclaim_focus) {
 				ImGui::SetKeyboardFocusHere(-1);
 			}
@@ -125,7 +150,6 @@ namespace Arche
 			s_scrollToBottom = true;
 		}
 
-		// --- コマンド実行ロジック ---
 		static void ExecuteCommand(const std::string& commandLine) {
 			AddLog("# " + commandLine, LogType::Command, ImVec4(0.7f, 0.7f, 0.7f, 1));
 
@@ -137,7 +161,6 @@ namespace Arche
 			std::string arg;
 			while (ss >> arg) args.push_back(arg);
 
-			// 登録されたコマンドを探して実行
 			if (s_commands.count(cmdName)) {
 				s_commands[cmdName](args);
 			}
@@ -152,7 +175,6 @@ namespace Arche
 			}
 		}
 
-		// コマンドリスト
 		inline static std::map<std::string, CommandHandler> s_commands;
 
 	private:

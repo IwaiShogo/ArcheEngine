@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date	2025/11/26	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___MODEL_RENDER_SYSTEM_H___
@@ -29,8 +21,7 @@
 namespace Arche
 {
 
-	class ModelRenderSystem
-		: public ISystem
+	class ModelRenderSystem : public ISystem
 	{
 	public:
 		ModelRenderSystem()
@@ -80,6 +71,7 @@ namespace Arche
 
 			// 2. 描画開始
 			ModelRenderer::Begin(viewMatrix, projMatrix, lightDir);
+
 			// 3. MeshComponentとTransformを持つEntityを描画
 			registry.view<MeshComponent, Transform>().each([&](Entity e, MeshComponent& m, Transform& t)
 				{
@@ -96,8 +88,20 @@ namespace Arche
 							world = preScale * world;
 						}
 
+						// アニメーションデータの取得
+						std::vector<XMFLOAT4X4>* boneMatrices = nullptr;
+						if (registry.has<Animator>(e))
+						{
+							auto& animator = registry.get<Animator>(e);
+							// 再生中、かつ行列データがあれば渡す
+							if (animator.isPlaying && !animator.finalBoneMatrices.empty())
+							{
+								boneMatrices = &animator.finalBoneMatrices;
+							}
+						}
+
 						// 描画
-						ModelRenderer::Draw(model, world);
+						ModelRenderer::Draw(model, world, boneMatrices);
 					}
 				});
 		}

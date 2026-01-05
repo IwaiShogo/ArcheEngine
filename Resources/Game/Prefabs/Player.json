@@ -18,7 +18,7 @@
             "radius": 0.5,
             "type": 2
         },
-        "ID": 2,
+        "ID": 1,
         "MeshComponent": {
             "Enabled": true,
             "color": [
@@ -66,9 +66,9 @@
         "Transform": {
             "Enabled": true,
             "position": [
-                -0.5279810428619385,
-                1.496972918510437,
-                -0.28873175382614136
+                0.0,
+                0.0,
+                0.0
             ],
             "rotation": [
                 0.0,

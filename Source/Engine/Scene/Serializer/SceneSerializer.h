@@ -32,6 +32,7 @@ namespace Arche
 	public:
 		static void SaveScene(World& world, const std::string& filepath);
 		static void LoadScene(World& world, const std::string& filepath);
+		static void RevertPrefab(World& world, Entity entity);
 		static void CreateEmptyScene(const std::string& filepath);
 
 		static void SavePrefab(Registry& reg, Entity root, const std::string& filepath);
@@ -42,6 +43,7 @@ namespace Arche
 		static Entity DeserializeEntityFromJson(Registry& registry, const json& inJson);
 
 		static void ReconstructPrefabChildren(World& world, Entity root, const json& prefabJson);
+		static void ReloadPrefabInstances(World& world, const std::string& filepath);
 	};
 
 }	// namespace Arche

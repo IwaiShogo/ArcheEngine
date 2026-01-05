@@ -1,11 +1,11 @@
 {
     "Camera": {
-        "pitch": 0.4300011992454529,
-        "x": 2.26503586769104,
-        "y": 3.581332206726074,
-        "yaw": -6.9449992179870605,
-        "z": -3.874049186706543
+        "pitch": 0.16000182926654816,
+        "x": -3.3360369205474854,
+        "y": 6.599473476409912,
+        "yaw": -5.745014667510986,
+        "z": -5.419264793395996
     },
-    "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX_ECS_Time-Trace-Puzzle\\Resources\\Game\\Prefabs",
+    "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Models",
     "LastScene": "Resources/Game/Scenes/GameScene.json"
 }
