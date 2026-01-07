@@ -12,9 +12,6 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 #include "Engine/Scene/Animation/Animation.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 namespace Arche
 {
@@ -35,13 +32,20 @@ namespace Arche
 
 	float BoneChannel::GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime) const
 	{
-		float midWayLength = animationTime - lastTimeStamp;
+		if (std::isnan(lastTimeStamp) || std::isinf(lastTimeStamp) ||
+			std::isnan(nextTimeStamp) || std::isinf(nextTimeStamp) ||
+			std::isnan(animationTime) || std::isinf(animationTime))
+		{
+			return 0.0f;
+		}
+
 		float framesDiff = nextTimeStamp - lastTimeStamp;
 
 		// 1. ゼロ除算回避 (時間が全く進んでいない場合は0を返す)
 		if (framesDiff <= 0.0f) return 0.0f;
 
 		// 2. 係数計算
+		float midWayLength = animationTime - lastTimeStamp;
 		float factor = midWayLength / framesDiff;
 
 		if (factor < 0.0f) factor = 0.0f;
@@ -52,6 +56,8 @@ namespace Arche
 
 	int BoneChannel::GetPositionIndex(float animationTime) const
 	{
+		if (positions.size() < 2) return 0;
+
 		for (int index = 0; index < positions.size() - 1; ++index)
 		{
 			if (animationTime < positions[index + 1].timeStamp)
@@ -62,6 +68,8 @@ namespace Arche
 
 	int BoneChannel::GetRotationIndex(float animationTime) const
 	{
+		if (rotations.size() < 2) return 0;
+
 		for (int index = 0; index < rotations.size() - 1; ++index)
 		{
 			if (animationTime < rotations[index + 1].timeStamp)
@@ -72,6 +80,8 @@ namespace Arche
 
 	int BoneChannel::GetScaleIndex(float animationTime) const
 	{
+		if (scales.size() < 2) return 0;
+
 		for (int index = 0; index < scales.size() - 1; ++index)
 		{
 			if (animationTime < scales[index + 1].timeStamp)
@@ -82,56 +92,120 @@ namespace Arche
 
 	XMMATRIX BoneChannel::GetLocalTransform(float animationTime) const
 	{
+		XMMATRIX translationM = DirectX::XMMatrixIdentity();
+		XMMATRIX rotationM = DirectX::XMMatrixIdentity();
+		XMMATRIX scaleM = DirectX::XMMatrixIdentity();
+
+		// 入力時間のサニタイズ
+		if (std::isnan(animationTime) || std::isinf(animationTime)) animationTime = 0.0f;
+
 		// 1. Translation Interpolation
-		XMMATRIX translationM;
-		if (positions.size() == 1)
+		if (!positions.empty())
 		{
-			translationM = XMMatrixTranslation(positions[0].position.x, positions[0].position.y, positions[0].position.z);
-		}
-		else
-		{
-			int p0 = GetPositionIndex(animationTime);
-			int p1 = p0 + 1;
-			float scaleFactor = GetScaleFactor(positions[p0].timeStamp, positions[p1].timeStamp, animationTime);
-			XMVECTOR start = XMLoadFloat3(&positions[p0].position);
-			XMVECTOR end = XMLoadFloat3(&positions[p1].position);
-			XMVECTOR finalV = XMVectorLerp(start, end, scaleFactor);
-			translationM = XMMatrixTranslationFromVector(finalV);
+			if (positions.size() == 1)
+			{
+				translationM = DirectX::XMMatrixTranslation(positions[0].position.x, positions[0].position.y, positions[0].position.z);
+			}
+			else
+			{
+				int p0 = GetPositionIndex(animationTime);
+				int p1 = p0 + 1;
+				// 境界チェック
+				if (p0 >= positions.size()) p0 = 0;
+				if (p1 >= positions.size()) p1 = 0;
+
+				float scaleFactor = GetScaleFactor(positions[p0].timeStamp, positions[p1].timeStamp, animationTime);
+				XMVECTOR start = DirectX::XMLoadFloat3(&positions[p0].position);
+				XMVECTOR end = DirectX::XMLoadFloat3(&positions[p1].position);
+				XMVECTOR finalV = DirectX::XMVectorLerp(start, end, scaleFactor);
+				translationM = DirectX::XMMatrixTranslationFromVector(finalV);
+			}
 		}
 
 		// 2. Rotation Interpolation
-		XMMATRIX rotationM;
-		if (rotations.size() == 1)
+		if (!rotations.empty())
 		{
-			XMVECTOR quat = XMLoadFloat4(&rotations[0].orientation);
-			rotationM = XMMatrixRotationQuaternion(quat);
-		}
-		else
-		{
-			int p0 = GetRotationIndex(animationTime);
-			int p1 = p0 + 1;
-			float scaleFactor = GetScaleFactor(rotations[p0].timeStamp, rotations[p1].timeStamp, animationTime);
-			XMVECTOR start = XMLoadFloat4(&rotations[p0].orientation);
-			XMVECTOR end = XMLoadFloat4(&rotations[p1].orientation);
-			XMVECTOR finalQ = XMVectorLerp(start, end, scaleFactor);
-			rotationM = XMMatrixRotationQuaternion(finalQ);
+			if (rotations.size() == 1)
+			{
+				XMVECTOR quat = DirectX::XMLoadFloat4(&rotations[0].orientation);
+				// ゼロ・NaNチェック
+				if (DirectX::XMQuaternionIsNaN(quat) || DirectX::XMVectorGetX(DirectX::XMQuaternionLengthSq(quat)) < 1.0e-6f)
+				{
+					quat = DirectX::XMQuaternionIdentity();
+				}
+				else
+				{
+					quat = DirectX::XMQuaternionNormalize(quat);
+				}
+				rotationM = DirectX::XMMatrixRotationQuaternion(quat);
+			}
+			else
+			{
+				int p0 = GetRotationIndex(animationTime);
+				int p1 = p0 + 1;
+				// 境界チェック
+				if (p0 >= rotations.size()) p0 = 0;
+				if (p1 >= rotations.size()) p1 = 0;
+
+				float scaleFactor = GetScaleFactor(rotations[p0].timeStamp, rotations[p1].timeStamp, animationTime);
+
+				// scaleFactorがNaNなら0にする（SlerpのAbort回避）
+				if (std::isnan(scaleFactor) || std::isinf(scaleFactor)) scaleFactor = 0.0f;
+
+				XMVECTOR start = DirectX::XMLoadFloat4(&rotations[p0].orientation);
+				XMVECTOR end = DirectX::XMLoadFloat4(&rotations[p1].orientation);
+
+				// start のサニタイズ
+				if (DirectX::XMQuaternionIsNaN(start) || DirectX::XMVectorGetX(DirectX::XMQuaternionLengthSq(start)) < 1.0e-6f)
+					start = DirectX::XMQuaternionIdentity();
+				else
+					start = DirectX::XMQuaternionNormalize(start);
+
+				// end のサニタイズ
+				if (DirectX::XMQuaternionIsNaN(end) || DirectX::XMVectorGetX(DirectX::XMQuaternionLengthSq(end)) < 1.0e-6f)
+					end = DirectX::XMQuaternionIdentity();
+				else
+					end = DirectX::XMQuaternionNormalize(end);
+
+				// Slerp実行（入力が正規化＆Validであることを保証済み）
+				XMVECTOR finalQ = DirectX::XMQuaternionSlerp(start, end, scaleFactor);
+
+				// 結果のサニタイズ
+				if (DirectX::XMQuaternionIsNaN(finalQ) || DirectX::XMVectorGetX(DirectX::XMQuaternionLengthSq(finalQ)) < 1.0e-6f)
+				{
+					// 計算失敗時は前のフレーム(start)を採用するか、単位行列にする
+					finalQ = start;
+				}
+				else
+				{
+					finalQ = DirectX::XMQuaternionNormalize(finalQ);
+				}
+
+				rotationM = DirectX::XMMatrixRotationQuaternion(finalQ);
+			}
 		}
 
 		// 3. Scale Interpolation
-		XMMATRIX scaleM;
-		if (scales.size() == 1)
+		if (!scales.empty())
 		{
-			scaleM = XMMatrixScaling(scales[0].scale.x, scales[0].scale.y, scales[0].scale.z);
-		}
-		else
-		{
-			int p0 = GetScaleIndex(animationTime);
-			int p1 = p0 + 1;
-			float scaleFactor = GetScaleFactor(scales[p0].timeStamp, scales[p1].timeStamp, animationTime);
-			XMVECTOR start = XMLoadFloat3(&scales[p0].scale);
-			XMVECTOR end = XMLoadFloat3(&scales[p1].scale);
-			XMVECTOR finalV = XMVectorLerp(start, end, scaleFactor);
-			scaleM = XMMatrixScalingFromVector(finalV);
+			if (scales.size() == 1)
+			{
+				scaleM = DirectX::XMMatrixScaling(scales[0].scale.x, scales[0].scale.y, scales[0].scale.z);
+			}
+			else
+			{
+				int p0 = GetScaleIndex(animationTime);
+				int p1 = p0 + 1;
+				// 境界チェック
+				if (p0 >= scales.size()) p0 = 0;
+				if (p1 >= scales.size()) p1 = 0;
+
+				float scaleFactor = GetScaleFactor(scales[p0].timeStamp, scales[p1].timeStamp, animationTime);
+				XMVECTOR start = DirectX::XMLoadFloat3(&scales[p0].scale);
+				XMVECTOR end = DirectX::XMLoadFloat3(&scales[p1].scale);
+				XMVECTOR finalV = DirectX::XMVectorLerp(start, end, scaleFactor);
+				scaleM = DirectX::XMMatrixScalingFromVector(finalV);
+			}
 		}
 
 		// T * R * S
@@ -170,22 +244,28 @@ namespace Arche
 				{
 					KeyPosition data;
 					data.timeStamp = (float)channel->mPositionKeys[k].mTime;
+
 					data.position.x = channel->mPositionKeys[k].mValue.x;
 					data.position.y = channel->mPositionKeys[k].mValue.y;
 					data.position.z = channel->mPositionKeys[k].mValue.z;
+
 					boneChannel.positions.push_back(data);
 				}
+
 				// Rotation Keys
 				for (unsigned int k = 0; k < channel->mNumRotationKeys; k++)
 				{
 					KeyRotation data;
 					data.timeStamp = (float)channel->mRotationKeys[k].mTime;
+
 					data.orientation.x = channel->mRotationKeys[k].mValue.x;
 					data.orientation.y = channel->mRotationKeys[k].mValue.y;
 					data.orientation.z = channel->mRotationKeys[k].mValue.z;
 					data.orientation.w = channel->mRotationKeys[k].mValue.w;
+
 					boneChannel.rotations.push_back(data);
 				}
+
 				// Scaling Keys
 				for (unsigned int k = 0; k < channel->mNumScalingKeys; k++)
 				{

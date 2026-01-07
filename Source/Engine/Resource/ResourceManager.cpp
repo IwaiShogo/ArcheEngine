@@ -421,9 +421,13 @@ namespace Arche
 	{
 		Assimp::Importer importer;
 		// 読み込みフラグ: 三角形化、UVフリップ(DirectX用)、タンジェント計算
-		unsigned int flags = aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded; // | aiProcess_PopulateArmatureData;
-
-		const aiScene* scene = importer.ReadFile(path, flags);
+		const aiScene* scene = importer.ReadFile(path,
+			aiProcess_Triangulate |
+			aiProcess_FlipUVs |
+			aiProcess_GenNormals |
+			aiProcess_LimitBoneWeights |
+			aiProcess_ConvertToLeftHanded
+		);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{

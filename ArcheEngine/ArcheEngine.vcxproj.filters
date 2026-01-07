@@ -61,15 +61,6 @@
     <Filter Include="Library\DirectXTex">
       <UniqueIdentifier>{cb869771-5322-4066-8477-87cec07827f8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{0e55fee7-153f-4fd8-b6bb-7a07bd7de050}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders">
-      <UniqueIdentifier>{91f3bfef-8122-45cd-89dc-c0038cd1ad39}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\DebugMeshes">
-      <UniqueIdentifier>{c9611005-b6ac-4fec-9c7e-5437819840da}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Engine\Core\Base">
       <UniqueIdentifier>{8afe79f0-2150-40b7-aabb-04793004fe06}</UniqueIdentifier>
     </Filter>
@@ -129,6 +120,15 @@
     </Filter>
     <Filter Include="Source\Engine\Scene\Systems\Animation">
       <UniqueIdentifier>{20d7707c-685a-458d-ac4a-d844f3baa6cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Core\Resources">
+      <UniqueIdentifier>{0e55fee7-153f-4fd8-b6bb-7a07bd7de050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Core\Resources\Shaders">
+      <UniqueIdentifier>{91f3bfef-8122-45cd-89dc-c0038cd1ad39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Engine\Core\Resources\DebugMeshes">
+      <UniqueIdentifier>{c9611005-b6ac-4fec-9c7e-5437819840da}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -560,13 +560,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Billboard.hlsl">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Source\Engine\Core\Resources\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\DebugPrimitive.hlsl">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Source\Engine\Core\Resources\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\Sprite.hlsl">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Source\Engine\Core\Resources\Shaders</Filter>
     </None>
     <None Include="..\Scripts\GenerateGameLoader.ps1">
       <Filter>Scripts</Filter>
@@ -575,7 +575,7 @@
       <Filter>Library\DirectXTex</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Source\Engine\Core\Resources\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
