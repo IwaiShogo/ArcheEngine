@@ -1,10 +1,10 @@
 {
     "Camera": {
-        "pitch": 0.030002884566783905,
-        "x": -2.9634997844696045,
-        "y": 5.103909969329834,
-        "yaw": -5.785003185272217,
-        "z": -5.2744245529174805
+        "pitch": 6.5699663162231445,
+        "x": -10.331812858581543,
+        "y": 9.192594528198242,
+        "yaw": 0.874975860118866,
+        "z": -6.018582344055176
     },
     "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Models",
     "LastScene": "Resources/Game/Scenes/GameScene.json"

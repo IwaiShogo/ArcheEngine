@@ -133,7 +133,7 @@ namespace Arche
 				if (model)
 				{
 					ImGui::SameLine();
-					ImGui::TextDisabled("(%d meshes)", (int)model->meshes.size());
+					ImGui::TextDisabled("(%d meshes)", (int)model->GetMeshes().size());
 				}
 			}
 			ImGui::EndChild();

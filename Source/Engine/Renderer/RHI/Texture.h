@@ -23,24 +23,27 @@
 // ===== インクルード =====
 #include "Engine/pch.h"
 
-using Microsoft::WRL::ComPtr;
-
-class Texture
+namespace Arche
 {
-public:
-	// ファイルパスを保持（デバッグ用）
-	std::string filepath;
 
-	// 画像サイズ
-	int width = 0;
-	int height = 0;
+	class Texture
+	{
+	public:
+		// ファイルパスを保持（デバッグ用）
+		std::string filepath;
 
-	// DirectXリソース
-	ComPtr<ID3D11ShaderResourceView> srv;
+		// 画像サイズ
+		int width = 0;
+		int height = 0;
 
-	// コンストラクタ
-	Texture() = default;
-	~Texture() = default;
-};
+		// DirectXリソース
+		ComPtr<ID3D11ShaderResourceView> srv;
+
+		// コンストラクタ
+		Texture() = default;
+		~Texture() = default;
+	};
+
+}	// namespace Arche
 
 #endif // !___TEXTURE_H___

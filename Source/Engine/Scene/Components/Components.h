@@ -499,6 +499,10 @@ namespace Arche
 		XMFLOAT3 scaleOffset;	// モデル固有のスケール補正（アセットが巨大/極小な場合用）
 		XMFLOAT4 color;			// マテリアルカラー乗算用
 
+		std::shared_ptr<Model> pModel = nullptr;
+
+		std::string loadedKey = "";
+
 		MeshComponent(std::string key = "", const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT4& c = { 1, 1, 1, 1 })
 			: modelKey(key), scaleOffset(scale), color(c) {
 		}
@@ -729,9 +733,6 @@ namespace Arche
 	// ============================================================
 	// アニメーション
 	// ============================================================
-	// 前方宣言
-	class AnimationClip;
-
 	/**
 	 * @struct	Animator
 	 * @brief	スケルタルアニメーション制御
@@ -739,13 +740,9 @@ namespace Arche
 	struct Animator
 	{
 		std::string currentAnimationName;	// 再生中のアニメーション名
-		float currentTime = 0.0f;			// 再生時間
 		float speed = 1.0f;					// 再生速度
 		bool isPlaying = true;				// 再生中か
 		bool loop = true;					// ループするか
-
-		// 現在再生中のクリップデータへの参照
-		std::shared_ptr<AnimationClip> currentAnimation = nullptr;
 
 		// ボーン行列
 		std::vector<XMFLOAT4X4> finalBoneMatrices;
@@ -753,7 +750,7 @@ namespace Arche
 		Animator()
 		{
 			// ボーン行列の初期化
-			finalBoneMatrices.resize(100);
+			finalBoneMatrices.resize(200);
 			for (auto& m : finalBoneMatrices) XMStoreFloat4x4(&m, XMMatrixIdentity());
 		}
 	};

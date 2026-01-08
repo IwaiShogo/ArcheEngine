@@ -264,7 +264,12 @@ namespace Arche
 					{
 						ShowResourceCombo("Resources/Game/Models", { ".fbx", ".obj", ".gltf", ".glb" }, false);
 					}
-					// 5. その他 (標準入力 + D&D)
+					// 5. アニメーション選択
+					else if (strstr(name, "animation") || strstr(name, "Animation"))
+					{
+						ShowResourceCombo("Resources/Game/Animations", { ".fbx" }, false);
+					}
+					// 6. その他 (標準入力 + D&D)
 					else
 					{
 						char buf[256];

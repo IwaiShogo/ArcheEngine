@@ -19,7 +19,9 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-#include "Engine/Renderer/Renderers/ModelRenderer.h"
+#include "ModelRenderer.h"
+#include "Engine/Renderer/RHI/MeshBuffer.h"
+#include "Engine/Core/Base/Logger.h"
 
 namespace Arche
 {
@@ -31,55 +33,71 @@ namespace Arche
 	ComPtr<ID3D11Buffer> ModelRenderer::s_constantBuffer = nullptr;
 	ComPtr<ID3D11SamplerState> ModelRenderer::s_samplerState = nullptr;
 	ComPtr<ID3D11RasterizerState> ModelRenderer::s_rsSolid = nullptr;
-	ModelRenderer::CBData ModelRenderer::s_cbData = {};
 	ComPtr<ID3D11ShaderResourceView> ModelRenderer::s_whiteTexture = nullptr;
+	ModelRenderer::CBData ModelRenderer::s_cbData = {};
 
 	void ModelRenderer::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 	{
 		s_device = device;
 		s_context = context;
 
+		// --- シェーダーパスの定義 ---
+		// ワイド文字列リテラルで定義
+		const std::wstring vsPath = L"Resources/Engine/Shaders/Standard.hlsl";
+		const std::wstring psPath = L"Resources/Engine/Shaders/Standard.hlsl";
+
+		// --- ファイル存在チェック (デバッグ用) ---
+		// 現在のカレントディレクトリとファイルの有無を確認
+		if (!std::filesystem::exists(vsPath))
+		{
+			std::string currentDir = std::filesystem::current_path().string();
+			std::string errorMsg = "Shader File NOT FOUND!\nPath: Resources/Engine/Shaders/Standard.hlsl\nCurrent Directory: " + currentDir;
+
+			// 致命的エラーとしてログ出力＆メッセージボックス
+			Logger::LogError(errorMsg);
+			MessageBoxA(nullptr, errorMsg.c_str(), "Shader Error", MB_ICONERROR | MB_OK);
+			return; // 初期化中断
+		}
+
 		// 1. シェーダーコンパイル
 		ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
-		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG;
+		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+		flags |= D3DCOMPILE_DEBUG;
+#endif
 
-		// VS コンパイル
-		HRESULT hr = D3DCompileFromFile(L"Resources/Engine/Shaders/Standard.hlsl", nullptr, nullptr, "VS", "vs_5_0", flags, 0, &vsBlob, &errorBlob);
-		if (FAILED(hr))
-		{
-			if (errorBlob)
-			{
-				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-				MessageBoxA(nullptr, (char*)errorBlob->GetBufferPointer(), "Standard VS Compile Error", MB_OK | MB_ICONERROR);
-			}
-			throw std::runtime_error("Failed to compile Standard VS");
+		// VS
+		HRESULT hr = D3DCompileFromFile(vsPath.c_str(), nullptr, nullptr, "VS", "vs_5_0", flags, 0, &vsBlob, &errorBlob);
+		if (FAILED(hr)) {
+			std::string errorMsg = "Failed to compile VS.\n";
+			if (errorBlob) errorMsg += (char*)errorBlob->GetBufferPointer();
+			Logger::LogError(errorMsg);
+			OutputDebugStringA(errorMsg.c_str());
+			return;
 		}
 		s_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &s_vs);
 
-		// PS コンパイル
-		hr = D3DCompileFromFile(L"Resources/Engine/Shaders/Standard.hlsl", nullptr, nullptr, "PS", "ps_5_0", flags, 0, &psBlob, &errorBlob);
-		if (FAILED(hr))
-		{
-			if (errorBlob)
-			{
-				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-				MessageBoxA(nullptr, (char*)errorBlob->GetBufferPointer(), "Standard PS Compile Error", MB_OK | MB_ICONERROR);
-			}
-			throw std::runtime_error("Failed to compile Standard PS");
+		// PS
+		hr = D3DCompileFromFile(psPath.c_str(), nullptr, nullptr, "PS", "ps_5_0", flags, 0, &psBlob, &errorBlob);
+		if (FAILED(hr)) {
+			std::string errorMsg = "Failed to compile PS.\n";
+			if (errorBlob) errorMsg += (char*)errorBlob->GetBufferPointer();
+			Logger::LogError(errorMsg);
+			OutputDebugStringA(errorMsg.c_str());
+			return;
 		}
 		s_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &s_ps);
 
-		// 2. 入力レイアウト (Pos, Normal, UV, BoneIDs, Weights)
+		// 2. 入力レイアウト
 		D3D11_INPUT_ELEMENT_DESC layout[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	 0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL",	  0, DXGI_FORMAT_R32G32B32_FLOAT,	 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "BONE_IDS", 0, DXGI_FORMAT_R32G32B32A32_SINT,	 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 }, // int4
-			{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 }, // float4
+			{ "COLOR",	  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "WEIGHT",	  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "INDEX",	  0, DXGI_FORMAT_R32G32B32A32_UINT,	 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-
-		// 要素数を 3 から 5 に変更
-		s_device->CreateInputLayout(layout, 5, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &s_inputLayout);
+		s_device->CreateInputLayout(layout, 6, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &s_inputLayout);
 
 		// 3. 定数バッファ
 		D3D11_BUFFER_DESC bd = {};
@@ -88,7 +106,7 @@ namespace Arche
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		s_device->CreateBuffer(&bd, nullptr, &s_constantBuffer);
 
-		// 4. サンプラー
+		// 4. サンプラー & ラスタライザ
 		D3D11_SAMPLER_DESC sd = {};
 		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -96,11 +114,15 @@ namespace Arche
 		sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		s_device->CreateSamplerState(&sd, &s_samplerState);
 
-		// 5. ラスタライザ
 		D3D11_RASTERIZER_DESC rd = {};
-		rd.CullMode = D3D11_CULL_BACK; // 裏面カリング有効
+		rd.CullMode = D3D11_CULL_BACK;
 		rd.FillMode = D3D11_FILL_SOLID;
+		rd.CullMode = D3D11_CULL_NONE;
+		rd.FrontCounterClockwise = FALSE;
 		rd.DepthClipEnable = TRUE;
+		rd.MultisampleEnable = TRUE;
+		// 左手系・右手系の違いでカリングが逆になる場合があるため、表示がおかしい場合はここを CULL_NONE にして確認してください
+		// rd.CullMode = D3D11_CULL_NONE; 
 		s_device->CreateRasterizerState(&rd, &s_rsSolid);
 
 		CreateWhiteTexture();
@@ -108,17 +130,9 @@ namespace Arche
 
 	void ModelRenderer::Shutdown()
 	{
-		s_vs.Reset();
-		s_ps.Reset();
-		s_inputLayout.Reset();
-		s_constantBuffer.Reset();
-		s_samplerState.Reset();
-		s_rsSolid.Reset();
-
-		s_whiteTexture.Reset(); // これを忘れるとテクスチャが残ります
-
-		s_device = nullptr;
-		s_context = nullptr;
+		s_vs.Reset(); s_ps.Reset(); s_inputLayout.Reset();
+		s_constantBuffer.Reset(); s_samplerState.Reset(); s_rsSolid.Reset();
+		s_whiteTexture.Reset();
 	}
 
 	void ModelRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection, const XMFLOAT3& lightDir, const XMFLOAT3& lightColor)
@@ -134,7 +148,6 @@ namespace Arche
 		s_context->PSSetConstantBuffers(0, 1, s_constantBuffer.GetAddressOf());
 		s_context->PSSetSamplers(0, 1, s_samplerState.GetAddressOf());
 
-		// 行列とライト設定
 		s_cbData.view = XMMatrixTranspose(view);
 		s_cbData.projection = XMMatrixTranspose(projection);
 		s_cbData.lightDir = XMFLOAT4(lightDir.x, lightDir.y, lightDir.z, 0);
@@ -143,85 +156,74 @@ namespace Arche
 
 	void ModelRenderer::Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos, const XMFLOAT3& scale, const XMFLOAT3& rot)
 	{
-		// 行列を作って、上の関数に丸投げする
+		if (!model) return;
+
+		// ワールド行列作成
 		XMMATRIX S = XMMatrixScaling(scale.x, scale.y, scale.z);
 		XMMATRIX R = XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z);
 		XMMATRIX T = XMMatrixTranslation(pos.x, pos.y, pos.z);
-
 		XMMATRIX world = S * R * T;
-
-		// 新しいDrawを呼ぶ
-		Draw(model, world, nullptr);
+		
+		Draw(model, world);
 	}
 
-	void ModelRenderer::Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix, const std::vector<DirectX::XMFLOAT4X4>* boneMatrices)
+	void ModelRenderer::Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix)
 	{
 		if (!model) return;
 
-		// 1. 定数バッファの更新
-		// 受け取った行列を転置してセット
+		// ワールド行列更新
 		s_cbData.world = XMMatrixTranspose(worldMatrix);
-		s_cbData.materialColor = { 1, 1, 1, 1 }; // デフォルト白
 
-		// ボーン行列の転送処理
-		if (boneMatrices && !boneMatrices->empty())
+		// メッシュごとの描画
+		const auto& meshes = model->GetMeshes();
+		const auto& nodes = model->GetNodes();
+
+		for (const auto& mesh : meshes)
 		{
-			s_cbData.hasAnimation = 1;
-			// 最大100本までコピー
-			size_t count = std::min((size_t)100, boneMatrices->size());
-			for (size_t i = 0; i < count; i++)
-			{
-				// XMLoadFloat4x4 でロードし、転置してセット
-				XMMATRIX m = XMLoadFloat4x4(&(*boneMatrices)[i]);
-				s_cbData.boneTransforms[i] = XMMatrixTranspose(m);
-			}
-		}
-		else
-		{
-			s_cbData.hasAnimation = 0;
-		}
+			// --- ボーン行列の更新 ---
+			if (!mesh.bones.empty()) {
+				s_cbData.hasAnimation = 1;
+				for (int i = 0; i < 200; ++i) s_cbData.boneTransforms[i] = XMMatrixIdentity();
 
-		// シェーダーに送信
-		s_context->UpdateSubresource(s_constantBuffer.Get(), 0, nullptr, &s_cbData, 0, 0);
-
-		// 2. メッシュごとの描画ループ
-		for (const auto& mesh : model->meshes)
-		{
-			// 頂点バッファ・インデックスバッファセット
-			UINT stride = sizeof(ModelVertex);
-			UINT offset = 0;
-			s_context->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
-			s_context->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-			// テクスチャセット (なければ白テクスチャ)
-			ID3D11ShaderResourceView* srv = nullptr;
-			if (mesh.texture) {
-				srv = mesh.texture->srv.Get();
+				for (size_t b = 0; b < mesh.bones.size() && b < 200; ++b)
+				{
+					const auto& bone = mesh.bones[b];
+					XMMATRIX m = bone.invOffset * nodes[bone.index].mat;
+					s_cbData.boneTransforms[b] = XMMatrixTranspose(m);
+				}
 			}
 			else {
-				srv = s_whiteTexture.Get();
+				s_cbData.hasAnimation = 0;
 			}
+
+			// マテリアル設定
+			ID3D11ShaderResourceView* srv = s_whiteTexture.Get();
+			if (mesh.materialID >= 0) {
+				const auto* mat = model->GetMaterial(mesh.materialID);
+				if (mat && mat->pTexture && mat->pTexture->srv) {
+					srv = mat->pTexture->srv.Get();
+				}
+				if (mat) s_cbData.materialColor = mat->diffuse;
+				else s_cbData.materialColor = { 1,1,1,1 };
+			}
+			
+			// 定数バッファ更新
+			s_context->UpdateSubresource(s_constantBuffer.Get(), 0, nullptr, &s_cbData, 0, 0);
+
+			// テクスチャセット
 			s_context->PSSetShaderResources(0, 1, &srv);
 
-			// 描画実行
-			s_context->DrawIndexed(mesh.indexCount, 0, 0);
+			// 描画
+			if (mesh.pMesh) mesh.pMesh->Draw();
 		}
 	}
 
 	void ModelRenderer::CreateWhiteTexture()
 	{
-		// 1x1 の白ピクセルデータ (R,G,B,A = 255,255,255,255)
 		uint32_t pixel = 0xFFFFFFFF;
-
-		D3D11_SUBRESOURCE_DATA initData = {};
-		initData.pSysMem = &pixel;
-		initData.SysMemPitch = sizeof(uint32_t);
-
+		D3D11_SUBRESOURCE_DATA initData = { &pixel, sizeof(uint32_t), 0 };
 		D3D11_TEXTURE2D_DESC desc = {};
-		desc.Width = 1;
-		desc.Height = 1;
-		desc.MipLevels = 1;
-		desc.ArraySize = 1;
+		desc.Width = 1; desc.Height = 1; desc.MipLevels = 1; desc.ArraySize = 1;
 		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		desc.SampleDesc.Count = 1;
 		desc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -229,8 +231,6 @@ namespace Arche
 
 		ComPtr<ID3D11Texture2D> tex;
 		s_device->CreateTexture2D(&desc, &initData, &tex);
-
 		s_device->CreateShaderResourceView(tex.Get(), nullptr, &s_whiteTexture);
 	}
-
-}	// namespace Arche
+}

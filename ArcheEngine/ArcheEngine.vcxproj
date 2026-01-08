@@ -159,14 +159,15 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Engine/pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="..\Source\Engine\Renderer\Core\RenderTarget.cpp" />
+    <ClCompile Include="..\Source\Engine\Renderer\Data\Model.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.cpp" />
+    <ClCompile Include="..\Source\Engine\Renderer\RHI\MeshBuffer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Text\FontManager.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Text\TextRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Resource\ResourceManager.cpp" />
-    <ClCompile Include="..\Source\Engine\Scene\Animation\Animation.cpp" />
     <ClCompile Include="..\Source\Engine\Scene\Core\ECS\ECS.cpp" />
     <ClCompile Include="..\Source\Engine\Scene\Core\SceneManager.cpp" />
     <ClCompile Include="..\Source\Engine\Scene\Serializer\ComponentRegistry.cpp" />
@@ -231,19 +232,18 @@
     <ClInclude Include="..\Source\Engine\Physics\PhysicsEvents.h" />
     <ClInclude Include="..\Source\Engine\Physics\SpatialHash.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Core\RenderTarget.h" />
-    <ClInclude Include="..\Source\Engine\Renderer\Data\AnimationData.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Data\Model.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.h" />
+    <ClInclude Include="..\Source\Engine\Renderer\RHI\MeshBuffer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\RHI\Texture.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Text\FontManager.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Text\PrivateFontLoader.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Text\TextRenderer.h" />
     <ClInclude Include="..\Source\Engine\Resource\Prefab.h" />
     <ClInclude Include="..\Source\Engine\Resource\ResourceManager.h" />
-    <ClInclude Include="..\Source\Engine\Scene\Animation\Animation.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\ComponentDefines.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\Components.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\UIComponents.h" />

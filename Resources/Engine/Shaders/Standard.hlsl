@@ -1,98 +1,116 @@
-// 定数バッファ (Transformなど)
-cbuffer ConstantBuffer : register(b0)
-{
-	matrix World;
-	matrix View;
-	matrix Projection;
-	float4 LightDir;
-	float4 LightColor;
-	float4 MaterialColor;
-	
-	matrix BoneTransforms[100];
-	int HasAnimation;
-	float3 padding;
-}
+// =========================================================
+// Standard.hlsl - 統合定数バッファ版
+// =========================================================
 
-// テクスチャ
+// C++側の ModelRenderer::CBData 構造体と一致させる必要があります
+cbuffer MainCB : register(b0)
+{
+	float4x4 world;			 // ワールド行列
+	float4x4 view;			 // ビュー行列
+	float4x4 proj;			 // プロジェクション行列
+	float4x4 boneTransforms[200]; // ボーン行列
+	float4 lightDir;		 // ライト方向
+	float4 lightColor;		 // ライト色
+	float4 materialColor;	 // マテリアル色
+	int hasAnimation;		 // アニメーションフラグ (bool)
+	float3 padding;			 // パディング
+};
+
+// --- 入力構造体 ---
+struct VS_IN
+{
+	float3 pos		: POSITION;
+	float3 normal	: NORMAL0;
+	float2 uv		: TEXCOORD0;
+	float4 color	: COLOR0;
+	float4 weight	: WEIGHT0;
+	uint4  index	: INDEX0;
+};
+
+struct VS_OUT
+{
+	float4 pos		: SV_POSITION;
+	float3 normal	: NORMAL0;
+	float2 uv		: TEXCOORD0;
+	float4 color	: COLOR0;
+	float4 wPos		: POSITION0;
+};
+
+// --- テクスチャ・サンプラー ---
 Texture2D tex : register(t0);
-SamplerState sam : register(s0);
+SamplerState samp : register(s0);
 
-struct VS_INPUT
+// =========================================================
+// 頂点シェーダー
+// =========================================================
+VS_OUT VS(VS_IN vin)
 {
-	float4 Pos : POSITION;
-	float3 Normal : NORMAL;
-	float2 UV : TEXCOORD0;
-	int4 boneIds : BONE_IDS;
-	float4 weights : WEIGHTS;
-};
+	VS_OUT vout;
 
-struct PS_INPUT
-{
-	float4 Pos : SV_POSITION;
-	float3 Normal : NORMAL;
-	float2 UV : TEXCOORD0;
-};
+	float4 localPos = float4(vin.pos, 1.0f);
+	float3 localNormal = vin.normal;
 
-// Vertex Shader
-PS_INPUT VS(VS_INPUT input)
-{
-	PS_INPUT output = (PS_INPUT) 0;
-	
-	float4 localPos = input.Pos;
-	float3 localNormal = input.Normal;
-
-	// スキニング計算
-	if (HasAnimation != 0)
+	if (hasAnimation)
 	{
-		float4 totalPos = float4(0, 0, 0, 0);
-		float3 totalNormal = float3(0, 0, 0);
-
-		for (int i = 0; i < 4; i++)
+		// ウェイトの合計を計算
+		float wSum = dot(vin.weight, float4(1,1,1,1));
+		
+		// 合計が0に近い（アニメなし、またはエラー）場合はスキニングしない、または補正
+		if (wSum < 0.001f)
 		{
-			if (input.boneIds[i] < 0 || input.boneIds[i] >= 100)
-				continue;
-
-			matrix boneM = BoneTransforms[input.boneIds[i]];
-			
-			float4 posePos = mul(input.Pos, boneM);
-			totalPos += posePos * input.weights[i];
-			
-			float3 poseNormal = mul(input.Normal, (float3x3) boneM);
-			totalNormal += poseNormal * input.weights[i];
+			vin.weight = float4(1, 0, 0, 0);
+			wSum = 1.0f;
 		}
 		
-		if (totalPos.w > 0.0f)
-		{
-			localPos = totalPos;
-			localNormal = normalize(totalNormal);
-			localPos.w = 1.0f;
-		}
+		float4 w = vin.weight / wSum; // 正規化
+		
+		float4x4 skinMatrix = 
+			boneTransforms[vin.index.x] * w.x +
+			boneTransforms[vin.index.y] * w.y +
+			boneTransforms[vin.index.z] * w.z +
+			boneTransforms[vin.index.w] * w.w;
+
+		localPos = mul(localPos, skinMatrix);
 	}
 
-	output.Pos = mul(localPos, World);
-	output.Pos = mul(output.Pos, View);
-	output.Pos = mul(output.Pos, Projection);
-	
-	output.Normal = mul(localNormal, (float3x3) World);
-	output.Normal = normalize(output.Normal);
-	output.UV = input.UV;
-	
-	return output;
+	// ワールド変換
+	vout.pos = mul(localPos, world);
+	vout.wPos = vout.pos;
+
+	// ビュー・プロジェクション変換
+	vout.pos = mul(vout.pos, view);
+	vout.pos = mul(vout.pos, proj);
+
+	// 法線変換
+	vout.normal = mul(localNormal, (float3x3)world);
+	vout.normal = normalize(vout.normal);
+
+	// その他
+	vout.uv = vin.uv;
+	vout.color = vin.color * materialColor;
+
+	return vout;
 }
 
-// Pixel Shader
-float4 PS(PS_INPUT input) : SV_Target
+// =========================================================
+// ピクセルシェーダー
+// =========================================================
+float4 PS(VS_OUT pin) : SV_TARGET
 {
-	float4 texColor = tex.Sample(sam, input.UV) * MaterialColor;
+	// テクスチャカラー
+	float4 color = tex.Sample(samp, pin.uv);
+	color *= pin.color; // 頂点カラー(マテリアル色含む)を乗算
 
-	float3 L = normalize(-LightDir.xyz);
-	float3 N = normalize(input.Normal);
-	
-	float diff = dot(N, L) * 0.5 + 0.5;
-	float3 ambient = float3(0.3, 0.3, 0.3);
-	float3 diffuse = diff * LightColor.rgb;
-	
-	float3 finalColor = texColor.rgb * (diffuse + ambient);
-	
-	return float4(finalColor, texColor.a);
+	// ライティング (Lambert)
+	float3 N = normalize(pin.normal);
+	float3 L = normalize(-lightDir.xyz);
+	float dotNL = saturate(dot(N, L));
+
+	float3 diffuse = lightColor.rgb * dotNL;
+	float3 ambient = float3(0.2f, 0.2f, 0.2f); // 簡易アンビエント
+
+	// 最終カラー
+	color.rgb = color.rgb * (diffuse + ambient);
+
+	return color;
 }

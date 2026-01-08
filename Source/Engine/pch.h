@@ -33,6 +33,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/matrix4x4.h>
 #include <DirectXTex.h>
 
 // AudioManager

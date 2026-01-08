@@ -70,38 +70,40 @@ namespace Arche
 			if (!cameraFound) return;
 
 			// 2. 描画開始
-			ModelRenderer::Begin(viewMatrix, projMatrix, lightDir);
+			ModelRenderer::Begin(viewMatrix, projMatrix, lightDir, { 1, 1, 1 });
 
 			// 3. MeshComponentとTransformを持つEntityを描画
 			registry.view<MeshComponent, Transform>().each([&](Entity e, MeshComponent& m, Transform& t)
 				{
-					auto model = ResourceManager::Instance().GetModel(m.modelKey);
-					if (model)
+					if (m.modelKey != m.loadedKey)
 					{
-						// 計算済みの GetWorldMatrix() を取得
+						m.pModel = nullptr;
+						m.loadedKey = "";
+					}
+
+					if (!m.pModel && !m.modelKey.empty())
+					{
+						m.pModel = ResourceManager::Instance().GetModel(m.modelKey);
+
+						if (m.pModel)
+						{
+							m.loadedKey = m.modelKey;
+						}
+					}
+
+					if (m.pModel)
+					{
+						// ワールド行列計算
 						XMMATRIX world = t.GetWorldMatrix();
 
-						// モデル固有のスケール補正 * Transformのスケール
+						// スケール補正
 						if (m.scaleOffset.x != 1.0f || m.scaleOffset.y != 1.0f || m.scaleOffset.z != 1.0f)
 						{
-							XMMATRIX preScale = XMMatrixScaling(m.scaleOffset.x, m.scaleOffset.y, m.scaleOffset.z);
-							world = preScale * world;
-						}
-
-						// アニメーションデータの取得
-						std::vector<XMFLOAT4X4>* boneMatrices = nullptr;
-						if (registry.has<Animator>(e))
-						{
-							auto& animator = registry.get<Animator>(e);
-							// 再生中、かつ行列データがあれば渡す
-							if (animator.isPlaying && !animator.finalBoneMatrices.empty())
-							{
-								boneMatrices = &animator.finalBoneMatrices;
-							}
+							world = XMMatrixScaling(m.scaleOffset.x, m.scaleOffset.y, m.scaleOffset.z) * world;
 						}
 
 						// 描画
-						ModelRenderer::Draw(model, world, boneMatrices);
+						ModelRenderer::Draw(m.pModel, world);
 					}
 				});
 		}

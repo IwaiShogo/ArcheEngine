@@ -182,7 +182,8 @@ namespace Arche
 			XMMATRIX proj = XMMatrixPerspectiveFovLH(fov, 1.0f, 0.1f, 1000.0f);
 
 			// 4. 描画開始
-			ModelRenderer::Begin(view, proj);
+			XMFLOAT3 lightDir = { 0.5f, -1.0f, 0.5f };
+			ModelRenderer::Begin(view, proj, lightDir, { 1, 1, 1 });
 
 			// 5. 実際の描画（コールバック）
 			drawCallback();
