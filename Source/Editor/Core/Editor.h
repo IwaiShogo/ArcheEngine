@@ -75,9 +75,22 @@ namespace Arche
 		// 変更を破棄してシーンに戻る
 		void ExitPrefabMode();
 
+		// 外部から呼ばれる「シーンを開く」「終了する」関数
+		void RequestOpenScene(const std::string& path);
+		void RequestCloseEngine();
+
+		// ポップアップ描画用
+		void DrawSavePopup();
+
 	private:
 		Editor() = default;
 		~Editor() = default;
+
+		// シーン遷移・終了の保留管理
+		enum class PendingAction { None, LoadScene, CloseEngine };
+		PendingAction m_pendingAction = PendingAction::None;
+		std::string m_pendingScenePath = "";
+		bool m_showSavePopup = false;	// ポップアップ表示フラグ
 
 		Entity m_selectedEntity = NullEntity;	// プライマリ（最後に選んだもの）
 		std::vector<Entity> m_selection;		// 選択中の全エンティティ

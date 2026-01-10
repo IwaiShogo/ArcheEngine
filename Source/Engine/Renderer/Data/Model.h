@@ -54,7 +54,8 @@ namespace Arche
 			XMFLOAT4 diffuse;
 			XMFLOAT4 ambient;
 			XMFLOAT4 specular;
-			std::shared_ptr<Texture> pTexture = nullptr; // shared_ptrに変更（ResourceManagerとの親和性のため）
+			std::shared_ptr<Texture> pTexture = nullptr;
+			std::string texturePath; // 非同期ロード用にパスを保持
 		};
 
 		struct Node {
@@ -72,7 +73,7 @@ namespace Arche
 		};
 
 		struct Animation {
-			std::string name; // 名前を追加
+			std::string name;
 			float totalTime = 0.0f;
 			float nowTime = 0.0f;
 			float speed = 1.0f;
@@ -91,28 +92,27 @@ namespace Arche
 		Model();
 		~Model();
 
-		bool Load(const std::string& filename, float scale = 1.0f, Flip flip = None);
+		// ★API変更: ロードを2段階に分離
+		bool LoadCPU(const std::string& filename, float scale = 1.0f, Flip flip = None);
+		void UploadGPU();
+
+		// 従来互換用（同期ロード）
+		bool LoadSync(const std::string& filename, float scale = 1.0f, Flip flip = None);
+
 		void Reset();
 
-		// 描画（レンダラーから呼ばれる）
 		const std::vector<Mesh>& GetMeshes() const { return m_meshes; }
 		const std::vector<Node>& GetNodes() const { return m_nodes; }
 		const Material* GetMaterial(size_t index) const { return &m_materials[index]; }
 
-		// アニメーション操作
 		void Step(float deltaTime);
-
-		// ファイルからアニメーションを追加してIDを返す
 		AnimeNo AddAnimation(const std::string& filename);
-
-		// ID指定再生
-		void Play(AnimeNo no, bool loop = true, float speed = 1.0f);
-
-		// ★追加: 名前指定再生（Animatorコンポーネント用）
-		void Play(const std::string& animName, bool loop = true, float speed = 1.0f);
-
-		// 現在再生中のアニメIDを取得
+		AnimeNo ImportAnimation(std::shared_ptr<Model> sourceModel, const std::string& name);
+		void Play(AnimeNo no, bool loop = true, float speed = 1.0f, float transitionDuration = 0.0f);
+		void Play(const std::string& animName, bool loop = true, float speed = 1.0f, float transitionDuration = 0.0f);
 		AnimeNo GetCurrentAnimation() const { return m_playNo; }
+		float GetCurrentAnimationTime() const;
+		float GetCurrentAnimationLength() const;
 
 	private:
 		void MakeMesh(const aiScene* pScene, float scale, Flip flip);
@@ -121,7 +121,8 @@ namespace Arche
 		void MakeWeight(const aiScene* pScene, int meshIdx);
 
 		void UpdateNodeTransforms();
-		void CalcAnimation(AnimeNo no);
+		void EvaluateAnimation(AnimeNo no, float time, std::vector<TransformData>& outTransforms);
+		void BlendTransforms(const std::vector<TransformData>& src, const std::vector<TransformData>& dst, float t, std::vector<TransformData>& outResult);
 
 		XMFLOAT3 Lerp3(const XMFLOAT3& a, const XMFLOAT3& b, float t);
 		XMFLOAT4 Slerp4(const XMFLOAT4& a, const XMFLOAT4& b, float t);
@@ -133,7 +134,14 @@ namespace Arche
 		std::vector<Animation> m_animes;
 
 		AnimeNo m_playNo = ANIME_NONE;
+		AnimeNo m_nextPlayNo = ANIME_NONE;
+		float m_transitionTime = 0.0f;
+		float m_transitionDuration = 0.0f;
+
 		std::vector<TransformData> m_currentTransforms;
+		std::vector<TransformData> m_defaultTransforms;
+		std::vector<TransformData> m_blendSrcTransforms;
+		std::vector<TransformData> m_blendDstTransforms;
 
 		float m_loadScale = 1.0f;
 		Flip m_loadFlip = None;

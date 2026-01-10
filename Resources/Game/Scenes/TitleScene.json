@@ -4,7 +4,7 @@
             "Collider": {
                 "Enabled": true,
                 "boxSize": [
-                    1.2300000190734863,
+                    1.0,
                     1.0,
                     1.0
                 ],
@@ -19,8 +19,13 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 2,
+            "ID": 1,
             "IsActive": true,
+            "Relationship": {
+                "Enabled": true,
+                "children": [],
+                "parent": 4294967295
+            },
             "Rigidbody": {
                 "Enabled": true,
                 "drag": 0.10000000149011612,
@@ -34,7 +39,8 @@
                     "Tag",
                     "Transform",
                     "Rigidbody",
-                    "Collider"
+                    "Collider",
+                    "Relationship"
                 ],
                 "name": "GameObject"
             },
@@ -51,9 +57,106 @@
                     0.0
                 ],
                 "scale": [
-                    8.396818161010742,
+                    11.34807014465332,
                     1.0,
-                    8.745420455932617
+                    10.770015716552734
+                ]
+            }
+        },
+        {
+            "Animator": {
+                "Enabled": true,
+                "controllerPath": "Resources/Game/Animations/NewController.json",
+                "currentState": "Empty",
+                "isPlaying": true
+            },
+            "Collider": {
+                "Enabled": true,
+                "boxSize": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "height": 2.0,
+                "isTrigger": false,
+                "layer": 2,
+                "offset": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "radius": 0.5,
+                "type": 2
+            },
+            "ID": 2,
+            "IsActive": true,
+            "MeshComponent": {
+                "Enabled": true,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "modelKey": "Player/Y Bot.fbx",
+                "scaleOffset": [
+                    0.029999999329447746,
+                    0.029999999329447746,
+                    0.029999999329447746
+                ]
+            },
+            "PlayerInput": {
+                "Enabled": true,
+                "jumpPower": 5.0,
+                "speed": 3.0
+            },
+            "PlayerMoveData": {
+                "Enabled": true,
+                "speed": 10.0
+            },
+            "Relationship": {
+                "Enabled": true,
+                "children": [],
+                "parent": 4294967295
+            },
+            "Rigidbody": {
+                "Enabled": true,
+                "drag": 0.10000000149011612,
+                "mass": 1.0,
+                "type": 1,
+                "useGravity": true
+            },
+            "Tag": {
+                "Enabled": true,
+                "componentOrder": [
+                    "Collider",
+                    "PlayerInput",
+                    "Rigidbody",
+                    "Tag",
+                    "Transform",
+                    "PlayerMoveData",
+                    "MeshComponent",
+                    "Animator",
+                    "Relationship"
+                ],
+                "name": "Player"
+            },
+            "Transform": {
+                "Enabled": true,
+                "position": [
+                    -1.8807264566421509,
+                    2.255858898162842,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
                 ]
             }
         },
@@ -158,7 +261,7 @@
                     0.0,
                     0.0
                 ],
-                "text": "Game Scene"
+                "text": "Title Scene"
             },
             "Transform2D": {
                 "Enabled": true,
@@ -175,8 +278,8 @@
                     0.5
                 ],
                 "position": [
-                    -294.84442138671875,
-                    297.8502502441406
+                    -313.564697265625,
+                    290.81451416015625
                 ],
                 "rotation": [
                     0.0,

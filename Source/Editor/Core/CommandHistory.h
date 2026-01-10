@@ -40,6 +40,7 @@ namespace Arche
 
 			// 履歴制限
 			if (m_undoStack.size() > 50) m_undoStack.pop_front();
+			SceneManager::Instance().SetDirty(true);
 		}
 
 		static void Undo()

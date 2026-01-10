@@ -30,7 +30,7 @@ namespace Arche
 	public:
 		ContentBrowser()
 			: m_rootDirectory(std::filesystem::current_path())
-			, m_currentDirectory(std::filesystem::current_path())	// 初期ディレクトリ: プロジェクトルート
+			, m_currentDirectory(std::filesystem::current_path())
 		{
 			m_windowName = "Content Browser";
 
@@ -85,6 +85,26 @@ namespace Arche
 			HandlePopups(world);
 			EditorPrefs::Instance().contentBrowserPath = m_currentDirectory.string();
 
+			ImGui::Columns(1);
+
+			// プレファブ化のドロップ受け入れ
+			ImVec2 avail = ImGui::GetContentRegionAvail();
+			if (avail.y < 50.0f) avail.y = 50.0f;	// 最低限の高さ確保
+
+			// カレントディレクトリ内へのdropを受け付けるダミー要素を描画
+			ImGui::InvisibleButton("##ContentBrowserDropArea", avail);
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				// Hierarchyからのエンティティドロップ
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+				{
+					Entity droppedEntity = *(const Entity*)payload->Data;
+					CreatePrefabFromEntity(world, droppedEntity);
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			ImGui::End();
 		}
 
@@ -110,6 +130,44 @@ namespace Arche
 
 		// サムネイル管理
 		ThumbnailCache m_thumbnailCache;
+
+		// エンティティをプレファブとして保存するヘルパー
+		void CreatePrefabFromEntity(World& world, Entity entity)
+		{
+			auto& reg = world.getRegistry();
+			if (!reg.valid(entity)) return;
+
+			// ファイル名決定 (Entity名.json)
+			std::string name = "NewPrefab";
+			if (reg.has<Tag>(entity)) name = reg.get<Tag>(entity).name.c_str();
+			if (name.empty()) name = "Entity";
+
+			std::filesystem::path filepath = m_currentDirectory / (name + ".json");
+
+			// 重複チェック (同名ファイルがある場合は連番をつけるなどの処理が理想ですが、今回はログを出してリターン)
+			if (std::filesystem::exists(filepath))
+			{
+				Logger::LogError("File already exists: " + filepath.string());
+				return;
+			}
+
+			// 保存実行
+			std::string pathStr = filepath.string();
+			std::replace(pathStr.begin(), pathStr.end(), '\\', '/'); // パス統一
+
+			SceneSerializer::SavePrefab(reg, entity, pathStr);
+			Logger::Log("Created Prefab: " + pathStr);
+
+			// エンティティをプレファブインスタンス化 (リンク情報を付与)
+			if (!reg.has<PrefabInstance>(entity))
+			{
+				reg.emplace<PrefabInstance>(entity, pathStr);
+			}
+			else
+			{
+				reg.get<PrefabInstance>(entity).prefabPath = pathStr;
+			}
+		}
 
 		// ====================================================================================
 		// 左側: フォルダツリー描画 (再帰)
@@ -322,7 +380,7 @@ namespace Arche
 							}
 							else
 							{
-								SceneSerializer::LoadScene(world, path.string());
+								Editor::Instance().RequestOpenScene(path.string());
 							}
 						}
 						else

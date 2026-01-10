@@ -445,6 +445,28 @@ namespace Arche
 			// ツリーノード描画
 			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)e, flags, "%s (ID:%d)", tag.name.c_str(), e);
 
+			// --- ドラッグ＆ドロップ処理 ---
+
+			// 1. ドラッグ元 (Source)
+			if (ImGui::BeginDragDropSource())
+			{
+				ImGui::SetDragDropPayload("ENTITY_ID", &e, sizeof(Entity));
+				ImGui::Text("Move %s", tag.name.c_str());
+				ImGui::EndDragDropSource();
+			}
+
+			// 2. ドロップ先 (Target)
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+				{
+					Entity payloadEntity = *(const Entity*)payload->Data;
+					// ドロップされたEntityを、こいつ(e)の子にする
+					CommandHistory::Execute(std::make_shared<ReparentEntityCommand>(world, payloadEntity, e));
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			// 色を戻す
 			if (colorPushed) ImGui::PopStyleColor();
 
@@ -535,28 +557,6 @@ namespace Arche
 				}
 
 				ImGui::EndPopup();
-			}
-
-			// --- ドラッグ＆ドロップ処理 ---
-
-			// 1. ドラッグ元 (Source)
-			if (ImGui::BeginDragDropSource())
-			{
-				ImGui::SetDragDropPayload("ENTITY_ID", &e, sizeof(Entity));
-				ImGui::Text("Move %s", tag.name.c_str());
-				ImGui::EndDragDropSource();
-			}
-
-			// 2. ドロップ先 (Target)
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
-				{
-					Entity payloadEntity = *(const Entity*)payload->Data;
-					// ドロップされたEntityを、こいつ(e)の子にする
-					CommandHistory::Execute(std::make_shared<ReparentEntityCommand>(world, payloadEntity, e));
-				}
-				ImGui::EndDragDropTarget();
 			}
 
 			// --- 子要素の再帰描画 ---

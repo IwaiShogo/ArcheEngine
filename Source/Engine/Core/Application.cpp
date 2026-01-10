@@ -270,7 +270,7 @@ namespace Arche
 		// パターンA: ホットリロード復帰
 		if (std::filesystem::exists(tempPath))
 		{
-			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), tempPath);
+			SceneManager::Instance().LoadSceneAsync(tempPath, new ImmediateTransition());
 			std::filesystem::remove(tempPath);
 			Logger::Log("HotReload: State Reset (Debug).");
 		}
@@ -293,7 +293,7 @@ namespace Arche
 				Logger::LogError("Failed to load game_config.json");
 			}
 
-			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
+			SceneManager::Instance().LoadSceneAsync(startScene, new ImmediateTransition());
 			Logger::Log("Release Build: Loaded " + startScene);
 		}
 		// パターンC: エディタデフォルト
@@ -305,7 +305,7 @@ namespace Arche
 			{
 				startScene = lastScene;
 			}
-			SceneSerializer::LoadScene(SceneManager::Instance().GetWorld(), startScene);
+			SceneManager::Instance().LoadSceneAsync(startScene, new ImmediateTransition());
 #endif // _DEBUG
 		}
 
@@ -348,6 +348,8 @@ namespace Arche
 		Input::Update();
 		// オーディオ
 		AudioManager::Instance().Update();
+		// リソース（非同期ロード）
+		ResourceManager::Instance().Update();
 
 #ifdef _DEBUG
 		// ImGui開始

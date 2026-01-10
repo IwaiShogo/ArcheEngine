@@ -91,6 +91,7 @@
 #include <deque>
 #include <comdef.h>
 #include <future>
+#include <list>
 
 #include "Engine/Core/Core.h"
 
@@ -102,6 +103,7 @@
 #include "imgui_internal.h"
 // #include "imgui_stdlib.h"
 #include "ImGuizmo.h"
+#include "imnodes.h"
 
 // --- Common Engine Definitions ---
 // よく使うComPtrやDirectXMathのnamespce省略など

@@ -139,9 +139,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\Library\ImNodes\imnodes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\Source\Editor\Core\Editor.cpp" />
     <ClCompile Include="..\Source\Editor\Panels\SceneViewPanel.cpp" />
     <ClCompile Include="..\Source\Engine\Audio\AudioManager.cpp" />
+    <ClCompile Include="..\Source\Engine\Audio\Sound.cpp" />
     <ClCompile Include="..\Source\Engine\Core\Application.cpp" />
     <ClCompile Include="..\Source\Engine\Core\Graphics\Graphics.cpp" />
     <ClCompile Include="..\Source\Engine\Core\Time\Time.cpp" />
@@ -165,6 +170,7 @@
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\RHI\MeshBuffer.cpp" />
+    <ClCompile Include="..\Source\Engine\Renderer\RHI\Texture.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Text\FontManager.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Text\TextRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Resource\ResourceManager.cpp" />
@@ -194,6 +200,8 @@
     <ClInclude Include="..\Library\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\Library\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\Library\ImGui\imstb_truetype.h" />
+    <ClInclude Include="..\Library\ImNodes\imnodes.h" />
+    <ClInclude Include="..\Library\ImNodes\imnodes_internal.h" />
     <ClInclude Include="..\Library\nlohmann\json.hpp" />
     <ClInclude Include="..\Source\Editor\Core\CommandHistory.h" />
     <ClInclude Include="..\Source\Editor\Core\Editor.h" />
@@ -201,6 +209,7 @@
     <ClInclude Include="..\Source\Editor\Core\EditorPrefs.h" />
     <ClInclude Include="..\Source\Editor\Core\GameCommands.h" />
     <ClInclude Include="..\Source\Editor\Core\InspectorGui.h" />
+    <ClInclude Include="..\Source\Editor\Panels\AnimatorGraphWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\BuildSettingsWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\ContentBrowser.h" />
     <ClInclude Include="..\Source\Editor\Panels\GameControlWindow.h" />
@@ -244,12 +253,14 @@
     <ClInclude Include="..\Source\Engine\Renderer\Text\TextRenderer.h" />
     <ClInclude Include="..\Source\Engine\Resource\Prefab.h" />
     <ClInclude Include="..\Source\Engine\Resource\ResourceManager.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Animation\AnimatorController.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\ComponentDefines.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\Components.h" />
     <ClInclude Include="..\Source\Engine\Scene\Components\UIComponents.h" />
     <ClInclude Include="..\Source\Engine\Scene\Core\ECS\ECS.h" />
     <ClInclude Include="..\Source\Engine\Scene\Core\SceneManager.h" />
     <ClInclude Include="..\Source\Engine\Scene\Core\SceneTransition.h" />
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\AnimatorControllerSerializer.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentRegistry.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentSerializer.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\SceneSerializer.h" />
@@ -401,7 +412,7 @@
       <PreprocessorDefinitions>IMGUI_API=__declspec(dllexport);_DEBUG;_CONSOLE;ARCHE_BUILD_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;$(SolutionDir)Library\ImNodes</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine/pch.h</PrecompiledHeaderFile>
@@ -433,7 +444,7 @@
       <PreprocessorDefinitions>IMGUI_API=__declspec(dllexport);NDEBUG;_CONSOLE;ARCHE_BUILD_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Source;$(SolutionDir)Library\Assimp\include;$(SolutionDir)Library\DirectXTex;$(SolutionDir)Library\ImGui;$(SolutionDir)Library\nlohmann;$(SolutionDir)Library\ImNodes</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine/pch.h</PrecompiledHeaderFile>

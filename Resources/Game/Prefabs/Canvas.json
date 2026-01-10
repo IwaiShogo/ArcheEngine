@@ -1,0 +1,131 @@
+[
+    {
+        "Canvas": {
+            "Enabled": true,
+            "isScreenSpace": true,
+            "referenceSize": [
+                1920.0,
+                1080.0
+            ]
+        },
+        "ID": 1,
+        "Relationship": {
+            "Enabled": true,
+            "children": [
+                2
+            ],
+            "parent": 4294967295
+        },
+        "Tag": {
+            "Enabled": true,
+            "componentOrder": [
+                "Tag",
+                "Transform2D",
+                "Canvas",
+                "Relationship"
+            ],
+            "name": "Canvas"
+        },
+        "Transform2D": {
+            "Enabled": true,
+            "anchorMax": [
+                0.5,
+                0.5
+            ],
+            "anchorMin": [
+                0.5,
+                0.5
+            ],
+            "pivot": [
+                0.5,
+                0.5
+            ],
+            "position": [
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0
+            ],
+            "size": [
+                100.0,
+                100.0
+            ]
+        }
+    },
+    {
+        "ID": 2,
+        "Relationship": {
+            "Enabled": true,
+            "children": [],
+            "parent": 1
+        },
+        "Tag": {
+            "Enabled": true,
+            "componentOrder": [
+                "Tag",
+                "Transform2D",
+                "TextComponent",
+                "Relationship"
+            ],
+            "name": "Text"
+        },
+        "TextComponent": {
+            "Enabled": true,
+            "centerAlign": true,
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "fontKey": "Reggae One",
+            "fontSize": 100.0,
+            "isBold": false,
+            "isItalic": false,
+            "offset": [
+                0.0,
+                0.0
+            ],
+            "text": "Title"
+        },
+        "Transform2D": {
+            "Enabled": true,
+            "anchorMax": [
+                0.5,
+                0.5
+            ],
+            "anchorMin": [
+                0.5,
+                0.5
+            ],
+            "pivot": [
+                0.5,
+                0.5
+            ],
+            "position": [
+                -493.74835205078125,
+                267.3609313964844
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0
+            ],
+            "size": [
+                100.0,
+                100.0
+            ]
+        }
+    }
+]

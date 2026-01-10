@@ -1,159 +1,12 @@
 {
     "Entities": [
         {
-            "AudioListener": {
-                "Enabled": true
-            },
-            "Camera": {
-                "Enabled": true,
-                "aspect": 1.7777777910232544,
-                "farZ": 1000.0,
-                "fov": 0.7853981852531433,
-                "nearZ": 0.10000000149011612
-            },
             "Collider": {
                 "Enabled": true,
                 "boxSize": [
                     1.0,
                     1.0,
                     1.0
-                ],
-                "height": 1.0,
-                "isTrigger": false,
-                "layer": 1,
-                "offset": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "radius": 0.5,
-                "type": 1
-            },
-            "ID": 1,
-            "IsActive": true,
-            "Tag": {
-                "Enabled": true,
-                "componentOrder": [
-                    "AudioListener",
-                    "Camera",
-                    "Collider",
-                    "Tag",
-                    "Transform"
-                ],
-                "name": "MainCamera"
-            },
-            "Transform": {
-                "Enabled": true,
-                "position": [
-                    2.0,
-                    10.0,
-                    -10.0
-                ],
-                "rotation": [
-                    0.7799999713897705,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "Animator": {
-                "Enabled": true,
-                "currentAnimationName": "Walking.fbx",
-                "isPlaying": true,
-                "loop": true,
-                "speed": 1.0
-            },
-            "Collider": {
-                "Enabled": true,
-                "boxSize": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "height": 2.0,
-                "isTrigger": false,
-                "layer": 2,
-                "offset": [
-                    0.0,
-                    -2.0,
-                    0.0
-                ],
-                "radius": 0.5,
-                "type": 2
-            },
-            "ID": 2,
-            "IsActive": true,
-            "MeshComponent": {
-                "Enabled": true,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "modelKey": "Walking.fbx",
-                "scaleOffset": [
-                    0.029999999329447746,
-                    0.029999999329447746,
-                    0.029999999329447746
-                ]
-            },
-            "PlayerMoveData": {
-                "Enabled": true,
-                "speed": 3.0
-            },
-            "Rigidbody": {
-                "Enabled": true,
-                "drag": 0.10000000149011612,
-                "mass": 1.0,
-                "type": 1,
-                "useGravity": true
-            },
-            "Tag": {
-                "Enabled": true,
-                "componentOrder": [
-                    "Transform",
-                    "Collider",
-                    "Rigidbody",
-                    "PlayerMoveData",
-                    "MeshComponent",
-                    "Tag",
-                    "Animator"
-                ],
-                "name": "Player"
-            },
-            "Transform": {
-                "Enabled": true,
-                "position": [
-                    -0.5279810428619385,
-                    3.4969561100006104,
-                    -0.28873175382614136
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "Collider": {
-                "Enabled": true,
-                "boxSize": [
-                    10.0,
-                    1.0,
-                    10.0
                 ],
                 "height": 1.0,
                 "isTrigger": false,
@@ -166,24 +19,30 @@
                 "radius": 0.5,
                 "type": 0
             },
-            "ID": 3,
+            "ID": 1,
             "IsActive": true,
+            "Relationship": {
+                "Enabled": true,
+                "children": [],
+                "parent": 4294967295
+            },
             "Rigidbody": {
                 "Enabled": true,
                 "drag": 0.10000000149011612,
                 "mass": 1.0,
                 "type": 0,
-                "useGravity": false
+                "useGravity": true
             },
             "Tag": {
                 "Enabled": true,
                 "componentOrder": [
-                    "Collider",
-                    "Rigidbody",
                     "Tag",
-                    "Transform"
+                    "Transform",
+                    "Rigidbody",
+                    "Collider",
+                    "Relationship"
                 ],
-                "name": "Floor"
+                "name": "GameObject"
             },
             "Transform": {
                 "Enabled": true,
@@ -194,13 +53,13 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.0,
+                    -0.0,
                     0.0
                 ],
                 "scale": [
+                    11.34807014465332,
                     1.0,
-                    1.0,
-                    1.0
+                    10.770015716552734
                 ]
             }
         },
@@ -209,27 +68,31 @@
                 "Enabled": true,
                 "isScreenSpace": true,
                 "referenceSize": [
-                    1280.0,
-                    720.0
+                    1920.0,
+                    1080.0
                 ]
             },
-            "ID": 4,
+            "ID": 3,
             "IsActive": true,
+            "PrefabInstance": {
+                "Enabled": true,
+                "prefabPath": "Resources/Game/Prefabs/Canvas.json"
+            },
             "Relationship": {
                 "Enabled": true,
                 "children": [
-                    5,
-                    6
+                    4
                 ],
                 "parent": 4294967295
             },
             "Tag": {
                 "Enabled": true,
                 "componentOrder": [
+                    "Tag",
+                    "Transform2D",
                     "Canvas",
                     "Relationship",
-                    "Tag",
-                    "Transform2D"
+                    "PrefabInstance"
                 ],
                 "name": "Canvas"
             },
@@ -261,47 +124,47 @@
                     1.0
                 ],
                 "size": [
-                    1280.0,
-                    720.0
+                    100.0,
+                    100.0
                 ]
             }
         },
         {
-            "ID": 5,
+            "ID": 4,
             "IsActive": true,
             "Relationship": {
                 "Enabled": true,
                 "children": [],
-                "parent": 4
+                "parent": 3
             },
             "Tag": {
                 "Enabled": true,
                 "componentOrder": [
-                    "Relationship",
                     "Tag",
+                    "Transform2D",
                     "TextComponent",
-                    "Transform2D"
+                    "Relationship"
                 ],
                 "name": "Text"
             },
             "TextComponent": {
                 "Enabled": true,
-                "centerAlign": false,
+                "centerAlign": true,
                 "color": [
                     1.0,
-                    0.5,
-                    0.5,
+                    1.0,
+                    1.0,
                     1.0
                 ],
-                "fontKey": "Oradano-mincho-GSRR",
-                "fontSize": 80.0,
+                "fontKey": "Reggae One",
+                "fontSize": 100.0,
                 "isBold": false,
                 "isItalic": false,
                 "offset": [
                     0.0,
                     0.0
                 ],
-                "text": "Text (テキスト)"
+                "text": "Title Scene"
             },
             "Transform2D": {
                 "Enabled": true,
@@ -318,69 +181,8 @@
                     0.5
                 ],
                 "position": [
-                    519.9000854492188,
-                    34.81317901611328
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0
-                ],
-                "size": [
-                    1000.0,
-                    80.0
-                ]
-            }
-        },
-        {
-            "ID": 6,
-            "IsActive": true,
-            "Relationship": {
-                "Enabled": true,
-                "children": [],
-                "parent": 4
-            },
-            "SpriteComponent": {
-                "Enabled": true,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "textureKey": "White"
-            },
-            "Tag": {
-                "Enabled": true,
-                "componentOrder": [
-                    "Relationship",
-                    "SpriteComponent",
-                    "Tag",
-                    "Transform2D"
-                ],
-                "name": "UI"
-            },
-            "Transform2D": {
-                "Enabled": true,
-                "anchorMax": [
-                    0.5,
-                    0.5
-                ],
-                "anchorMin": [
-                    0.5,
-                    0.5
-                ],
-                "pivot": [
-                    0.5,
-                    0.5
-                ],
-                "position": [
-                    540.4434204101563,
-                    -164.5714111328125
+                    -313.564697265625,
+                    290.81451416015625
                 ],
                 "rotation": [
                     0.0,
@@ -398,6 +200,12 @@
             }
         },
         {
+            "Animator": {
+                "Enabled": true,
+                "controllerPath": "Resources/Game/Animations/NewController.json",
+                "currentState": "Empty",
+                "isPlaying": true
+            },
             "Collider": {
                 "Enabled": true,
                 "boxSize": [
@@ -405,22 +213,51 @@
                     1.0,
                     1.0
                 ],
-                "height": 1.0,
+                "height": 2.0,
                 "isTrigger": false,
-                "layer": 1,
+                "layer": 2,
                 "offset": [
                     0.0,
                     0.0,
                     0.0
                 ],
                 "radius": 0.5,
-                "type": 0
+                "type": 2
             },
-            "ID": 7,
+            "ID": 5,
             "IsActive": true,
+            "MeshComponent": {
+                "Enabled": true,
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "modelKey": "Player/Y Bot.fbx",
+                "scaleOffset": [
+                    0.029999999329447746,
+                    0.029999999329447746,
+                    0.029999999329447746
+                ]
+            },
+            "PlayerInput": {
+                "Enabled": true,
+                "jumpPower": 5.0,
+                "speed": 3.0
+            },
+            "PlayerMoveData": {
+                "Enabled": true,
+                "speed": 5.0
+            },
             "PrefabInstance": {
                 "Enabled": true,
-                "prefabPath": "Resources/Game/Prefabs/Enemy.json"
+                "prefabPath": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Prefabs\\Player.json"
+            },
+            "Relationship": {
+                "Enabled": true,
+                "children": [],
+                "parent": 4294967295
             },
             "Rigidbody": {
                 "Enabled": true,
@@ -433,18 +270,23 @@
                 "Enabled": true,
                 "componentOrder": [
                     "Collider",
+                    "PlayerInput",
                     "Rigidbody",
                     "Tag",
                     "Transform",
+                    "PlayerMoveData",
+                    "MeshComponent",
+                    "Animator",
+                    "Relationship",
                     "PrefabInstance"
                 ],
-                "name": "Enemy"
+                "name": "Player"
             },
             "Transform": {
                 "Enabled": true,
                 "position": [
-                    2.1864304542541504,
-                    5.571140289306641,
+                    -1.8807264566421509,
+                    2.255858898162842,
                     0.0
                 ],
                 "rotation": [
@@ -461,28 +303,7 @@
         }
     ],
     "Physics": {
-        "LayerCollision": [
-            {
-                "Layer": 2,
-                "Mask": 62
-            },
-            {
-                "Layer": 4,
-                "Mask": 62
-            },
-            {
-                "Layer": 8,
-                "Mask": 62
-            },
-            {
-                "Layer": 16,
-                "Mask": 62
-            },
-            {
-                "Layer": 32,
-                "Mask": 62
-            }
-        ]
+        "LayerCollision": []
     },
     "SceneName": "Untitled Scene",
     "Systems": [
@@ -505,6 +326,10 @@
         {
             "Group": 0,
             "Name": "Hierarchy System"
+        },
+        {
+            "Group": 1,
+            "Name": "Animation System"
         },
         {
             "Group": 0,
@@ -533,10 +358,6 @@
         {
             "Group": 1,
             "Name": "PlayerMoveSystem"
-        },
-        {
-            "Group": 1,
-            "Name": "Animation System"
         }
     ]
 }

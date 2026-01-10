@@ -19,6 +19,7 @@
 #include "Engine/Scene/Serializer/SceneSerializer.h"
 #include "Engine/Scene/Serializer/ComponentSerializer.h"
 #include "Engine/Scene/Serializer/SystemRegistry.h"
+#include "Engine/Scene/Core/SceneManager.h"
 
 // パネル群
 #include "Editor/Panels/HierarchyWindow.h"
@@ -30,6 +31,7 @@
 #include "Editor/Panels/GameControlWindow.h"
 #include "Editor/Panels/InputVisualizerWindow.h"
 #include "Editor/Panels/BuildSettingsWindow.h"
+#include "Editor/Panels/AnimatorGraphWindow.h"
 
 namespace Arche
 {
@@ -49,6 +51,7 @@ namespace Arche
 		m_windows.push_back(std::make_unique<GameControlWindow>());
 		m_windows.push_back(std::make_unique<InputVisualizerWindow>());
 		m_windows.push_back(std::make_unique<BuildSettingsWindow>());
+		m_windows.push_back(std::make_unique<AnimatorGraphWindow>());
 
 		// 2. ImGuiの設定
 		ImGuiIO& io = ImGui::GetIO();
@@ -98,8 +101,6 @@ namespace Arche
 		Logger::Log("Editor Shutdown Completed.");
 	}
 
-	static std::string s_currentScenePath = "Resources/Game/Scenes/GameScene.json";
-
 	void Editor::Draw(World& world, Context& ctx)
 	{
 		bool ctrl = Input::GetKey(VK_CONTROL);
@@ -120,7 +121,13 @@ namespace Arche
 			// Editモードの時だけ保存可能
 			if (ctx.editorState == EditorState::Edit)
 			{
-				SceneSerializer::SaveScene(world, s_currentScenePath);
+				std::string path = SceneManager::Instance().GetCurrentScenePath();
+				if (path.empty()) path = "Resources/Game/Scenes/Untitled.json";
+
+				SceneSerializer::SaveScene(world, path);
+				SceneManager::Instance().SetDirty(false);
+				EditorPrefs::Instance().lastScenePath = path;
+				EditorPrefs::Instance().Save();
 			}
 		}
 
@@ -178,10 +185,20 @@ namespace Arche
 			{
 				if (ImGui::MenuItem("Save Scene", "Ctrl + S"))
 				{
-					SceneSerializer::SaveScene(world, s_currentScenePath);
-					EditorPrefs::Instance().lastScenePath = s_currentScenePath;
+					std::string path = SceneManager::Instance().GetCurrentScenePath();
+					if (path.empty()) path = "Resources/Game/Scenes/Untitled.json";
+
+					SceneSerializer::SaveScene(world, path);
+					SceneManager::Instance().SetDirty(false);
+					EditorPrefs::Instance().lastScenePath = path;
 					EditorPrefs::Instance().Save();
 				}
+
+				if (ImGui::MenuItem("Exit"))
+				{
+					RequestCloseEngine();
+				}
+
 				ImGui::EndMenu();
 			}
 
@@ -251,8 +268,23 @@ namespace Arche
 				}
 			}
 
+			// 現在のシーン名を表示
+			std::string currentScene = SceneManager::Instance().GetCurrentScenePath();
+			if (currentScene.empty()) currentScene = "Untitled";
+			else currentScene = std::filesystem::path(currentScene).filename().string();
+
+			if (SceneManager::Instance().IsDirty()) currentScene += "*";
+
+			// 画面中央に表示するための計算
+			float textWidth = ImGui::CalcTextSize(currentScene.c_str()).x;
+			ImGui::SetCursorPosX((ImGui::GetWindowWidth() - textWidth) * 0.5f);
+			ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "%s", currentScene.c_str());
+
 			ImGui::EndMainMenuBar();
 		}
+
+		// ポップアップの描画
+		DrawSavePopup();
 
 		ImGuizmo::BeginFrame();
 
@@ -366,6 +398,111 @@ namespace Arche
 
 		// 選択解除
 		SetSelectedEntity(NullEntity);
+	}
+
+	void Editor::RequestOpenScene(const std::string& path)
+	{
+		if (SceneManager::Instance().IsDirty())
+		{
+			// 変更があれば確認ポップアップを出す
+			m_pendingAction = PendingAction::LoadScene;
+			m_pendingScenePath = path;
+			m_showSavePopup = true;
+		}
+		else
+		{
+			// 変更が無ければ即ロード
+			SceneManager::Instance().LoadSceneAsync(path, new ImmediateTransition());
+		}
+	}
+
+	void Editor::RequestCloseEngine()
+	{
+		if (SceneManager::Instance().IsDirty())
+		{
+			m_pendingAction = PendingAction::CloseEngine;
+			m_showSavePopup = true;
+		}
+		else
+		{
+			PostQuitMessage(0);
+		}
+	}
+
+	void Editor::DrawSavePopup()
+	{
+		if (m_showSavePopup)
+		{
+			ImGui::OpenPopup("Save Changes?");
+			m_showSavePopup = false; // OpenPopupは1回呼べばいいので戻す
+		}
+
+		// モーダルウィンドウ（画面中央に表示、後ろを触れなくする）
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		if (ImGui::BeginPopupModal("Save Changes?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::Text("Current scene has unsaved changes.\nDo you want to save before continuing?");
+			ImGui::Separator();
+
+			// --- SAVE ---
+			if (ImGui::Button("Save", ImVec2(120, 0)))
+			{
+				// 現在のシーンを保存
+				std::string currentPath = SceneManager::Instance().GetCurrentScenePath();
+				if (currentPath.empty()) currentPath = "Resources/Game/Scenes/Untitled.json";
+
+				SceneSerializer::SaveScene(SceneManager::Instance().GetWorld(), currentPath);
+				SceneManager::Instance().SetDirty(false); // 保存したのでDirty解除
+				Logger::Log("Saved: " + currentPath);
+
+				// 保留していたアクションを実行
+				if (m_pendingAction == PendingAction::LoadScene)
+				{
+					SceneManager::Instance().LoadSceneAsync(m_pendingScenePath);
+				}
+				else if (m_pendingAction == PendingAction::CloseEngine)
+				{
+					PostQuitMessage(0);
+				}
+
+				m_pendingAction = PendingAction::None;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+
+			// --- DON'T SAVE ---
+			if (ImGui::Button("Don't Save", ImVec2(120, 0)))
+			{
+				// 保存せずにアクション実行
+				if (m_pendingAction == PendingAction::LoadScene)
+				{
+					SceneManager::Instance().LoadSceneAsync(m_pendingScenePath);
+				}
+				else if (m_pendingAction == PendingAction::CloseEngine)
+				{
+					PostQuitMessage(0);
+				}
+
+				m_pendingAction = PendingAction::None;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			// --- CANCEL ---
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				// 何もしない
+				m_pendingAction = PendingAction::None;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
 	}
 
 }	// namespace Arche

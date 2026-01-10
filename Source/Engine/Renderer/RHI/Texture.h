@@ -29,19 +29,24 @@ namespace Arche
 	class Texture
 	{
 	public:
-		// ファイルパスを保持（デバッグ用）
 		std::string filepath;
-
-		// 画像サイズ
 		int width = 0;
 		int height = 0;
 
 		// DirectXリソース
 		ComPtr<ID3D11ShaderResourceView> srv;
 
-		// コンストラクタ
+		// 非同期ロード用の一時データ（CPUメモリ）
+		DirectX::ScratchImage scratchImage;
+
 		Texture() = default;
 		~Texture() = default;
+
+		// 1. CPUロード (スレッドセーフ・並列実行可能)
+		bool LoadCPU(const std::string& path);
+
+		// 2. GPUアップロード (メインスレッド専用)
+		bool UploadGPU(ID3D11Device* device);
 	};
 
 }	// namespace Arche

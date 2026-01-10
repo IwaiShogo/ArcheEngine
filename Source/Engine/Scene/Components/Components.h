@@ -18,6 +18,8 @@
 #include "Engine/Core/Base/StringId.h"
 #include "Engine/Config.h"
 #include "Engine/Scene/Serializer/ComponentRegistry.h"
+#include "Engine/Scene/Animation/AnimatorController.h"
+#include "Engine/Renderer/Data/Model.h"
 
 namespace Arche
 {
@@ -739,22 +741,34 @@ namespace Arche
 	 */
 	struct Animator
 	{
-		std::string currentAnimationName;	// 再生中のアニメーション名
-		float speed = 1.0f;					// 再生速度
-		bool isPlaying = true;				// 再生中か
-		bool loop = true;					// ループするか
+		// 参照するコントローラー
+		std::string controllerPath;
+		std::shared_ptr<AnimatorController> controller = nullptr;
 
-		// ボーン行列
-		std::vector<XMFLOAT4X4> finalBoneMatrices;
+		// ランタイム状態
+		StringId currentState;
+		float stateTime = 0.0f;	// 現在のステートの経過時間
 
-		Animator()
-		{
-			// ボーン行列の初期化
-			finalBoneMatrices.resize(200);
-			for (auto& m : finalBoneMatrices) XMStoreFloat4x4(&m, XMMatrixIdentity());
-		}
+		// パラメータの現在値
+		std::map<std::string, float> floats;
+		std::map<std::string, int> ints;
+		std::map<std::string, bool> bools;
+		std::map<std::string, bool> triggers;	// Triggerは一度消費されると false に戻る
+
+		bool isPlaying = true;
+
+		Animator() = default;
+
+		void SetFloat(const std::string& name, float value) { floats[name] = value; }
+		void SetInt(const std::string& name, int value) { ints[name] = value; }
+		void SetBool(const std::string& name, bool value) { bools[name] = value; }
+		void SetTrigger(const std::string& name) { triggers[name] = true; }
+
+		float GetFloat(const std::string& name) { return floats[name]; }
+		int GetInt(const std::string& name) { return ints[name]; }
+		bool GetBool(const std::string& name) { return bools[name]; }
 	};
-	ARCHE_COMPONENT(Animator, REFLECT_VAR(currentAnimationName) REFLECT_VAR(speed) REFLECT_VAR(loop) REFLECT_VAR(isPlaying))
+	ARCHE_COMPONENT(Animator, REFLECT_VAR(controllerPath) REFLECT_VAR(currentState) REFLECT_VAR(isPlaying))
 
 	// ============================================================
 	// エフェクト関連

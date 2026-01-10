@@ -62,6 +62,12 @@
             }
         },
         {
+            "Animator": {
+                "Enabled": true,
+                "controllerName": "",
+                "currentState": "Empty",
+                "isPlaying": true
+            },
             "Collider": {
                 "Enabled": true,
                 "boxSize": [
@@ -74,7 +80,7 @@
                 "layer": 2,
                 "offset": [
                     0.0,
-                    0.0,
+                    -2.0,
                     0.0
                 ],
                 "radius": 0.5,
@@ -90,21 +96,16 @@
                     1.0,
                     1.0
                 ],
-                "modelKey": "dousakakuninn11",
+                "modelKey": "Walking.fbx",
                 "scaleOffset": [
-                    0.10000000149011612,
-                    0.10000000149011612,
-                    0.10000000149011612
+                    0.029999999329447746,
+                    0.029999999329447746,
+                    0.029999999329447746
                 ]
-            },
-            "PlayerInput": {
-                "Enabled": true,
-                "jumpPower": 5.0,
-                "speed": 3.0
             },
             "PlayerMoveData": {
                 "Enabled": true,
-                "speed": 10.0
+                "speed": 3.0
             },
             "Rigidbody": {
                 "Enabled": true,
@@ -116,13 +117,13 @@
             "Tag": {
                 "Enabled": true,
                 "componentOrder": [
-                    "Collider",
-                    "MeshComponent",
-                    "PlayerInput",
-                    "Rigidbody",
-                    "Tag",
                     "Transform",
-                    "PlayerMoveData"
+                    "Collider",
+                    "Rigidbody",
+                    "PlayerMoveData",
+                    "MeshComponent",
+                    "Tag",
+                    "Animator"
                 ],
                 "name": "Player"
             },
@@ -130,7 +131,7 @@
                 "Enabled": true,
                 "position": [
                     -0.5279810428619385,
-                    1.496972918510437,
+                    3.4969561100006104,
                     -0.28873175382614136
                 ],
                 "rotation": [
@@ -441,48 +442,13 @@
             "Transform": {
                 "Enabled": true,
                 "position": [
-                    0.0,
+                    2.1864304542541504,
                     5.571140289306641,
                     0.0
                 ],
                 "rotation": [
                     0.0,
                     -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "ID": 8,
-            "IsActive": true,
-            "PrefabInstance": {
-                "Enabled": true,
-                "prefabPath": "Resources/Game/Prefabs/GameObject.json"
-            },
-            "Tag": {
-                "Enabled": true,
-                "componentOrder": [
-                    "Tag",
-                    "Transform",
-                    "PrefabInstance"
-                ],
-                "name": "GameObject"
-            },
-            "Transform": {
-                "Enabled": true,
-                "position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
                     0.0
                 ],
                 "scale": [
@@ -566,6 +532,10 @@
         {
             "Group": 1,
             "Name": "PlayerMoveSystem"
+        },
+        {
+            "Group": 1,
+            "Name": "Animation System"
         }
     ]
 }

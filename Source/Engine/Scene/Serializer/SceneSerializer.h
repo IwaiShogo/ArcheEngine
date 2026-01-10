@@ -35,15 +35,31 @@ namespace Arche
 		static void RevertPrefab(World& world, Entity entity);
 		static void CreateEmptyScene(const std::string& filepath);
 
+		// プレファブ保存・読み込み
 		static void SavePrefab(Registry& reg, Entity root, const std::string& filepath);
 		static Entity LoadPrefab(World& world, const std::string& filepath);
 
+		// プレファブの変更をシーン上のインスタンスに適用する
+		static void ReloadPrefabInstances(World& world, const std::string& filepath);
+
+		// ヘルパー再帰処理用
+		static void SerializeEntityRecursive(Registry& reg, Entity entity, json& outJson);
+		static void ReconstructEntityRecursive(World& world, Entity parent, const json& jsonNode);
+
+		// エンティティとその子孫を全て削除する
+		static void DestroyEntityRecursive(World& world, Entity entity);
+
+		static void ReconstructPrefabChildren(World& world, Entity root, const json& prefabJson);
 		// 個別保存用（必要なら実装、使わなければ削除可）
 		static void SerializeEntityToJson(Registry& registry, Entity entity, json& outJson);
 		static Entity DeserializeEntityFromJson(Registry& registry, const json& inJson);
+		static void DeserializeEntityFromJson(Registry& registry, Entity entity, const json& inJson);
 
-		static void ReconstructPrefabChildren(World& world, Entity root, const json& prefabJson);
-		static void ReloadPrefabInstances(World& world, const std::string& filepath);
+
+		static void CollectAssets(const std::string& filepath, 
+			std::vector<std::string>& outModels, 
+			std::vector<std::string>& outTextures, 
+			std::vector<std::string>& outSounds);
 	};
 
 }	// namespace Arche

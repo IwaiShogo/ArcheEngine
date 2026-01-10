@@ -147,6 +147,10 @@ namespace Arche
 	private:
 		static void AddLog(const std::string& msg, LogType type, const ImVec4& color) {
 			s_logs.push_back({ msg, type, color });
+			if (s_logs.size() > 1000)
+			{
+				s_logs.erase(s_logs.begin());
+			}
 			s_scrollToBottom = true;
 		}
 

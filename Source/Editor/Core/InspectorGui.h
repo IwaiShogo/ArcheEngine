@@ -152,150 +152,202 @@ namespace Arche
 		// ------------------------------------------------------------
 		void operator()(std::string& val, const char* name)
 		{
-			DrawWidget(name, val, [&]()
+			std::string label = name;
+
+			// --------------------------------------------------------
+			// 1. テキスト本文 (複数行入力)
+			// --------------------------------------------------------
+			if (label == "text" || label == "Content")
+			{
+				ImGui::LabelText(name, "Text Content");
+				char buf[1024];
+				strncpy_s(buf, val.c_str(), sizeof(buf));
+				// 複数行入力ボックス
+				if (ImGui::InputTextMultiline(name, buf, sizeof(buf), ImVec2(-1, 60)))
 				{
-					namespace fs = std::filesystem;
+					val = buf;
+				}
+				return;
+			}
 
-					// ヘルパー: ディレクトリ内のファイルを走査してコンボボックスを表示
-					auto ShowResourceCombo = [&](const std::string& dir, const std::vector<std::string>& extensions, bool useStem)
+			// --------------------------------------------------------
+			// 2. フォント選択 (.ttf / .otf)
+			// --------------------------------------------------------
+			if (label == "fontKey")
+			{
+				const auto& loadedFonts = FontManager::Instance().GetLoadedFontNames();
+
+				if (ImGui::BeginCombo(name, val.c_str()))
+				{
+					// カスタムフォント一覧
+					for (const auto& fontName : loadedFonts)
+					{
+						bool isSelected = (val == fontName);
+						bool pushed = false;
+						if (g_InspectorFontMap.find(fontName) != g_InspectorFontMap.end())
 						{
-							if (ImGui::BeginCombo(name, val.c_str()))
-							{
-								if (fs::exists(dir))
-								{
-									for (const auto& entry : fs::directory_iterator(dir))
-									{
-										if (!entry.is_regular_file()) continue;
-
-										std::string ext = entry.path().extension().string();
-
-										// 拡張子チェック
-										bool isMatch = false;
-										for (const auto& targetExt : extensions) {
-											if (ext == targetExt) { isMatch = true; break; }
-										}
-
-										if (isMatch)
-										{
-											// useStemがtrueなら拡張子なし、falseならファイル名そのまま
-											std::string itemName = useStem ? entry.path().stem().string() : entry.path().filename().string();
-
-											bool isSelected = (val == itemName);
-											if (ImGui::Selectable(itemName.c_str(), isSelected))
-											{
-												val = itemName;
-											}
-											if (isSelected) ImGui::SetItemDefaultFocus();
-										}
-									}
-								}
-								ImGui::EndCombo();
-							}
-						};
-
-					// 1. テキスト本文
-					if (strcmp(name, "text") == 0 || strcmp(name, "Content") == 0)
-					{
-						ImGui::LabelText(name, "Text Content");
-						char buf[1024];
-						strcpy_s(buf, sizeof(buf), val.c_str());
-						if (ImGui::InputTextMultiline(name, buf, sizeof(buf), ImVec2(-1, 60)))
-						{
-							val = buf;
-						}
-					}
-					// 2. フォント選択 (.ttf / .otf)
-					else if (strcmp(name, "fontKey") == 0)
-					{
-						// FontManagerが認識している「正式なフォント名リスト」を取得して表示する
-						const auto& loadedFonts = FontManager::Instance().GetLoadedFontNames();
-
-						if (ImGui::BeginCombo(name, val.c_str()))
-						{
-							// カスタムフォント一覧
-							for (const auto& fontName : loadedFonts)
-							{
-								bool isSelected = (val == fontName);
-								bool pushed = false;
-								if (g_InspectorFontMap.find(fontName) != g_InspectorFontMap.end())
-								{
-									ImGui::PushFont(g_InspectorFontMap[fontName]);
-									pushed = true;
-								}
-
-								if (ImGui::Selectable(fontName.c_str(), isSelected))
-								{
-									val = fontName;
-								}
-
-								if (pushed) ImGui::PopFont();
-
-								if (isSelected) ImGui::SetItemDefaultFocus();
-							}
-
-							// システムフォントの代表例も追加しておく（必要であれば）
-							const char* systemFonts[] = { "Meiryo", "Yu Gothic", "MS Gothic", "Arial" };
-							for (const char* sysFont : systemFonts)
-							{
-								bool isSelected = (val == sysFont);
-								if (ImGui::Selectable(sysFont, isSelected))
-								{
-									val = sysFont;
-								}
-								if (isSelected) ImGui::SetItemDefaultFocus();
-							}
-
-							ImGui::EndCombo();
-						}
-					}
-					// 3. テクスチャ/画像選択 (.png, .jpg, etc)
-					// 変数名に "texture", "image", "sprite", "path" などが含まれる場合
-					else if (strstr(name, "texture") || strstr(name, "Texture") ||
-						strstr(name, "image") || strstr(name, "Image") ||
-						strstr(name, "sprite") || strstr(name, "Sprite"))
-					{
-						// useStem = false (拡張子あり) で表示。ResourceManagerの仕様に合わせて調整してください。
-						// 画像ファイルは拡張子で区別することが多いため、通常は拡張子ありが望ましいです。
-						ShowResourceCombo("Resources/Game/Textures", { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".dds" }, false);
-					}
-					// 4. モデル選択 (.fbx, .obj, etc)
-					else if (strstr(name, "model") || strstr(name, "Model") ||
-						strstr(name, "mesh") || strstr(name, "Mesh"))
-					{
-						ShowResourceCombo("Resources/Game/Models", { ".fbx", ".obj", ".gltf", ".glb" }, false);
-					}
-					// 5. アニメーション選択
-					else if (strstr(name, "animation") || strstr(name, "Animation"))
-					{
-						ShowResourceCombo("Resources/Game/Animations", { ".fbx" }, false);
-					}
-					// 6. その他 (標準入力 + D&D)
-					else
-					{
-						char buf[256];
-						strcpy_s(buf, sizeof(buf), val.c_str());
-						if (ImGui::InputText(name, buf, sizeof(buf)))
-						{
-							val = buf;
+							ImGui::PushFont(g_InspectorFontMap[fontName]);
+							pushed = true;
 						}
 
-						if (ImGui::BeginDragDropTarget())
+						if (ImGui::Selectable(fontName.c_str(), isSelected))
 						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								const wchar_t* droppedPathW = (const wchar_t*)payload->Data;
-								std::filesystem::path p(droppedPathW);
-								std::string fullPath = p.string();
-								std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+							val = fontName;
+						}
 
-								size_t found = fullPath.find("Resources");
-								if (found != std::string::npos) val = fullPath.substr(found);
-								else val = fullPath;
+						if (pushed) ImGui::PopFont();
+						if (isSelected) ImGui::SetItemDefaultFocus();
+					}
+
+					// システムフォントの代表例
+					const char* systemFonts[] = { "Meiryo", "Yu Gothic", "MS Gothic", "Arial" };
+					for (const char* sysFont : systemFonts)
+					{
+						bool isSelected = (val == sysFont);
+						if (ImGui::Selectable(sysFont, isSelected))
+						{
+							val = sysFont;
+						}
+						if (isSelected) ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+				return;
+			}
+
+			// --------------------------------------------------------
+			// 3. リソースファイル選択 (サブフォルダ対応・検索機能付き)
+			// --------------------------------------------------------
+
+			// 検索対象のディレクトリと拡張子を決定
+			std::string searchDir = "";
+			std::vector<std::string> extensions;
+
+			if (label == "modelKey" || strstr(name, "Model")) {
+				searchDir = "Resources/Game/Models";
+				extensions = { ".fbx", ".obj", ".gltf", ".glb" };
+			}
+			else if (label == "textureKey" || strstr(name, "Texture") || strstr(name, "Sprite") || strstr(name, "Image")) {
+				searchDir = "Resources/Game/Textures";
+				extensions = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".dds" };
+			}
+			else if (label == "controllerPath" || strstr(name, "Animation")) {
+				searchDir = "Resources/Game/Animations";
+				extensions = { ".json", ".fbx" }; // FBXのアニメーションも含む場合
+			}
+			else if (label == "soundKey" || strstr(name, "Sound")) {
+				searchDir = "Resources/Game/Sounds";
+				extensions = { ".wav", ".mp3", ".ogg" };
+			}
+
+			// 対象のリソース変数でなければ、通常のテキスト入力 (フォールバック)
+			if (searchDir.empty())
+			{
+				char buf[256];
+				strncpy_s(buf, val.c_str(), sizeof(buf));
+				if (ImGui::InputText(name, buf, sizeof(buf)))
+				{
+					val = buf;
+				}
+				// ドラッグ&ドロップ受け入れ (絶対パス対応)
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						const wchar_t* droppedPathW = (const wchar_t*)payload->Data;
+						std::filesystem::path p(droppedPathW);
+						std::string fullPath = p.string();
+						std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+
+						// Resources以下なら相対パスにする
+						size_t found = fullPath.find("Resources");
+						if (found != std::string::npos) val = fullPath.substr(found);
+						else val = fullPath;
+					}
+					ImGui::EndDragDropTarget();
+				}
+				return;
+			}
+
+			// === ファイル選択用プルダウン描画 ===
+
+			static std::unordered_map<std::string, std::vector<std::string>> s_fileCache;
+			bool needScan = (s_fileCache[searchDir].empty());
+
+			ImGui::PushID(name);
+
+			float btnWidth = 24.0f;
+			ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - btnWidth - 8.0f);
+
+			std::string preview = val.empty() ? "(None)" : val;
+
+			if (ImGui::BeginCombo(name, preview.c_str()))
+			{
+				// 検索フィルター
+				static char filterBuf[64] = "";
+				ImGui::InputTextWithHint("##Filter", "Search...", filterBuf, 64);
+				std::string filterStr = filterBuf;
+				bool hasFilter = !filterStr.empty();
+
+				if (!hasFilter)
+				{
+					if (ImGui::Selectable("(None)", val.empty())) val = "";
+				}
+
+				for (const auto& file : s_fileCache[searchDir])
+				{
+					// フィルター (大文字小文字区別簡易版)
+					if (hasFilter && file.find(filterStr) == std::string::npos) continue;
+
+					bool isSelected = (val == file);
+					if (ImGui::Selectable(file.c_str(), isSelected))
+					{
+						val = file;
+					}
+					if (isSelected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+			// リフレッシュボタン
+			if (ImGui::Button("R", ImVec2(btnWidth, 0)))
+			{
+				needScan = true;
+			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Refresh file list");
+
+			ImGui::PopID();
+
+			// ファイルスキャン (再帰的)
+			if (needScan)
+			{
+				auto& list = s_fileCache[searchDir];
+				list.clear();
+
+				if (std::filesystem::exists(searchDir))
+				{
+					// recursive_directory_iterator でサブフォルダも走査
+					for (const auto& entry : std::filesystem::recursive_directory_iterator(searchDir))
+					{
+						if (entry.is_regular_file())
+						{
+							std::string ext = entry.path().extension().string();
+							bool match = false;
+							for (const auto& e : extensions) if (e == ext) match = true;
+
+							if (match)
+							{
+								// ルートからの相対パスを作成
+								std::string relative = std::filesystem::relative(entry.path(), searchDir).string();
+								std::replace(relative.begin(), relative.end(), '\\', '/');
+								list.push_back(relative);
 							}
-							ImGui::EndDragDropTarget();
 						}
 					}
-				});
+				}
+			}
 		}
 
 		// リソースキー（StringId） -> ドラッグ&ドロップ対応

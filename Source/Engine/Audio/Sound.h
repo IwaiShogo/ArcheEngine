@@ -39,6 +39,11 @@ namespace Arche
 
 		std::string filepath;
 		float duration = 0.0f;			// 再生時間（秒）
+		// 1. CPUロード
+		bool LoadCPU(const std::string& path);
+
+		// 2. 初期化
+		void Initialize();
 	};
 
 }	// namespace Arche

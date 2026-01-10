@@ -127,6 +127,12 @@
     <Filter Include="Resources\DebugMeshes">
       <UniqueIdentifier>{c9611005-b6ac-4fec-9c7e-5437819840da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\Scene\Animation">
+      <UniqueIdentifier>{44b761df-2510-45e1-b793-23598cf1a1be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library\ImNodes">
+      <UniqueIdentifier>{a10edd4f-ebb2-4f36-a5f4-c4929eec5197}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Editor\Core\Editor.cpp">
@@ -284,6 +290,15 @@
     </ClCompile>
     <ClCompile Include="..\Source\Engine\Renderer\RHI\MeshBuffer.cpp">
       <Filter>Source\Engine\Renderer\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Library\ImNodes\imnodes.cpp">
+      <Filter>Library\ImNodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Renderer\RHI\Texture.cpp">
+      <Filter>Source\Engine\Renderer\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Engine\Audio\Sound.cpp">
+      <Filter>Source\Engine\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +568,21 @@
     </ClInclude>
     <ClInclude Include="..\Source\Engine\Scene\Systems\Animation\AnimationSystem.h">
       <Filter>Source\Engine\Scene\Systems\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Animation\AnimatorController.h">
+      <Filter>Source\Engine\Scene\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\AnimatorGraphWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\ImNodes\imnodes.h">
+      <Filter>Library\ImNodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Library\ImNodes\imnodes_internal.h">
+      <Filter>Library\ImNodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\Serializer\AnimatorControllerSerializer.h">
+      <Filter>Source\Engine\Scene\Serializer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
