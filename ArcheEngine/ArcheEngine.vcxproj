@@ -166,6 +166,7 @@
     <ClCompile Include="..\Source\Engine\Renderer\Core\RenderTarget.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Data\Model.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.cpp" />
+    <ClCompile Include="..\Source\Engine\Renderer\Renderers\GridRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="..\Source\Engine\Renderer\Core\RenderTarget.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Data\Model.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\BillboardRenderer.h" />
+    <ClInclude Include="..\Source\Engine\Renderer\Renderers\GridRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.h" />
@@ -296,6 +298,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Engine\Shaders\InfiniteGrid.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

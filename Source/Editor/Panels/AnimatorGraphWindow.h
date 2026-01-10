@@ -49,7 +49,7 @@ namespace Arche
 			m_initialized = false;
 		}
 
-		void Draw(World& world, Entity& selectedEntity, Context& ctx) override
+		void Draw(World& world, std::vector<Entity>& selection, Context& ctx) override
 		{
 			if (!m_isOpen) return;
 

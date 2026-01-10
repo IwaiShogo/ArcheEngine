@@ -298,10 +298,10 @@ namespace Arche
 		// 各ウィンドウを描画
 		for (auto& window : m_windows)
 		{
-			window->Draw(*activeWorld, m_selectedEntity, ctx);
+			window->Draw(*activeWorld, m_selection, ctx);
 		}
 
-		m_sceneViewPanel.Draw(*activeWorld, m_selectedEntity);
+		m_sceneViewPanel.Draw(*activeWorld, m_selection);
 
 		m_gameViewPanel.Draw();
 

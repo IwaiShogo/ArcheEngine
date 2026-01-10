@@ -62,7 +62,7 @@ namespace Arche
 		// 描画モード変更
 		static void SetFillMode(bool wireframe);
 		// グリッドと軸を描画
-		static void DrawGrid(float spacing = 1.0f, int lines = 10);
+		//static void DrawGrid(float spacing = 1.0f, int lines = 10);
 		static void DrawAxis(float length = 5.0f);
 
 		static ID3D11DeviceContext* GetDeviceContext() { return s_context; }

@@ -18,6 +18,7 @@
 #include "Engine/pch.h"
 #include "Engine/Scene/Core/ECS/ECS.h"
 #include "Editor/Tools/EditorCamera.h"
+#include "Engine/Core/Context.h"
 
 namespace Arche
 {
@@ -31,7 +32,7 @@ namespace Arche
 		SceneViewPanel();
 		~SceneViewPanel();
 
-		void Draw(World& world, Entity& selectedEntity);
+		void Draw(World& world, std::vector<Entity>& selection);
 		void FocusEntity(Entity entity, World& world);
 
 		EditorCamera& GetCamera() { return m_camera; }

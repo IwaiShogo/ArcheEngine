@@ -77,11 +77,19 @@ namespace Arche
 
 		if (!cameraFound) return;
 
+		// グリッドと軸の描画（Collider設定に関わらず出す）
+		if (context.debugSettings.showGrid)
+		{
+			XMVECTOR camPosVec = XMMatrixInverse(nullptr, viewMatrix).r[3];
+			XMFLOAT3 camPos;
+			XMStoreFloat3(&camPos, camPosVec);
+
+			m_gridRenderer.Render(viewMatrix, projMatrix, camPos, 1000.0f);
+		}
+
 		// メインシーン描画開始
 		PrimitiveRenderer::Begin(viewMatrix, projMatrix);
 
-		// グリッドと軸の描画（Collider設定に関わらず出す）
-		if (context.debugSettings.showGrid) PrimitiveRenderer::DrawGrid();
 		if (context.debugSettings.showAxis) PrimitiveRenderer::DrawAxis();
 
 		// 3. オブジェクト描画

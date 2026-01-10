@@ -295,69 +295,6 @@
                     100.0
                 ]
             }
-        },
-        {
-            "Collider": {
-                "Enabled": true,
-                "boxSize": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "height": 1.0,
-                "isTrigger": false,
-                "layer": 1,
-                "offset": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "radius": 0.5,
-                "type": 0
-            },
-            "ID": 5,
-            "IsActive": true,
-            "Relationship": {
-                "Enabled": true,
-                "children": [],
-                "parent": 4294967295
-            },
-            "Rigidbody": {
-                "Enabled": true,
-                "drag": 0.10000000149011612,
-                "mass": 1.0,
-                "type": 0,
-                "useGravity": true
-            },
-            "Tag": {
-                "Enabled": true,
-                "componentOrder": [
-                    "Tag",
-                    "Transform",
-                    "Rigidbody",
-                    "Collider",
-                    "Relationship"
-                ],
-                "name": "GameObject (Copy)"
-            },
-            "Transform": {
-                "Enabled": true,
-                "position": [
-                    0.0,
-                    1.9471259117126465,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    11.34807014465332,
-                    1.0,
-                    10.770015716552734
-                ]
-            }
         }
     ],
     "Physics": {

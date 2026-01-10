@@ -28,7 +28,7 @@ namespace Arche
 			m_windowName = "Physics Settings";
 		}
 
-		void Draw(World& world, Entity& selected, Context& ctx) override
+		void Draw(World& world, std::vector<Entity>& selection, Context& ctx) override
 		{
 			if (!m_isOpen) return;
 

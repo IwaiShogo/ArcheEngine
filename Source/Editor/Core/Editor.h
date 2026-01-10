@@ -36,7 +36,7 @@ namespace Arche
 		std::string m_windowName = "Window";
 
 		virtual ~EditorWindow() = default;
-		virtual void Draw(World& world, Entity& selected, Context& ctx) = 0;
+		virtual void Draw(World& world, std::vector<Entity>& selection, Context& ctx) = 0;
 	};
 
 	// エディタの管理者
@@ -53,8 +53,40 @@ namespace Arche
 		void Shutdown();
 		void Draw(World& world, Context& ctx);
 
-		void SetSelectedEntity(Entity e) { m_selectedEntity = e; }
+		// 選択管理用メソッド
+		void SetSelectedEntity(Entity e)
+		{
+			m_selection.clear();
+			if (e != NullEntity) m_selection.push_back(e);
+			m_selectedEntity = e;
+		}
+
+		// 複数選択用の操作
+		void AddToSelection(Entity e)
+		{
+			if (std::find(m_selection.begin(), m_selection.end(), e) == m_selection.end())
+			{
+				m_selection.push_back(e);
+				m_selectedEntity = e;
+			}
+		}
+
+		void RemoveFromSelection(Entity e)
+		{
+			auto it = std::remove(m_selection.begin(), m_selection.end(), e);
+			m_selection.erase(it, m_selection.end());
+			if (m_selectedEntity == e) m_selectedEntity = NullEntity;
+		}
+
+		void ClearSelection()
+		{
+			m_selection.clear();
+			m_selectedEntity = NullEntity;
+		}
+
+		// ゲッター
 		Entity& GetSelectedEntity() { return m_selectedEntity; }
+		std::vector<Entity>& GetSelection() { return m_selection; }
 
 		SceneViewPanel& GetSceneViewPanel() { return m_sceneViewPanel; }
 

@@ -1,10 +1,10 @@
 {
     "Camera": {
-        "pitch": 6.5349812507629395,
-        "x": -7.123167514801025,
-        "y": 6.427577972412109,
-        "yaw": -5.755044460296631,
-        "z": -7.216427803039551
+        "pitch": 6.7049784660339355,
+        "x": -9.702794075012207,
+        "y": 9.610662460327148,
+        "yaw": -5.705048084259033,
+        "z": -14.223505020141602
     },
     "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Prefabs",
     "LastScene": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Scenes\\TitleScene.json"

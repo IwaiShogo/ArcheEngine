@@ -24,6 +24,7 @@
 #include "Engine/Scene/Core/ECS/ECS.h"
 #include "Engine/Resource/ResourceManager.h"
 #include "Engine/Scene/Components/Components.h"
+#include "Engine/Renderer/Renderers/GridRenderer.h"
 
 namespace Arche
 {
@@ -34,6 +35,7 @@ namespace Arche
 		RenderSystem()
 		{
 			m_systemName = "Render System";
+			m_gridRenderer.Initialize();
 		}
 
 		void Render(Registry& registry, const Context& context) override;
@@ -62,6 +64,9 @@ namespace Arche
 
 			return XMFLOAT3(screenX, screenY, clip.z);
 		}
+
+	private:
+		GridRenderer m_gridRenderer;
 	};
 
 }	// namespace Arche

@@ -426,25 +426,25 @@ namespace Arche
 		}
 	}
 
-	void PrimitiveRenderer::DrawGrid(float spacing, int lines)
-	{
-		// グリッドは常にワイヤーフレームで書く
-		s_context->RSSetState(s_rsWireframe.Get());
+	//void PrimitiveRenderer::DrawGrid(float spacing, int lines)
+	//{
+	//	// グリッドは常にワイヤーフレームで書く
+	//	s_context->RSSetState(s_rsWireframe.Get());
 
-		float size = static_cast<float>(lines) * spacing;
-		XMFLOAT4 color = { 0.5f, 0.5f, 0.5f, 1.0f };
+	//	float size = static_cast<float>(lines) * spacing;
+	//	XMFLOAT4 color = { 0.5f, 0.5f, 0.5f, 1.0f };
 
-		// X軸に平行な線
-		for (int i = -lines; i <= lines; ++i)
-		{
-			float pos = static_cast<float>(i) * spacing;
+	//	// X軸に平行な線
+	//	for (int i = -lines; i <= lines; ++i)
+	//	{
+	//		float pos = static_cast<float>(i) * spacing;
 
-			// 横線
-			DrawLine(XMFLOAT3(-size, 0, pos), XMFLOAT3(size, 0, pos), color);
-			// 縦線
-			DrawLine(XMFLOAT3(pos, 0, -size), XMFLOAT3(pos, 0, size), color);
-		}
-	}
+	//		// 横線
+	//		DrawLine(XMFLOAT3(-size, 0, pos), XMFLOAT3(size, 0, pos), color);
+	//		// 縦線
+	//		DrawLine(XMFLOAT3(pos, 0, -size), XMFLOAT3(pos, 0, size), color);
+	//	}
+	//}
 
 	// 座標軸描画
 	void PrimitiveRenderer::DrawAxis(float length)

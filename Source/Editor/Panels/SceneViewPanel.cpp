@@ -43,7 +43,7 @@ namespace Arche
 		EditorPrefs::Instance().Save();
 	}
 
-	void SceneViewPanel::Draw(World& world, Entity& selectedEntity)
+	void SceneViewPanel::Draw(World& world, std::vector<Entity>& selection)
 	{
 		// Editorクラスへのアクセスが可能になる
 		World* activeWorld = &world;
@@ -62,13 +62,18 @@ namespace Arche
 			return;
 		}
 
-		// 0. Deleteキーでの削除ショートカット
-		if (ImGui::IsWindowFocused() && selectedEntity != NullEntity)
+		// 0. Deleteキーでの削除ショートカット (複数選択対応)
+		if (ImGui::IsWindowFocused() && !selection.empty())
 		{
 			if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 			{
-				CommandHistory::Execute(std::make_shared<DeleteEntityCommand>(world, selectedEntity));
-				selectedEntity = NullEntity;
+				// コピーしてから回す（イテレータ破壊防止）
+				auto targets = selection;
+				for (Entity e : targets)
+				{
+					CommandHistory::Execute(std::make_shared<DeleteEntityCommand>(world, e));
+				}
+				Editor::Instance().ClearSelection();
 			}
 		}
 
@@ -116,7 +121,7 @@ namespace Arche
 		if (ImGui::IsWindowHovered())
 		{
 			m_camera.SetAspect(imageSize.x / imageSize.y);
-			m_camera.Update();
+			m_camera.Update(); // 元のUpdate関数を使用
 		}
 
 		// 3. 画像描画
@@ -207,7 +212,8 @@ namespace Arche
 						world.getRegistry().get<Transform2D>(newEntity).position = { spawnPos.x, spawnPos.y };
 					}
 
-					selectedEntity = newEntity;
+					// 複数選択対応のセッターを使用
+					Editor::Instance().SetSelectedEntity(newEntity);
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -220,13 +226,17 @@ namespace Arche
 		bool cameraFound = true;
 
 		// ギズモ描画
-		if (cameraFound && selectedEntity != NullEntity)
+		// 選択されている最後のエンティティ（プライマリ）を表示対象とする
+		Entity primarySelected = selection.empty() ? NullEntity : selection.back();
+
+		if (cameraFound && primarySelected != NullEntity)
 		{
 			// ワールドの切り替えに対応するため、引数の world を使用する
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(imageStart.x, imageStart.y, imageSize.x, imageSize.y);
-			GizmoSystem::Draw(*activeWorld, selectedEntity, viewMat, projMat, imageStart.x, imageStart.y, imageSize.x, imageSize.y);
+			// primarySelected を渡す
+			GizmoSystem::Draw(*activeWorld, primarySelected, viewMat, projMat, imageStart.x, imageStart.y, imageSize.x, imageSize.y);
 		}
 
 		// マウスピッキング
@@ -272,9 +282,12 @@ namespace Arche
 					}
 				}
 
+				// ヒットしたエンティティ
+				Entity hitResult = NullEntity;
+
 				if (uiHit)
 				{
-					selectedEntity = uiHitEntity;
+					hitResult = uiHitEntity;
 				}
 				else
 				{
@@ -294,7 +307,43 @@ namespace Arche
 					Entity hit = CollisionSystem::Raycast(activeWorld->getRegistry(), origin, dir, dist);
 
 					if (hit != NullEntity) {
-						selectedEntity = hit;
+						hitResult = hit;
+					}
+				}
+
+				bool ctrlPressed = ImGui::GetIO().KeyCtrl;
+
+				if (hitResult != NullEntity)
+				{
+					if (ctrlPressed)
+					{
+						// Ctrlキーが押されている場合：選択トグル
+						auto it = std::find(selection.begin(), selection.end(), hitResult);
+						if (it != selection.end())
+						{
+							Editor::Instance().RemoveFromSelection(hitResult);
+						}
+						else
+						{
+							Editor::Instance().AddToSelection(hitResult);
+						}
+					}
+					else
+					{
+						// Ctrlキーがない場合：単一選択
+						// すでに選択済みなら何もしない（ドラッグ移動のため）
+						if (selection.size() != 1 || selection[0] != hitResult)
+						{
+							Editor::Instance().SetSelectedEntity(hitResult);
+						}
+					}
+				}
+				else
+				{
+					// 何もクリックしなかった場合：選択解除（Ctrlなし時）
+					if (!ctrlPressed && !ImGuizmo::IsOver())
+					{
+						Editor::Instance().ClearSelection();
 					}
 				}
 			}

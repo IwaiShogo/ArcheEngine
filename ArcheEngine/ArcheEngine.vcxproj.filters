@@ -300,6 +300,9 @@
     <ClCompile Include="..\Source\Engine\Audio\Sound.cpp">
       <Filter>Source\Engine\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Engine\Renderer\Renderers\GridRenderer.cpp">
+      <Filter>Source\Engine\Renderer\Renderers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Editor\Core\Editor.h">
@@ -584,6 +587,9 @@
     <ClInclude Include="..\Source\Engine\Scene\Serializer\AnimatorControllerSerializer.h">
       <Filter>Source\Engine\Scene\Serializer</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Engine\Renderer\Renderers\GridRenderer.h">
+      <Filter>Source\Engine\Renderer\Renderers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Billboard.hlsl">
@@ -602,6 +608,9 @@
       <Filter>Library\DirectXTex</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\Standard.hlsl">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\InfiniteGrid.hlsl">
       <Filter>Resources\Shaders</Filter>
     </None>
   </ItemGroup>
