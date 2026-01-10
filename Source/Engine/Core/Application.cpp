@@ -578,6 +578,11 @@ namespace Arche
 		SetForegroundWindow(m_hwnd);
 		SetFocus(m_hwnd);
 
+#ifdef _DEBUG
+		// エディタモード時はD&Dを受け付ける
+		DragAcceptFiles(m_hwnd, TRUE);
+#endif // _DEBUG
+
 		return true;
 	}
 
@@ -734,6 +739,57 @@ namespace Arche
 		case WM_KEYDOWN:
 			if (wParam == VK_ESCAPE) PostQuitMessage(0);
 			return 0;
+
+#ifdef _DEBUG
+		case WM_DROPFILES:
+		{
+			HDROP hDrop = (HDROP)wParam;
+
+			// 現在のContentBrowserのパスを取得（未設定ならResources）
+			std::string destDir = EditorPrefs::Instance().contentBrowserPath;
+			if (destDir.empty()) destDir = "Resources";
+
+			// ドロップされたファイル数を取得
+			UINT fileCount = DragQueryFileA(hDrop, 0xFFFFFFFF, nullptr, 0);
+			char filePath[MAX_PATH];
+
+			int successCount = 0;
+
+			for (UINT i = 0; i < fileCount; ++i)
+			{
+				if (DragQueryFileA(hDrop, i, filePath, MAX_PATH))
+				{
+					try
+					{
+						std::filesystem::path srcPath = filePath;
+						// 移動先パス = 現在のディレクトリ + ファイル名
+						std::filesystem::path dstPath = std::filesystem::path(destDir) / srcPath.filename();
+
+						// フォルダの場合は除外（今回はファイルのみ対応）
+						if (!std::filesystem::is_directory(srcPath))
+						{
+							// コピー実行 (同名ファイルは上書き)
+							std::filesystem::copy_file(srcPath, dstPath, std::filesystem::copy_options::overwrite_existing);
+							successCount++;
+						}
+					}
+					catch (const std::filesystem::filesystem_error& e)
+					{
+						Logger::LogError("File Import Error: " + std::string(e.what()));
+					}
+				}
+			}
+
+			if (successCount > 0)
+			{
+				Logger::Log("Imported " + std::to_string(successCount) + " files to " + destDir);
+			}
+
+			DragFinish(hDrop);
+			return 0;
+		}
+#endif // _DEBUG
+
 		}
 		return DefWindowProcW(hwnd, msg, wParam, lParam);
 	}

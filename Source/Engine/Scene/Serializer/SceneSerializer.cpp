@@ -722,4 +722,60 @@ namespace Arche
 		Unique(outTextures);
 		Unique(outSounds);
 	}
+	
+	Entity SceneSerializer::DuplicateEntity(World& world, Entity entity)
+	{
+		Registry& reg = world.getRegistry();
+		if (!reg.valid(entity)) return NullEntity;
+
+		// 1. JSONにシリアライズ (子孫含む)
+		json entityJson;
+		SerializeEntityRecursive(reg, entity, entityJson);
+
+		// 2. 親を取得
+		Entity parent = NullEntity;
+		if (reg.has<Relationship>(entity))
+		{
+			parent = reg.get<Relationship>(entity).parent;
+		}
+
+		// 3. 復元 (複製)
+		// ルートエンティティを作成
+		Entity newEntity = world.create_entity().id();
+		DeserializeEntityFromJson(reg, newEntity, entityJson);
+
+		// 名前を変更 (Unity風に "Name (Copy)" とする)
+		if (reg.has<Tag>(newEntity))
+		{
+			std::string name = reg.get<Tag>(newEntity).name.c_str();
+			name += " (Copy)";
+			reg.get<Tag>(newEntity).name = name;
+		}
+
+		// 親子付け
+		if (parent != NullEntity)
+		{
+			// 自分のRelationship
+			if (!reg.has<Relationship>(newEntity)) reg.emplace<Relationship>(newEntity);
+			reg.get<Relationship>(newEntity).parent = parent;
+
+			// 親のRelationship
+			if (reg.has<Relationship>(parent))
+			{
+				reg.get<Relationship>(parent).children.push_back(newEntity);
+			}
+		}
+
+		// 子要素の再構築 (再帰処理)
+		if (entityJson.contains("Children"))
+		{
+			for (const auto& childNode : entityJson["Children"])
+			{
+				ReconstructEntityRecursive(world, newEntity, childNode);
+			}
+		}
+
+		Logger::Log("Duplicated Entity: " + std::to_string(entity) + " -> " + std::to_string(newEntity));
+		return newEntity;
+	}
 }

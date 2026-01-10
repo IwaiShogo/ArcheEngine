@@ -427,6 +427,95 @@ namespace Arche
 		std::vector<std::string> m_newOrder;
 	};
 
+	class MoveEntityCommand : public ICommand
+	{
+	public:
+		// newIndex が -1 の場合は末尾に追加
+		MoveEntityCommand(World& world, Entity entity, Entity newParent, int newIndex = -1)
+			: m_world(world), m_entity(entity), m_newParent(newParent), m_newIndex(newIndex)
+		{
+			auto& reg = m_world.getRegistry();
+
+			// 現在の親とインデックスを保存（Undo用）
+			if (reg.has<Relationship>(entity))
+			{
+				m_oldParent = reg.get<Relationship>(entity).parent;
+
+				// 旧親の子リストから自分の位置を探す
+				if (m_oldParent != NullEntity)
+				{
+					auto& children = reg.get<Relationship>(m_oldParent).children;
+					auto it = std::find(children.begin(), children.end(), entity);
+					if (it != children.end()) m_oldIndex = (int)std::distance(children.begin(), it);
+				}
+				else
+				{
+					m_oldIndex = 0;
+				}
+			}
+		}
+
+		void Execute() override
+		{
+			Move(m_newParent, m_newIndex);
+		}
+
+		void Undo() override
+		{
+			Move(m_oldParent, m_oldIndex);
+		}
+
+	private:
+		void Move(Entity parent, int index)
+		{
+			auto& reg = m_world.getRegistry();
+			if (!reg.valid(m_entity)) return;
+
+			// 1. 現在の親から削除
+			Entity currentParent = NullEntity;
+			if (reg.has<Relationship>(m_entity))
+			{
+				currentParent = reg.get<Relationship>(m_entity).parent;
+			}
+
+			if (currentParent != NullEntity && reg.valid(currentParent))
+			{
+				auto& children = reg.get<Relationship>(currentParent).children;
+				auto it = std::find(children.begin(), children.end(), m_entity);
+				if (it != children.end()) children.erase(it);
+			}
+
+			// 2. 新しい親に登録
+			if (parent != NullEntity && reg.valid(parent))
+			{
+				if (!reg.has<Relationship>(parent)) reg.emplace<Relationship>(parent);
+				auto& children = reg.get<Relationship>(parent).children;
+
+				// インデックスの正規化
+				if (index < 0 || index >(int)children.size()) index = (int)children.size();
+
+				children.insert(children.begin() + index, m_entity);
+
+				// コンポーネント更新
+				if (!reg.has<Relationship>(m_entity)) reg.emplace<Relationship>(m_entity);
+				reg.get<Relationship>(m_entity).parent = parent;
+			}
+			else
+			{
+				// 親なし（ルート）にする場合
+				if (!reg.has<Relationship>(m_entity)) reg.emplace<Relationship>(m_entity);
+				reg.get<Relationship>(m_entity).parent = NullEntity;
+			}
+		}
+
+		World& m_world;
+		Entity m_entity;
+		Entity m_newParent;
+		Entity m_oldParent = NullEntity;
+		int m_newIndex;
+		int m_oldIndex = 0;
+	};
+
 }	// namespace Arche
 
 #endif // !___EDITOR_COMMANDS_H___

@@ -124,6 +124,19 @@ namespace Arche
 					}
 				}
 
+				// 複製（Ctrl + D）
+				if (ImGui::IsWindowFocused())
+				{
+					if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_D))
+					{
+						if (selected != NullEntity)
+						{
+							Entity newEntity = SceneSerializer::DuplicateEntity(world, selected);
+							selected = newEntity;	// 複製したほうを選択状態にする
+						}
+					}
+				}
+
 				// ----------------------------------------------------------------
 				// エンティティ一覧描画
 				// ----------------------------------------------------------------
@@ -458,11 +471,76 @@ namespace Arche
 			// 2. ドロップ先 (Target)
 			if (ImGui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID", ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect))
 				{
 					Entity payloadEntity = *(const Entity*)payload->Data;
-					// ドロップされたEntityを、こいつ(e)の子にする
-					CommandHistory::Execute(std::make_shared<ReparentEntityCommand>(world, payloadEntity, e));
+
+					if (payloadEntity != e)
+					{
+						// マウス位置による判定
+						float mouseY = ImGui::GetMousePos().y;
+						float nodeMinY = ImGui::GetItemRectMin().y;
+						float nodeMaxY = ImGui::GetItemRectMax().y;
+						float height = nodeMaxY - nodeMinY;
+						float relativeY = (mouseY - nodeMinY) / height;
+
+						// ゾーン閾値
+						float topThreshold = 0.25f;
+						float bottomThreshold = 0.75f;
+
+						// 親情報を取得（並び替え用）
+						Entity parent = NullEntity;
+						int myIndex = 0;
+						if (reg.has<Relationship>(e))
+						{
+							parent = reg.get<Relationship>(e).parent;
+						}
+
+						// 親がいる場合のみインデックスを計算
+						if (parent != NullEntity)
+						{
+							auto& siblings = reg.get<Relationship>(parent).children;
+							auto it = std::find(siblings.begin(), siblings.end(), e);
+							if (it != siblings.end()) myIndex = (int)std::distance(siblings.begin(), it);
+						}
+
+						// 描画リスト
+						ImDrawList* drawList = ImGui::GetWindowDrawList();
+						ImU32 guideColor = ImGui::GetColorU32(ImGuiCol_DragDropTarget);
+						float guideThickness = 2.0f;
+
+						// --- 判定ロジック ---
+
+						// A) 上端ゾーン: 「直前に挿入」 (親がいる場合のみ)
+						if (relativeY < topThreshold && parent != NullEntity)
+						{
+							drawList->AddLine({ ImGui::GetItemRectMin().x, nodeMinY }, { ImGui::GetItemRectMax().x, nodeMinY }, guideColor, guideThickness);
+							if (payload->IsDelivery())
+							{
+								CommandHistory::Execute(std::make_shared<MoveEntityCommand>(world, payloadEntity, parent, myIndex));
+							}
+						}
+						// B) 下端ゾーン: 「直後に挿入」 (親がいる場合のみ)
+						else if (relativeY > bottomThreshold && parent != NullEntity)
+						{
+							drawList->AddLine({ ImGui::GetItemRectMin().x, nodeMaxY }, { ImGui::GetItemRectMax().x, nodeMaxY }, guideColor, guideThickness);
+							if (payload->IsDelivery())
+							{
+								CommandHistory::Execute(std::make_shared<MoveEntityCommand>(world, payloadEntity, parent, myIndex + 1));
+							}
+						}
+						// C) 中央ゾーン: 「子要素にする」 (既存動作)
+						else
+						{
+							// 枠線表示（ImGui標準のハイライトと同じような矩形）
+							drawList->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), guideColor, 0.0f, 0, guideThickness);
+
+							if (payload->IsDelivery())
+							{
+								CommandHistory::Execute(std::make_shared<ReparentEntityCommand>(world, payloadEntity, e));
+							}
+						}
+					}
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -485,6 +563,19 @@ namespace Arche
 			// 右クリックメニュー
 			if (ImGui::BeginPopupContextItem())
 			{
+				// Duplicate
+				if (ImGui::MenuItem("Duplicate", "Ctrl+D"))
+				{
+					Entity newEntity = SceneSerializer::DuplicateEntity(world, e);
+					selected = newEntity;
+
+					ImGui::EndPopup();
+
+					if (opened) ImGui::TreePop();
+					ImGui::PopID();
+					return;
+				}
+
 				// エンティティ削除
 				if (ImGui::MenuItem("Delete Entity"))
 				{

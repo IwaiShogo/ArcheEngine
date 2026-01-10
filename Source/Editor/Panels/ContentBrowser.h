@@ -85,26 +85,6 @@ namespace Arche
 			HandlePopups(world);
 			EditorPrefs::Instance().contentBrowserPath = m_currentDirectory.string();
 
-			ImGui::Columns(1);
-
-			// プレファブ化のドロップ受け入れ
-			ImVec2 avail = ImGui::GetContentRegionAvail();
-			if (avail.y < 50.0f) avail.y = 50.0f;	// 最低限の高さ確保
-
-			// カレントディレクトリ内へのdropを受け付けるダミー要素を描画
-			ImGui::InvisibleButton("##ContentBrowserDropArea", avail);
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				// Hierarchyからのエンティティドロップ
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
-				{
-					Entity droppedEntity = *(const Entity*)payload->Data;
-					CreatePrefabFromEntity(world, droppedEntity);
-				}
-				ImGui::EndDragDropTarget();
-			}
-
 			ImGui::End();
 		}
 
@@ -362,6 +342,24 @@ namespace Arche
 					ImGui::EndDragDropSource();
 				}
 
+				// フォルダへのドロップ
+				if (directoryEntry.is_directory())
+				{
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							// ペイロードから元のパスを取得
+							std::filesystem::path srcPath = (const char*)payload->Data;
+							// 移動先 = ドロップしたフォルダパス / 元のファイル名
+							std::filesystem::path dstPath = path / srcPath.filename();
+
+							MoveFile(srcPath, dstPath);
+						}
+						ImGui::EndDragDropTarget();
+					}
+				}
+
 				// ダブルクリック (グループ全体で判定)
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
@@ -393,6 +391,19 @@ namespace Arche
 				ImGui::PopID();
 
 				index++;
+			}
+
+			ImGui::Dummy(ImGui::GetContentRegionAvail());
+
+			// 余白部分へのドロップ
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+				{
+					Entity droppedEntity = *(const Entity*)payload->Data;
+					CreatePrefabFromEntity(world, droppedEntity);
+				}
+				ImGui::EndDragDropTarget();
 			}
 
 			// 背景右クリック（作成メニュー）

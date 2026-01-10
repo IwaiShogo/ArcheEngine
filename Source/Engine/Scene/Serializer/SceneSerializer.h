@@ -60,6 +60,8 @@ namespace Arche
 			std::vector<std::string>& outModels, 
 			std::vector<std::string>& outTextures, 
 			std::vector<std::string>& outSounds);
+
+		static Entity DuplicateEntity(World& world, Entity entity);
 	};
 
 }	// namespace Arche
