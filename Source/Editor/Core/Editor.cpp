@@ -32,6 +32,7 @@
 #include "Editor/Panels/InputVisualizerWindow.h"
 #include "Editor/Panels/BuildSettingsWindow.h"
 #include "Editor/Panels/AnimatorGraphWindow.h"
+#include "Editor/Panels/LightingSettingsWindow.h"
 
 namespace Arche
 {
@@ -52,6 +53,7 @@ namespace Arche
 		m_windows.push_back(std::make_unique<InputVisualizerWindow>());
 		m_windows.push_back(std::make_unique<BuildSettingsWindow>());
 		m_windows.push_back(std::make_unique<AnimatorGraphWindow>());
+		m_windows.push_back(std::make_unique<LightingSettingsWindow>());
 
 		// 2. ImGuiの設定
 		ImGuiIO& io = ImGui::GetIO();

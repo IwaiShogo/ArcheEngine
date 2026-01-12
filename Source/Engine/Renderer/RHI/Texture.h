@@ -7,14 +7,6 @@
  * ------------------------------------------------------------
  * @author	Iwai Shogo
  * ------------------------------------------------------------
- * 
- * @date   2025/11/25	初回作成日
- * 			作業内容：	- 追加：
- * 
- * @update	2025/xx/xx	最終更新日
- * 			作業内容：	- XX：
- * 
- * @note	（省略可）
  *********************************************************************/
 
 #ifndef ___TEXTURE_H___
@@ -47,6 +39,9 @@ namespace Arche
 
 		// 2. GPUアップロード (メインスレッド専用)
 		bool UploadGPU(ID3D11Device* device);
+
+		// ゲッター
+		ID3D11ShaderResourceView* GetSRV() const { return srv.Get(); }
 	};
 
 }	// namespace Arche

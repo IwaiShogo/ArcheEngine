@@ -234,7 +234,11 @@ namespace Arche
 					{
 						std::string n = name;
 						std::string s = searchBuf;
-						// 簡易的な部分一致 (大文字小文字無視なし)
+						
+						// 両方を小文字に変換
+						std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+						std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+
 						if (n.find(s) == std::string::npos) continue;
 					}
 

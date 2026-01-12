@@ -230,6 +230,13 @@ namespace Arche
 						Entity e = world.create_entity()
 							.add<Tag>("GameObject")
 							.add<Transform>().id();
+
+						if (world.getRegistry().has<Tag>(e))
+						{
+							auto& tag = world.getRegistry().get<Tag>(e);
+							tag.componentOrder.push_back("Transform");
+						}
+
 						Editor::Instance().SetSelectedEntity(e);
 					}
 					ImGui::EndPopup();

@@ -69,6 +69,26 @@ namespace Arche
 
 			if (!cameraFound) return;
 
+			// ライト情報の収集と送信
+			std::vector<ModelRenderer::PointLightData> pointLights;
+
+			registry.view<Transform, PointLight>().each([&](Entity e, Transform& t, PointLight& l) {
+				ModelRenderer::PointLightData data;
+				data.position = t.position;
+				data.range = l.range;
+				data.color = l.color;
+				data.intensity = l.intensity;
+
+				pointLights.push_back(data);
+				});
+
+			// 環境設定とポイントライトリストをレンダラーへ送る
+			ModelRenderer::SetSceneLights(
+				context.environment.ambientColor,
+				context.environment.ambientIntensity,
+				pointLights
+			);
+
 			// 2. 描画開始
 			ModelRenderer::Begin(viewMatrix, projMatrix, lightDir, { 1, 1, 1 });
 

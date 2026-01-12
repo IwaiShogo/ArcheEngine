@@ -22,12 +22,7 @@
 
 // ===== インクルード =====
 #include "Engine/pch.h"
-
-// ===== 前方宣言 =====
-class PrimitiveRenderer;
-class SpriteRenderer;
-class ModelRenderer;
-class BillboardRenderer;
+#include "Engine/Scene/SceneEnvironment.h"
 
 namespace Arche
 {
@@ -80,6 +75,8 @@ namespace Arche
 		RenderCamera renderCamera;
 
 		EditorState editorState = EditorState::Edit;
+
+		SceneEnvironment environment;
 	};
 
 }	// namespace Arche

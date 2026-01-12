@@ -1,5 +1,6 @@
 ﻿#include "Engine/pch.h"
 #include "SceneSerializer.h"
+#include "Engine/Core/Application.h"
 #include "Engine/Scene/Systems/Physics/CollisionSystem.h"
 #include "Engine/Scene/Serializer/ComponentSerializer.h"
 #include "Engine/Scene/Serializer/SystemRegistry.h"
@@ -12,6 +13,20 @@ namespace Arche
 	{
 		json sceneJson;
 		sceneJson["SceneName"] = "Untitled Scene";
+
+		const auto& env = SceneManager::Instance().GetContext().environment;
+
+		json envJson;
+		envJson["SkyboxTexture"] = env.skyboxTexturePath;
+
+		envJson["SkyColorTop"] = { env.skyColorTop.x, env.skyColorTop.y, env.skyColorTop.z, env.skyColorTop.w };
+		envJson["SkyColorHorizon"] = { env.skyColorHorizon.x, env.skyColorHorizon.y, env.skyColorHorizon.z, env.skyColorHorizon.w };
+		envJson["SkyColorBottom"] = { env.skyColorBottom.x, env.skyColorBottom.y, env.skyColorBottom.z, env.skyColorBottom.w };
+
+		envJson["AmbientColor"] = { env.ambientColor.x, env.ambientColor.y, env.ambientColor.z };
+		envJson["AmbientIntensity"] = env.ambientIntensity;
+
+		sceneJson["Environment"] = envJson;
 
 		// 1. レイヤー衝突設定
 		sceneJson["Physics"]["LayerCollision"] = json::array();
@@ -86,6 +101,34 @@ namespace Arche
 		catch (json::parse_error& e) {
 			Logger::LogError(std::string("JSON Parse Error: ") + e.what());
 			return;
+		}
+
+		if (sceneJson.contains("Environment"))
+		{
+			auto& envJson = sceneJson["Environment"];
+			auto& ctx = SceneManager::Instance().GetContext(); // 書き換え可能な参照を取得
+
+			if (envJson.contains("SkyboxTexture"))
+				ctx.environment.skyboxTexturePath = envJson["SkyboxTexture"].get<std::string>();
+
+			// 色の読み込み (JSON配列 -> XMFLOAT4)
+			auto LoadColor4 = [&](const char* key, XMFLOAT4& outVal) {
+				if (envJson.contains(key)) {
+					auto v = envJson[key];
+					outVal = { v[0], v[1], v[2], v[3] };
+				}
+				};
+			LoadColor4("SkyColorTop", ctx.environment.skyColorTop);
+			LoadColor4("SkyColorHorizon", ctx.environment.skyColorHorizon);
+			LoadColor4("SkyColorBottom", ctx.environment.skyColorBottom);
+
+			if (envJson.contains("AmbientColor")) {
+				auto v = envJson["AmbientColor"];
+				ctx.environment.ambientColor = { v[0], v[1], v[2] };
+			}
+			if (envJson.contains("AmbientIntensity")) {
+				ctx.environment.ambientIntensity = envJson["AmbientIntensity"].get<float>();
+			}
 		}
 
 		// Physics

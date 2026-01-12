@@ -41,7 +41,7 @@ namespace Arche
 
 		if (FAILED(hr))
 		{
-			// Logger::LogError("Failed to load texture file: " + path);
+			Logger::LogError("Failed to load texture file: " + path + " (HRESULT: " + std::to_string(hr) + ")");
 			return false;
 		}
 

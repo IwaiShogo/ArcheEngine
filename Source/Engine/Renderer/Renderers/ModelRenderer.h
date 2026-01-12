@@ -30,6 +30,7 @@ namespace Arche
 	class ARCHE_API ModelRenderer
 	{
 	public:
+		// MainCB (b0)
 		struct CBData
 		{
 			XMMATRIX world;		 // ワールド行列
@@ -43,11 +44,33 @@ namespace Arche
 			float padding[3];
 		};
 
+		// SceneLightCB (b1)
+		struct PointLightData
+		{
+			XMFLOAT3 position;
+			float range;
+			XMFLOAT3 color;
+			float intensity;
+		};
+
+		struct SceneLightCBData
+		{
+			XMFLOAT3 ambientColor;
+			float ambientIntensity;
+			int pointLightCount;
+			float _padding[3];
+
+			PointLightData pointLights[32];
+		};
+
 	public:
 		static void Initialize(ID3D11Device* device, ID3D11DeviceContext* context);
 		static void Shutdown();
 
 		static void Begin(const XMMATRIX& view, const XMMATRIX& projection, const XMFLOAT3& lightDir, const XMFLOAT3& lightColor);
+
+		static void SetSceneLights(const XMFLOAT3& ambientColor, float ambientIntensity, const std::vector<PointLightData>& lights);
+
 		static void Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos, const XMFLOAT3& scale = { 1,1,1 }, const XMFLOAT3& rot = { 0,0,0 });
 		static void Draw(std::shared_ptr<Model> model, const DirectX::XMMATRIX& worldMatrix);
 
@@ -61,12 +84,16 @@ namespace Arche
 		static ComPtr<ID3D11VertexShader> s_vs;
 		static ComPtr<ID3D11PixelShader> s_ps;
 		static ComPtr<ID3D11InputLayout> s_inputLayout;
+
 		static ComPtr<ID3D11Buffer> s_constantBuffer;
+		static ComPtr<ID3D11Buffer> s_lightConstantBuffer;
+
 		static ComPtr<ID3D11SamplerState> s_samplerState;
 		static ComPtr<ID3D11RasterizerState> s_rsSolid;
 
 		static ComPtr<ID3D11ShaderResourceView> s_whiteTexture;
 		static CBData s_cbData;
+		static SceneLightCBData s_lightData;
 	};
 
 }	// namespace Arche

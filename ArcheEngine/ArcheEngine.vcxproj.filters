@@ -303,6 +303,7 @@
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\GridRenderer.cpp">
       <Filter>Source\Engine\Renderer\Renderers</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Engine\Renderer\Renderers\SkyboxRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Editor\Core\Editor.h">
@@ -590,6 +591,15 @@
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\GridRenderer.h">
       <Filter>Source\Engine\Renderer\Renderers</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Engine\Renderer\Renderers\SkyboxRenderer.h">
+      <Filter>Source\Engine\Renderer\Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Engine\Scene\SceneEnvironment.h">
+      <Filter>Source\Engine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Editor\Panels\LightingSettingsWindow.h">
+      <Filter>Source\Editor\Panels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\Billboard.hlsl">
@@ -611,6 +621,9 @@
       <Filter>Resources\Shaders</Filter>
     </None>
     <None Include="..\Resources\Engine\Shaders\InfiniteGrid.hlsl">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="..\Resources\Engine\Shaders\Skybox.hlsl">
       <Filter>Resources\Shaders</Filter>
     </None>
   </ItemGroup>

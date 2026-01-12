@@ -169,6 +169,7 @@
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\GridRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.cpp" />
+    <ClCompile Include="..\Source\Engine\Renderer\Renderers\SkyboxRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\RHI\MeshBuffer.cpp" />
     <ClCompile Include="..\Source\Engine\Renderer\RHI\Texture.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="..\Source\Editor\Panels\HierarchyWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\InputVisualizerWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\InspectorWindow.h" />
+    <ClInclude Include="..\Source\Editor\Panels\LightingSettingsWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\PhysicsSettingsWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\ResourceInspectorWindow.h" />
     <ClInclude Include="..\Source\Editor\Panels\SceneViewPanel.h" />
@@ -247,6 +249,7 @@
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\GridRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\ModelRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\PrimitiveRenderer.h" />
+    <ClInclude Include="..\Source\Engine\Renderer\Renderers\SkyboxRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\Renderers\SpriteRenderer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\RHI\MeshBuffer.h" />
     <ClInclude Include="..\Source\Engine\Renderer\RHI\Texture.h" />
@@ -262,6 +265,7 @@
     <ClInclude Include="..\Source\Engine\Scene\Core\ECS\ECS.h" />
     <ClInclude Include="..\Source\Engine\Scene\Core\SceneManager.h" />
     <ClInclude Include="..\Source\Engine\Scene\Core\SceneTransition.h" />
+    <ClInclude Include="..\Source\Engine\Scene\SceneEnvironment.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\AnimatorControllerSerializer.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentRegistry.h" />
     <ClInclude Include="..\Source\Engine\Scene\Serializer\ComponentSerializer.h" />
@@ -303,6 +307,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Resources\Engine\Shaders\InfiniteGrid.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Resources\Engine\Shaders\Skybox.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -423,7 +432,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine/pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -455,7 +464,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine/pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>

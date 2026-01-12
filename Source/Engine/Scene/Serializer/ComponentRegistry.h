@@ -121,6 +121,9 @@ namespace Arche
 		}
 	};
 
+	ARCHE_API void AddToComponentOrder(Registry& reg, Entity e, const std::string& compName);
+	ARCHE_API void RemoveFromComponentOrder(Registry& reg, Entity e, const std::string& compName);
+
 	// コンポーネントレジストリ
 	// ------------------------------------------------------------
 	class ARCHE_API ComponentRegistry
@@ -157,78 +160,80 @@ namespace Arche
 
 			// Serialize
 			iface.serialize = [nameStr](Registry& reg, Entity e, json& j)
-			{
-				if (reg.has<T>(e))
 				{
-					SerializeComponentHelper(j, nameStr, [&](json& compNode)
+					if (reg.has<T>(e))
 					{
-						compNode["Enabled"] = reg.isComponentEnabled<T>(e);
-
-						Reflection::VisitMembers(reg.get<T>(e), SerializeVisitor{ compNode });
-					});
-				}
-			};
+						SerializeComponentHelper(j, nameStr, [&](json& compNode)
+							{
+								compNode["Enabled"] = reg.isComponentEnabled<T>(e);
+								Reflection::VisitMembers(reg.get<T>(e), SerializeVisitor{ compNode });
+							});
+					}
+				};
 
 			// Deserialize
 			iface.deserialize = [nameStr](Registry& reg, Entity e, const json& j)
-			{
-				if (j.contains(nameStr))
 				{
-					// 持っていなければ追加、あれば取得
-					T& comp = reg.has<T>(e) ? reg.get<T>(e) : reg.emplace<T>(e);
-					const auto& compNode = j[nameStr];
-
-					if (compNode.contains("Enabled"))
+					if (j.contains(nameStr))
 					{
-						reg.setComponentEnabled<T>(e, compNode["Enabled"].get<bool>());
+						T& comp = reg.has<T>(e) ? reg.get<T>(e) : reg.emplace<T>(e);
+						const auto& compNode = j[nameStr];
+
+						if (compNode.contains("Enabled"))
+						{
+							reg.setComponentEnabled<T>(e, compNode["Enabled"].get<bool>());
+						}
+
+						Reflection::VisitMembers(comp, DeserializeVisitor{ compNode });
 					}
+				};
 
-					Reflection::VisitMembers(comp, DeserializeVisitor{ compNode });
-				}
-			};
+			iface.add = [nameStr](Registry& reg, Entity e)
+				{
+					// コンポーネント追加
+					if (!reg.has<T>(e))
+					{
+						reg.emplace<T>(e);
 
-			// Add
-			iface.add = [](Registry& reg, Entity e)
-			{
-					if (!reg.has<T>(e)) reg.emplace<T>(e);
-			};
+						AddToComponentOrder(reg, e, nameStr);
+					}
+				};
 
-			// Remove
-			iface.remove = [](Registry& reg, Entity e)
-			{
-				if (reg.has<T>(e)) reg.remove<T>(e);
-			};
+			iface.remove = [nameStr](Registry& reg, Entity e)
+				{
+					if (reg.has<T>(e))
+					{
+						reg.remove<T>(e);
 
-			// Has
+						RemoveFromComponentOrder(reg, e, nameStr);
+					}
+				};
+
+			// Has (変更なし)
 			iface.has = [](Registry& reg, Entity e)
-			{
-					return reg.has<T>(e);
-			};
-
-			// DrawInspector（Debugのみ有効）
-			iface.drawInspectorDnD = [nameStr, iface](Registry& reg, Entity e, int index, std::function<void(int, int)> onReorder, std::function<void()> onRemove, CommandCallback onCommand)
-			{
-#ifdef _DEBUG
-				if(reg.has<T>(e))
 				{
-					bool removed = false;
+					return reg.has<T>(e);
+				};
 
-					// Visitorに必要なシリアライズ用関数を作成
-					auto serializeFunc = [&](json& outJson)
+			// DrawInspector (変更なし)
+			iface.drawInspectorDnD = [nameStr, iface](Registry& reg, Entity e, int index, std::function<void(int, int)> onReorder, std::function<void()> onRemove, CommandCallback onCommand)
+				{
+#ifdef _DEBUG
+					if (reg.has<T>(e))
 					{
-						iface.serialize(reg, e, outJson);
-					};
+						bool removed = false;
+						auto serializeFunc = [&](json& outJson) { iface.serialize(reg, e, outJson); };
 
-					// シリアライズ用の関数を作成
-					DrawComponent(nameStr.c_str(), reg.get<T>(e), e, reg, removed, serializeFunc, onCommand, index, onReorder);
+						// DrawComponent関数内でImGuiの描画を行う
+						DrawComponent(nameStr.c_str(), reg.get<T>(e), e, reg, removed, serializeFunc, onCommand, index, onReorder);
 
-					if (removed && onRemove)
-					{
-						onRemove();
+						if (removed && onRemove)
+						{
+							onRemove();
+						}
 					}
-				}
 #endif // _DEBUG
-			};
+				};
 
 			m_interfaces[nameStr] = iface;
 		}

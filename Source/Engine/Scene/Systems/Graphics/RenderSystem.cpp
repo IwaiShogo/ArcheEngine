@@ -30,9 +30,20 @@
 
 namespace Arche
 {
+	RenderSystem::RenderSystem()
+	{
+		m_systemName = "Render System";
+	}
 
 	void RenderSystem::Render(Registry& registry, const Context& context)
 	{
+		if (!m_isInitialized)
+		{
+			m_gridRenderer.Initialize();
+			m_skyboxRenderer.Initialize();
+			m_isInitialized = true;
+		}
+
 		// ------------------------------------------------------------
 		// 1. メインの描画
 		// ------------------------------------------------------------
@@ -75,7 +86,27 @@ namespace Arche
 				});
 		}
 
+		// スカイボックスのテクスチャロード管理
+		static std::string currentSkyboxPath = "INITIAL_STATE";
+
+		if (context.environment.skyboxTexturePath != currentSkyboxPath)
+		{
+			if (context.environment.skyboxTexturePath.empty())
+			{
+				m_skyboxRenderer.SetTexture(nullptr);
+			}
+			else
+			{
+				auto tex = ResourceManager::Instance().GetTexture(context.environment.skyboxTexturePath);
+				if (tex) m_skyboxRenderer.SetTexture(tex);
+			}
+			currentSkyboxPath = context.environment.skyboxTexturePath;
+		}
+
 		if (!cameraFound) return;
+
+		// スカイボックス描画
+		m_skyboxRenderer.Render(viewMatrix, projMatrix, context.environment);
 
 		// グリッドと軸の描画（Collider設定に関わらず出す）
 		if (context.debugSettings.showGrid)
@@ -144,6 +175,19 @@ namespace Arche
 						float maxScaleXZ = std::max(gScale.x, gScale.z);
 						PrimitiveRenderer::DrawCylinder(center, c.radius * maxScaleXZ, c.height * gScale.y, gRot, color);
 					}
+				});
+
+			registry.view<Transform, PointLight>().each([&](Entity e, Transform& t, PointLight& l) {
+				// 高原の中心
+				XMFLOAT4 iconColor = { 1.0f, 1.0f, 0.3f, 1.0f };
+
+				// 中心位置
+				PrimitiveRenderer::DrawSphere(t.position, 0.2f, iconColor);
+
+				// 範囲
+				PrimitiveRenderer::SetFillMode(true);	// ワイヤーフレーム
+				XMFLOAT4 rangeColor = { 1.0f, 1.0f, 0.3f, 0.3f };
+				PrimitiveRenderer::DrawSphere(t.position, l.range, rangeColor);
 				});
 		}
 

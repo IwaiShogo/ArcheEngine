@@ -31,10 +31,12 @@ namespace Arche
 	ComPtr<ID3D11PixelShader> ModelRenderer::s_ps = nullptr;
 	ComPtr<ID3D11InputLayout> ModelRenderer::s_inputLayout = nullptr;
 	ComPtr<ID3D11Buffer> ModelRenderer::s_constantBuffer = nullptr;
+	ComPtr<ID3D11Buffer> ModelRenderer::s_lightConstantBuffer = nullptr;
 	ComPtr<ID3D11SamplerState> ModelRenderer::s_samplerState = nullptr;
 	ComPtr<ID3D11RasterizerState> ModelRenderer::s_rsSolid = nullptr;
 	ComPtr<ID3D11ShaderResourceView> ModelRenderer::s_whiteTexture = nullptr;
 	ModelRenderer::CBData ModelRenderer::s_cbData = {};
+	ModelRenderer::SceneLightCBData ModelRenderer::s_lightData = {};
 
 	void ModelRenderer::Initialize(ID3D11Device* device, ID3D11DeviceContext* context)
 	{
@@ -106,6 +108,9 @@ namespace Arche
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		s_device->CreateBuffer(&bd, nullptr, &s_constantBuffer);
 
+		bd.ByteWidth = sizeof(SceneLightCBData);
+		s_device->CreateBuffer(&bd, nullptr, &s_lightConstantBuffer);
+
 		// 4. サンプラー & ラスタライザ
 		D3D11_SAMPLER_DESC sd = {};
 		sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -133,6 +138,7 @@ namespace Arche
 		s_vs.Reset(); s_ps.Reset(); s_inputLayout.Reset();
 		s_constantBuffer.Reset(); s_samplerState.Reset(); s_rsSolid.Reset();
 		s_whiteTexture.Reset();
+		s_lightConstantBuffer.Reset();
 	}
 
 	void ModelRenderer::Begin(const XMMATRIX& view, const XMMATRIX& projection, const XMFLOAT3& lightDir, const XMFLOAT3& lightColor)
@@ -146,12 +152,33 @@ namespace Arche
 
 		s_context->VSSetConstantBuffers(0, 1, s_constantBuffer.GetAddressOf());
 		s_context->PSSetConstantBuffers(0, 1, s_constantBuffer.GetAddressOf());
+		s_context->PSSetConstantBuffers(1, 1, s_lightConstantBuffer.GetAddressOf());
 		s_context->PSSetSamplers(0, 1, s_samplerState.GetAddressOf());
 
 		s_cbData.view = XMMatrixTranspose(view);
 		s_cbData.projection = XMMatrixTranspose(projection);
 		s_cbData.lightDir = XMFLOAT4(lightDir.x, lightDir.y, lightDir.z, 0);
 		s_cbData.lightColor = XMFLOAT4(lightColor.x, lightColor.y, lightColor.z, 1);
+	}
+
+	void ModelRenderer::SetSceneLights(const XMFLOAT3& ambientColor, float ambientIntensity, const std::vector<PointLightData>& lights)
+	{
+		s_lightData.ambientColor = ambientColor;
+		s_lightData.ambientIntensity = ambientIntensity;
+
+		// ライト数を制限（最大32）
+		int count = (int)lights.size();
+		if (count > 32) count = 32;
+		s_lightData.pointLightCount = count;
+
+		// データをコピー
+		for (int i = 0; i < count; ++i)
+		{
+			s_lightData.pointLights[i] = lights[i];
+		}
+
+		// 定数バッファ更新
+		s_context->UpdateSubresource(s_lightConstantBuffer.Get(), 0, nullptr, &s_lightData, 0, 0);
 	}
 
 	void ModelRenderer::Draw(std::shared_ptr<Model> model, const XMFLOAT3& pos, const XMFLOAT3& scale, const XMFLOAT3& rot)

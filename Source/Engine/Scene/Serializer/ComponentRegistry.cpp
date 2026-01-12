@@ -1,6 +1,7 @@
 ﻿#include "Engine/pch.h"
 #include "ComponentRegistry.h"
 #include "Engine/Core/Base/StringId.h"
+#include "Engine/Scene/Components/Components.h"
 
 #ifdef _DEBUG
 #include "Editor/Core/InspectorGui.h"
@@ -39,6 +40,34 @@ namespace Arche
 		json& compNode = parent[key];
 		if (compNode.is_null()) compNode = json::object();
 		writer(compNode);
+	}
+
+	// ヘルパー関数の実装
+	void AddToComponentOrder(Registry& reg, Entity e, const std::string& compName)
+	{
+		// Tagコンポーネントを持っていれば、リストに追加
+		if (reg.has<Tag>(e))
+		{
+			auto& tag = reg.get<Tag>(e);
+			if (std::find(tag.componentOrder.begin(), tag.componentOrder.end(), compName) == tag.componentOrder.end())
+			{
+				tag.componentOrder.push_back(compName);
+			}
+		}
+	}
+
+	void RemoveFromComponentOrder(Registry& reg, Entity e, const std::string& compName)
+	{
+		// Tagコンポーネントを持っていれば、リストから削除
+		if (reg.has<Tag>(e))
+		{
+			auto& order = reg.get<Tag>(e).componentOrder;
+			auto it = std::find(order.begin(), order.end(), compName);
+			if (it != order.end())
+			{
+				order.erase(it);
+			}
+		}
 	}
 
 	// インスペクター状態管理の実装 (Engine側)

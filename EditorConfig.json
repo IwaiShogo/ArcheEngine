@@ -1,11 +1,11 @@
 {
     "Camera": {
-        "pitch": 6.7049784660339355,
-        "x": -9.702794075012207,
-        "y": 9.610662460327148,
-        "yaw": -5.705048084259033,
-        "z": -14.223505020141602
+        "pitch": 6.719955921173096,
+        "x": 4.022462844848633,
+        "y": 7.199847221374512,
+        "yaw": -13.28002643585205,
+        "z": -5.693858623504639
     },
-    "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Prefabs",
-    "LastScene": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Scenes\\TitleScene.json"
+    "ContentBrowserPath": "C:\\HAL\\DX22\\DirectX11_ECS_ArcheEngine\\Resources\\Game\\Skyboxes",
+    "LastScene": "Resources/Game/Scenes/TitleScene.json"
 }

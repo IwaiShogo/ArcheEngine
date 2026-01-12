@@ -770,6 +770,18 @@ namespace Arche
 	};
 	ARCHE_COMPONENT(Animator, REFLECT_VAR(controllerPath) REFLECT_VAR(currentState) REFLECT_VAR(isPlaying))
 
+	/**
+	 * @struct	PointLight
+	 * @brief	点光源
+	 */
+	struct PointLight
+	{
+		XMFLOAT3 color = { 1.0f, 1.0f, 1.0f };	// 光の色
+		float intensity = 1.0f;					// 強さ
+		float range = 10.0f;					// 届く距離
+	};
+	ARCHE_COMPONENT(PointLight, REFLECT_VAR(color) REFLECT_VAR(intensity) REFLECT_VAR(range))
+
 	// ============================================================
 	// エフェクト関連
 	// ============================================================
@@ -777,25 +789,53 @@ namespace Arche
 	 * @struct	ParticleSystemComponent
 	 * @brief	パーティクルエフェクト
 	 */
-	struct ParticleSystemComponent
+		struct ParticleSystemComponent
 	{
-		std::string textureKey;
+		// リソース
+		std::string textureKey = "White"; // テクスチャ
 
-		int maxParticles = 100;
-		float emissionRate = 10.0f;	// 1秒あたりの生成数
-		float lifetime = 1.0f;		// パーティクルの寿命
-		float speed = 1.0f;			// 速度
-		float size = 1.0f;			// サイズ
-		XMFLOAT4 startColor = { 1,1,1,1 };
-		XMFLOAT4 endColor = { 1,1,1,0 };
+		// 発生パラメータ
+		float duration = 5.0f;		// システムの稼働時間 (Loopなら無視)
+		bool looping = true;		// ループするか
+		float startDelay = 0.0f;	// 開始遅延
+		float lifetime = 1.0f;		// 粒子の寿命
+		float speed = 5.0f;			// 粒子の開始速度
+		float size = 1.0f;			// 粒子の開始サイズ
+		float rateOverTime = 10.0f; // 1秒間の発生数
 
-		bool isLoop = true;
+		// 形状パラメータ
+		float coneAngle = 25.0f;	// 放出角度（0なら直線、180なら全方位）
+
+		// 色
+		XMFLOAT4 startColor = { 1, 1, 1, 1 };
+		XMFLOAT4 endColor = { 1, 1, 1, 0 };	  // フェードアウト用
+
+		// 物理
+		bool useGravity = false;
+		float gravityScale = 1.0f;
+
+		// 実行時状態（シリアライズ不要）
 		bool isPlaying = true;
+		float timeElapsed = 0.0f;	// 経過時間
+		float emissionTimer = 0.0f; // 放出用タイマー
 
-		// 内部タイマー
-		float emissionTimer = 0.0f;
+		struct Particle
+		{
+			XMFLOAT3 position;
+			XMFLOAT3 velocity;
+			float lifeList;		// 残り寿命 (0で死亡)
+			float lifeMax;		// 最大寿命
+			float size;
+			XMFLOAT4 color;
+			bool active;
+		};
+		std::vector<Particle> particles; // アクティブな粒子リスト
 
-		ParticleSystemComponent() = default;
+		// コンストラクタでメモリ予備確保
+		ParticleSystemComponent()
+		{
+			particles.resize(100); // とりあえず100個分
+		}
 	};
 	ARCHE_COMPONENT(ParticleSystemComponent,
 		REFLECT_VAR(textureKey)
